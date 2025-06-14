@@ -7,7 +7,6 @@
     "dev": "vite",
     "build": "run-p \"build-only {@}\" --",
     "preview": "vite preview",
-    "build:test": "vite build --mode test",
     "build-only": "vite build",
     "type-check": "vue-tsc --build --force",
     "lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --fix --ignore-path .gitignore",
