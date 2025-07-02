@@ -12,6 +12,8 @@ import { type AiMessage, useChatStore } from './store/chat-store'
 import type { AiMessageParams, AiMessageWrapper } from '@/apis/__generated/model/static'
 import Login from '@/components/Login/index.vue'
 
+import IntroductionBindAccount from '@/components/IntroductionBindAccount/index.vue'
+
 import { useWebSocket } from '@vueuse/core'
 
 import { ElMessageBox } from 'element-plus'
@@ -38,6 +40,9 @@ type ChatResponse = {
     }
   }
 }
+
+const introductionBindAccountRef = ref(null)
+
 const API_PREFIX = import.meta.env.VITE_API_PREFIX
 const chatStore = useChatStore()
 // const { handleDeleteSession, handleUpdateSession, handleClearMessage } = chatStore
@@ -89,6 +94,10 @@ const chatMessage = ref<AiMessage>({
   textContent: '',
   sessionId: '',
 })
+
+function showBindEmail() {
+  introductionBindAccountRef.value.show('email')
+}
 
 const wsUrl = BASE_URL.replace('http', 'ws').replace('https', 'wss') + '/ws/app/websocket/' + wsUserId
 
@@ -1188,6 +1197,20 @@ const toggleSessionPanel = () => {
 
                 <el-button type="text" @click="disconnect" style="color: white" class="text-xs text-white" link>Disconnect</el-button>
               </p>
+
+              <p class="ml-1.25 flex items-center mt-7.5">
+                <SvgIcon width="1.5em" height="1.5em" name="email" />
+                <el-button type="text" @click="showBindEmail" style="color: white" class="text-xs text-white" link>
+                  {{ loginUser.email || 'Bind Email' }}
+                </el-button>
+              </p>
+
+              <p v-if="!loginUser.walletAddress" class="ml-1.25 flex items-center mt-7.5">
+                <el-icon size="20">
+                  <SvgIcon width="1.5em" height="1.5em" name="metamask" />
+                </el-icon>
+                <el-button type="plain" @click="showBindAccount" class="text-xs text-white" link> Bind Wallet </el-button>
+              </p>
             </el-card>
           </template>
         </el-dropdown>
@@ -1441,6 +1464,8 @@ const toggleSessionPanel = () => {
         </div>
       </div>
     </el-drawer>
+
+    <IntroductionBindAccount ref="introductionBindAccountRef"></IntroductionBindAccount>
   </div>
 </template>
 <style lang="scss" scoped>
