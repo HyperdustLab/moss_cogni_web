@@ -6,7 +6,7 @@ import MessageRow from './components/message-row.vue'
 import MessageInput from './components/message-input.vue'
 import { storeToRefs } from 'pinia'
 import { ElIcon, ElMessage, type UploadProps, type UploadUserFile } from 'element-plus'
-import { api } from '@/utils/api-instance'
+import { getDictText, getDictItems } from '@/api/login'
 import { SSE } from 'sse.js'
 import { type AiMessage, useChatStore } from './store/chat-store'
 import type { AiMessageParams, AiMessageWrapper } from '@/apis/__generated/model/static'
@@ -371,8 +371,9 @@ function generateUUID() {
   return `${uuid.slice(0, 8)}-${uuid.slice(8, 12)}-${uuid.slice(12, 16)}-${uuid.slice(16, 20)}-${uuid.slice(20)}`
 }
 
-function handleCreateMyAgent() {
-  window.open('https://www.hyperagi.network/store')
+async function handleCreateMyAgent() {
+  const AIPodDownload = await getDictText('sys_config', 'AIPodDownload')
+  window.open(AIPodDownload)
 }
 
 async function handleShareTwitter(sid) {
@@ -837,11 +838,11 @@ const disconnect = () => {
 }
 
 const goHome = () => {
-  location.href = `https://mossai.com/`
+  location.href = `https://www.mossai.com/`
 }
 
 function goUser() {
-  location.href = `https://user.mossai.com/login?token=${token.value}`
+  location.href = `https://dashboard.mossai.com/login?token=${token.value}`
 }
 
 function showUploadEmbedding() {
@@ -1137,7 +1138,7 @@ const toggleSessionPanel = () => {
 <template>
   <div class="home-view dark">
     <!-- LOGO部分调整到最左边 -->
-    <div class="w-full flex items-start px-4 py-3 border-b border-gray-700 fixed top-0 left-0 z-10 overflow-hidden">
+    <div class="w-full flex items-start px-4 border-b border-gray-700 fixed top-0 left-0 z-10 overflow-hidden">
       <div class="flex items-center justify-between w-full">
         <div class="flex items-center">
           <!-- 添加移动端菜单按钮 -->
@@ -1149,8 +1150,8 @@ const toggleSessionPanel = () => {
               <el-icon><ChatRound /></el-icon>
             </el-button>
           </template>
-          <div class="flex items-center cursor-pointer w-[10rem]">
-            <img @click="goHome" src="../../assets/logo2.png" loading="lazy" class="cursor-pointer w-8 h-8" alt="logo" />
+          <div class="flex items-center cursor-pointer w-[20rem]" @click="goHome">
+            <img @click="goHome" src="../../assets/logo2.png" loading="lazy" class="cursor-pointer max-w-8 max-h-8" alt="logo" />
             <span @click="goHome" class="text-white text-2xl font-bold ml-2">MOSS&nbsp;AI</span>
           </div>
         </div>
@@ -1240,7 +1241,7 @@ const toggleSessionPanel = () => {
 
             <div v-else>
               <div class="flex items-center justify-center p-2 hover:bg-gray-700 rounded-lg cursor-pointer transition-colors duration-200">
-                <el-button @click="handleCreateMyAgent" round type="primary" class="w-full">Create My Agent</el-button>
+                <el-button @click="handleCreateMyAgent" round type="primary" class="w-full text-xs whitespace-normal leading-tight py-2 px-3">Download AiPod to create your agent</el-button>
               </div>
             </div>
           </div>
@@ -1418,7 +1419,7 @@ const toggleSessionPanel = () => {
 
               <div v-else>
                 <div class="flex items-center justify-center p-2 hover:bg-gray-700 rounded-lg cursor-pointer transition-colors duration-200">
-                  <el-button @click="handleCreateMyAgent" round type="primary" class="w-full">Create My Agent</el-button>
+                  <el-button @click="handleCreateMyAgent" round type="primary" class="w-full text-xs whitespace-normal leading-tight py-2 px-3">Download AiPod to create your agent</el-button>
                 </div>
               </div>
             </div>

@@ -1,7 +1,5 @@
-import { request } from '@/utils/service'
+import { request } from '@/utils/request'
 import type * as Login from './types/login'
-import api from '@/utils/api'
-import { useUserStore } from '@/store/modules/user'
 
 /** 获取登录验证码 */
 export function getLoginCodeApi() {
@@ -64,11 +62,23 @@ export async function getBindStatus() {
     return 'metamask'
   }
 
-  const { result } = await api.get('/sys/user/listMyBindAccount', {})
+  const { result } = await request({ url: '/sys/user/listMyBindAccount', method: 'get' })
 
-  if (!userStore.email && !result.some(item => item === 'google')) {
+  if (!userStore.email && !result.some((item) => item === 'google')) {
     return 'email'
   }
 
   return 'none'
+}
+
+export async function getDictItems(dictCode) {
+  const { result } = await request({ url: '/sys/dict/getDictItems/' + dictCode, method: 'get' })
+  return result
+}
+export async function getDictText(dictCode, key) {
+  const { result } = await request({
+    url: `/sys/dict/getDictText/${dictCode}/${key}`,
+    method: 'get',
+  })
+  return result
 }

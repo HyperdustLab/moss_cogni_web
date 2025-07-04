@@ -23,6 +23,23 @@ const router = createRouter({
         return { path: to.query.path }
       },
     },
+
+    {
+      path: '/privacyPolicy',
+      component: () => import('@/views/privacyPolicy/index.vue'),
+      name: 'privacyPolicy',
+      meta: {
+        hidden: true,
+      },
+    },
+    {
+      path: '/termsService',
+      component: () => import('@/views/termsService/index.vue'),
+      name: 'termsService',
+      meta: {
+        hidden: true,
+      },
+    },
   ],
 })
 
