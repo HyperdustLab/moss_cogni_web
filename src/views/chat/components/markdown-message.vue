@@ -67,7 +67,7 @@ const markdownStyle = {
 
 /* 确保引用样式正确 */
 .custom-markdown .md-editor-preview-wrapper blockquote {
-  border-left: 4px solid #666 !important;
+  border-left: 4px solid transparent !important;
   margin: 1em 0 !important;
   padding: 0.5em 1em !important;
   background-color: rgba(255, 255, 255, 0.05) !important;

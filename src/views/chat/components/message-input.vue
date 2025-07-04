@@ -83,9 +83,9 @@ const uploadToggleButton = () => {
 <style lang="scss" scoped>
 .message-input {
   padding: 20px 20px 0 20px;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
-  border-left: 1px solid rgba(255, 255, 255, 0.1);
-  border-right: 1px solid rgba(255, 255, 255, 0.1);
+  border-top: 1px solid transparent;
+  border-left: 1px solid transparent;
+  border-right: 1px solid transparent;
   border-top-right-radius: 5px;
   border-top-left-radius: 5px;
   background-color: #1e1e1e;
@@ -97,9 +97,9 @@ const uploadToggleButton = () => {
 
   :deep(.el-textarea__inner) {
     background-color: #2b2b2b;
-    border-color: rgba(255, 255, 255, 0.1);
+    border-color: transparent;
     color: #ffffff;
-    box-shadow: 0 0 0 1px #282c34 inset;
+    box-shadow: 0 0 0 1px transparent inset;
     padding-right: 120px;
     padding-bottom: 50px;
     font-size: 16px;

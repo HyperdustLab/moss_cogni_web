@@ -1158,12 +1158,12 @@ const toggleSessionPanel = () => {
 
         <!-- 将登录按钮移到logo旁边 -->
         <div v-if="!loginUser" class="user-login-btn" @click="handleLogin">
-          <el-avatar :size="16" :src="user" style="border: none" />
+          <el-avatar :size="16" :src="user" style="border: none" fit="contain" />
           <span class="ml-1.25 text-white mobile:ml-0.5">Login In</span>
         </div>
         <el-dropdown v-else class="user-dropdown">
           <span class="el-dropdown-link flex items-center">
-            <el-avatar :size="16" :src="loginUser.avatar || defAvatar" style="border: none" />
+            <el-avatar :size="16" :src="loginUser.avatar || defAvatar" style="border: none" fit="contain" />
 
             <span class="ml-1.25 mobile:ml-0.5">
               <Substring :copys="false" color="#ffffff" fontSize="13px" :value="loginUser.walletAddress || loginUser.email"></Substring>
@@ -1177,7 +1177,7 @@ const toggleSessionPanel = () => {
             <el-card class="w-50 bg-[#303133] text-white mobile:w-40">
               <template #header>
                 <div class="card-header flex items-center">
-                  <el-avatar :size="25" :src="loginUser.avatar || defAvatar" />
+                  <el-avatar :size="25" :src="loginUser.avatar || defAvatar" fit="contain" />
 
                   <span class="ml-3.75 mobile:ml-2">
                     <Substring fontSize="12px" :value="loginUser.walletAddress || loginUser.email"></Substring>
@@ -1229,12 +1229,11 @@ const toggleSessionPanel = () => {
             <el-select v-if="myAgentList.length > 0" v-model="selectMyAgentId" clearable placeholder="Select an agent" @change="(val) => handleSelectAgent(myAgentList.find((a) => a.id === val))">
               <el-option v-for="(myAgent, index) in myAgentList" :key="index" :label="myAgent.nickName" :value="myAgent.id" class="dark-option">
                 <div class="flex items-center space-x-3">
-                  <div class="relative">
-                    <el-avatar :size="40" :src="myAgent.avatar" />
+                  <div class="relative flex-shrink-0">
+                    <el-avatar :size="20" :src="myAgent.avatar" fit="contain" />
                     <div v-if="myAgent.onlineStatus === 1" class="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-[#1e1e1e]"></div>
-                    <div class="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-[#1e1e1e]"></div>
                   </div>
-                  <span class="text-sm text-white">{{ myAgent.nickName }}</span>
+                  <span class="text-sm text-white leading-none">{{ myAgent.nickName }}</span>
                 </div>
               </el-option>
             </el-select>
@@ -1255,7 +1254,7 @@ const toggleSessionPanel = () => {
             <div class="space-y-2">
               <div v-for="agent in agentList" :key="agent.id" class="flex items-center space-x-3 p-2 bg-[#1e1e1e] hover:bg-[#2c2c2c] rounded-lg cursor-pointer transition-colors duration-200" :class="{ 'bg-[#2c2c2c]': selectAgentId === agent.id }" @click="preHandleSelectAgent(agent)">
                 <div class="relative">
-                  <el-avatar :size="40" :src="agent.avatar" />
+                  <el-avatar :size="40" :src="agent.avatar" fit="contain" />
                   <div v-if="agent.onlineStatus === 1" class="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-[#1e1e1e]"></div>
                 </div>
                 <div>
@@ -1332,7 +1331,7 @@ const toggleSessionPanel = () => {
             <!-- 显示当前选中agent的信息 -->
             <div class="flex flex-col">
               <div class="flex items-center">
-                <el-avatar :size="30" :src="selectAgent.avatar" class="mr-3" />
+                <el-avatar :size="30" :src="selectAgent.avatar" class="mr-3" fit="contain" />
                 <div class="flex flex-col ml-10">
                   <div class="flex items-center">
                     <span class="text-white text-base">{{ selectAgent.nickName }}</span>
@@ -1381,7 +1380,7 @@ const toggleSessionPanel = () => {
             </div>
           </div>
         </div>
-        <el-divider :border-style="'solid'" border-color="#666666" />
+        <!-- <el-divider :border-style="'solid'" border-color="#666666" /> -->
         <div ref="messageListRef" class="message-list">
           <!-- Transition effect -->
           <transition-group name="list" v-if="activeSession && selectAgent">
@@ -1409,7 +1408,7 @@ const toggleSessionPanel = () => {
                 <el-option v-for="(myAgent, index) in myAgentList" :key="index" :label="myAgent.nickName" :value="myAgent.id" class="dark-option">
                   <div class="flex items-center space-x-3">
                     <div class="relative">
-                      <el-avatar :size="40" :src="myAgent.avatar" />
+                      <el-avatar :size="40" :src="myAgent.avatar" fit="contain" />
                       <div class="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-[#1e1e1e]"></div>
                     </div>
                     <span class="text-sm text-white">{{ myAgent.nickName }}</span>
@@ -1432,7 +1431,7 @@ const toggleSessionPanel = () => {
               <div class="space-y-2">
                 <div v-for="agent in agentList" :key="agent.id" class="flex items-center space-x-3 p-2 bg-[#1e1e1e] hover:bg-[#2c2c2c] rounded-lg cursor-pointer transition-colors duration-200" :class="{ 'bg-[#2c2c2c]': selectAgentId === agent.id }" @click="preHandleSelectAgent(agent)">
                   <div class="relative">
-                    <el-avatar :size="40" :src="agent.avatar" />
+                    <el-avatar :size="40" :src="agent.avatar" fit="contain" />
                     <div v-if="agent.onlineStatus === 1" class="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-[#1e1e1e]"></div>
                   </div>
                   <div>
@@ -1568,7 +1567,7 @@ const toggleSessionPanel = () => {
 }
 
 :deep(.el-divider--horizontal) {
-  border-top: 1px solid #282c34;
+  border-top: none;
   display: block;
   height: 1px;
   margin: 24px 0;
@@ -1596,7 +1595,7 @@ const toggleSessionPanel = () => {
       height: 60px;
       align-items: center;
       background-color: #000000;
-      border-bottom: 1px solid #303133;
+      border-bottom: none;
 
       .flex.items-center {
         gap: 4px;
@@ -1644,7 +1643,7 @@ const toggleSessionPanel = () => {
       box-sizing: border-box;
       padding: 10px;
       position: relative;
-      border-right: 1px solid rgba(255, 255, 255, 0.07);
+      border-right: none;
       background-color: #141414;
       height: 100%;
       overflow: hidden;
@@ -1799,7 +1798,7 @@ const toggleSessionPanel = () => {
     .option-panel {
       width: 100%;
       padding: 20px;
-      border-left: 1px solid rgba(black, 0.07);
+      border-left: none;
 
       .upload {
         width: 160px;
@@ -1970,7 +1969,7 @@ const toggleSessionPanel = () => {
 
 :deep(.el-select-dropdown) {
   background-color: #1e1e1e !important;
-  border: 1px solid #303133;
+  border: none;
 
   .el-select-dropdown__item {
     color: #ffffff;
@@ -2012,6 +2011,7 @@ const toggleSessionPanel = () => {
 :deep(.dark-option) {
   background-color: #1e1e1e !important;
   color: #ffffff !important;
+  margin-top: 50px;
 
   &:hover {
     background-color: #2c2c2c !important;
@@ -2032,7 +2032,7 @@ const toggleSessionPanel = () => {
 
     :deep(.el-drawer__header) {
       background-color: #1e1e1e;
-      border-bottom: 1px solid #303133;
+      border-bottom: none;
       margin-bottom: 0;
       padding: 12px 16px;
       color: white;
@@ -2046,7 +2046,7 @@ const toggleSessionPanel = () => {
     }
 
     :deep(.el-card__header) {
-      border-bottom-color: #303133;
+      border-bottom-color: transparent;
     }
   }
 }
@@ -2063,7 +2063,7 @@ const toggleSessionPanel = () => {
 
   :deep(.el-drawer__header) {
     color: white;
-    border-bottom: 1px solid #303133;
+    border-bottom: none;
   }
 
   :deep(.el-drawer__body) {
