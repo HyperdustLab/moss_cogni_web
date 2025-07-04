@@ -40,7 +40,7 @@
         </p>
         <p>
           <span style="background-color: transparent; color: #e0e0e0; font-family: Arial, sans-serif; font-size: 11pt">Your Privacy: For more information regarding our collection, use, and disclosure of personal data and other certain data, please see our Privacy Policy (“</span
-          ><a target="_blank" rel="noopener noreferrer" href="https://app.hyperagi.network/privacyPolicy"
+          ><a target="_blank" rel="noopener noreferrer" href="https://app.mossai.com/privacyPolicy"
             ><span style="background-color: transparent; color: #1155cc; font-family: Arial, sans-serif; font-size: 11pt"><u>Privacy Policy</u></span></a
           ><span style="background-color: transparent; color: #e0e0e0; font-family: Arial, sans-serif; font-size: 11pt"
             >”). By using the Service, you consent to our collection, use, and disclosure of personal data and other data as outlined therein. The Privacy Policy is hereby incorporated by reference into these Terms of Service.</span
