@@ -1194,12 +1194,6 @@ const toggleSessionPanel = () => {
               </p>
 
               <p class="ml-1.25 flex items-center mt-7.5">
-                <el-image :src="logoutPng" class="w-5 h-5"></el-image>
-
-                <el-button type="text" @click="disconnect" style="color: white" class="text-xs text-white" link>Disconnect</el-button>
-              </p>
-
-              <p class="ml-1.25 flex items-center mt-7.5">
                 <SvgIcon width="1.5em" height="1.5em" name="email" />
                 <el-button type="text" @click="showBindEmail" style="color: white" class="text-xs text-white" link>
                   {{ loginUser.email || 'Bind Email' }}
@@ -1211,6 +1205,12 @@ const toggleSessionPanel = () => {
                   <SvgIcon width="1.5em" height="1.5em" name="metamask" />
                 </el-icon>
                 <el-button type="plain" @click="showBindAccount" class="text-xs text-white" link> Bind Wallet </el-button>
+              </p>
+
+              <p class="ml-1.25 flex items-center mt-7.5">
+                <el-image :src="logoutPng" class="w-5 h-5"></el-image>
+
+                <el-button type="text" @click="disconnect" style="color: white" class="text-xs text-white" link>Disconnect</el-button>
               </p>
             </el-card>
           </template>
@@ -1230,7 +1230,7 @@ const toggleSessionPanel = () => {
               <el-option v-for="(myAgent, index) in myAgentList" :key="index" :label="myAgent.nickName" :value="myAgent.id" class="dark-option">
                 <div class="flex items-center space-x-3">
                   <div class="relative flex-shrink-0">
-                    <el-avatar :size="20" :src="myAgent.avatar" fit="contain" />
+                    <el-avatar :size="20" :src="myAgent.avatar" class="mt-10" fit="contain" />
                     <div v-if="myAgent.onlineStatus === 1" class="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-[#1e1e1e]"></div>
                   </div>
                   <span class="text-sm text-white leading-none">{{ myAgent.nickName }}</span>
@@ -1911,10 +1911,17 @@ const toggleSessionPanel = () => {
   .el-input__wrapper {
     background-color: #1e1e1e !important;
     background-color: #1e1e1e;
-    box-shadow: 0 0 0 1px #303133 inset;
+    box-shadow: none !important;
+    border: none !important;
 
     &.is-focus {
-      box-shadow: 0 0 0 1px #409eff inset;
+      box-shadow: none !important;
+      border: none !important;
+    }
+
+    &:hover {
+      box-shadow: none !important;
+      border: none !important;
     }
   }
 
@@ -1947,14 +1954,17 @@ const toggleSessionPanel = () => {
 :deep(.el-select) {
   .el-input__wrapper {
     background-color: #1e1e1e !important;
-    box-shadow: 0 0 0 1px #303133 inset;
+    box-shadow: none !important;
+    border: none !important;
 
     &:hover {
-      box-shadow: 0 0 0 1px #409eff inset;
+      box-shadow: none !important;
+      border: none !important;
     }
 
     &.is-focus {
-      box-shadow: 0 0 0 1px #409eff inset;
+      box-shadow: none !important;
+      border: none !important;
     }
   }
 
