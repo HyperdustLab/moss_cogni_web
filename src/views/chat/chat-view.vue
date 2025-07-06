@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import { nextTick, normalizeClass, onMounted, onUnmounted, ref, Text, watch } from 'vue'
 import SessionItem from './components/session-item.vue'
-import { ChatRound, Close, Delete, EditPen, Upload, Share } from '@element-plus/icons-vue'
+import { ChatRound, Close, Delete, EditPen, Upload, Share, Message } from '@element-plus/icons-vue'
 import MessageRow from './components/message-row.vue'
 import MessageInput from './components/message-input.vue'
 import { storeToRefs } from 'pinia'
@@ -1151,8 +1151,7 @@ const toggleSessionPanel = () => {
             </el-button>
           </template>
           <div class="flex items-center cursor-pointer w-[20rem]" @click="goHome">
-            <img @click="goHome" src="../../assets/logo2.png" loading="lazy" class="cursor-pointer max-w-8 max-h-8" alt="logo" />
-            <span @click="goHome" class="text-white text-2xl font-bold ml-2">MOSS&nbsp;AI</span>
+            <img @click="goHome" src="../../assets/logo2.png" loading="lazy" class="cursor-pointer max-w-12 max-h-12 object-contain ml-20" alt="logo" />
           </div>
         </div>
 
@@ -1174,7 +1173,7 @@ const toggleSessionPanel = () => {
             </el-icon>
           </span>
           <template #dropdown>
-            <el-card class="w-50 bg-[#303133] text-white mobile:w-40">
+            <el-card class="w-50 bg-[#303133] text-white mobile:w-40" style="border: none">
               <template #header>
                 <div class="card-header flex items-center">
                   <el-avatar :size="25" :src="loginUser.avatar || defAvatar" fit="contain" />
@@ -1194,8 +1193,11 @@ const toggleSessionPanel = () => {
               </p>
 
               <p class="ml-1.25 flex items-center mt-7.5">
-                <SvgIcon width="1.5em" height="1.5em" name="email" />
-                <el-button type="text" @click="showBindEmail" style="color: white" class="text-xs text-white" link>
+                <el-icon size="20" class="text-white flex-shrink-0">
+                  <Message />
+                </el-icon>
+
+                <el-button type="text" @click="showBindEmail" style="color: white; white-space: nowrap; overflow: visible; text-overflow: unset" class="text-xs text-white ml-2 flex-shrink-0" link>
                   {{ loginUser.email || 'Bind Email' }}
                 </el-button>
               </p>
@@ -1204,7 +1206,7 @@ const toggleSessionPanel = () => {
                 <el-icon size="20">
                   <SvgIcon width="1.5em" height="1.5em" name="metamask" />
                 </el-icon>
-                <el-button type="plain" @click="showBindAccount" class="text-xs text-white" link> Bind Wallet </el-button>
+                <el-button type="text" @click="showBindAccount" class="text-xs text-white" link> Bind Wallet </el-button>
               </p>
 
               <p class="ml-1.25 flex items-center mt-7.5">
