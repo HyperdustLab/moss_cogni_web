@@ -25,7 +25,7 @@
               ><span style="-webkit-text-decoration-skip: none; font-style: normal; font-variant: normal; font-weight: 400; text-decoration-skip-ink: none; vertical-align: baseline; white-space: pre-wrap"><u>https://www.hyperagi.network/</u></span></span
             ></a
           ><span style="background-color: transparent; color: #000000; font-family: Calibri, sans-serif; font-size: 12pt"><span style="font-style: normal; font-variant: normal; font-weight: 400; text-decoration: none; vertical-align: baseline; white-space: pre-wrap">), the Gitbook (</span></span
-          ><a style="text-decoration: none" target="_blank" rel="noopener noreferrer" href="https://hyperdust-foundation.gitbook.io/hyperagi-docs-and-guides"
+          ><a style="text-decoration: none" target="_blank" rel="noopener noreferrer" href="https://hyperdust-foundation.gitbook.io/hyperagi-docs"
             ><span style="background-color: transparent; color: #1155cc; font-family: Calibri, sans-serif; font-size: 12pt"
               ><span style="-webkit-text-decoration-skip: none; font-style: normal; font-variant: normal; font-weight: 400; text-decoration-skip-ink: none; vertical-align: baseline; white-space: pre-wrap"><u>https://hyperdust-foundation.gitbook.io/hyperagi-docs-and-guides</u></span></span
             ></a
