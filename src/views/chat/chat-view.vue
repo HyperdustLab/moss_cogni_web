@@ -595,7 +595,7 @@ const handleSendMessage = async (message: { text: string; inputText: string; ima
       })
     }
 
-    if (data.metadata) {
+    if (data.fullPrompt) {
       evtSource.close()
 
       chatMessage.value.textContent = message.text
@@ -608,6 +608,7 @@ const handleSendMessage = async (message: { text: string; inputText: string; ima
         outContent: responseMessage.value.textContent,
         agentId: selectAgent.value.sid,
         userId: loginUser.value?.id || '',
+        prompt: data.fullPrompt,
         serviceName: options.value.model,
         systemContent: content,
         remark: options.value.baseUrl,
