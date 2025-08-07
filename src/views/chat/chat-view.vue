@@ -60,6 +60,8 @@ const loading = ref(false)
 
 const sendLoading = ref(false)
 
+let setTimeoutId = null
+
 const defaultWelcomeMessage = ref('')
 
 const loginRef = ref<InstanceType<typeof Login>>()
@@ -123,6 +125,10 @@ const { status, data, send, open, close } = useWebSocket(wsUrl, {
 
       const text = inputText.value
 
+      if (!sendLoading.value) {
+        return
+      }
+
       switch (msg.action) {
         case 'callbackAutoReplyTweetsMedia':
           isProcessing.value = true
@@ -143,8 +149,10 @@ const { status, data, send, open, close } = useWebSocket(wsUrl, {
 
             reasoningRecord.value.inputReplyMediaFileUrls = inputReplyMediaFileUrls.value
 
+            // @ts-ignore
             responseMessage.value.thinkingList[responseMessage.value.thinkingList.length - 1].status = 'success'
 
+            // @ts-ignore
             responseMessage.value.thinkingList.push({ title: 'Think complete', status: 'success' })
 
             await saveMessage(chatMessage.value)
@@ -158,14 +166,25 @@ const { status, data, send, open, close } = useWebSocket(wsUrl, {
 
           break
         case 'callbackAutoReplyTweetsText':
+          console.info('callbackAutoReplyTweetsText inputTextReplyStatus.value', inputTextReplyStatus.value)
+          if (inputTextReplyStatus.value) {
+            return
+          }
+
+          if (setTimeoutId) {
+            clearTimeout(setTimeoutId)
+          }
+
           isProcessing.value = true
           lastProcessedTime.value = currentTime
           inputTextReplyStatus.value = true
           inputText.value = msg.data.tweets
           sendLoading.value = true
 
+          // @ts-ignore
           responseMessage.value.thinkingList[responseMessage.value.thinkingList.length - 1].status = 'success'
 
+          // @ts-ignore
           responseMessage.value.thinkingList.push({ title: 'Think', status: 'pending' })
 
           handleSendMessage({ text: text, inputText: inputText.value, image: '' }).finally(() => {
@@ -223,6 +242,7 @@ const loginUser = ref(null)
 const mobileContactListRef = ref(null)
 
 import { useRoute } from 'vue-router'
+import { fa } from 'element-plus/es/locales.mjs'
 
 const route = useRoute()
 const sid = route.query.sid
@@ -433,9 +453,10 @@ async function getCurrAgentOnlineStatus() {
 }
 
 const preHandleSendMessage = async (message: { text: string; image: string }) => {
-  inputTextReplyStatus.value = false
   sendLoading.value = true
   inputText.value = message.text
+
+  inputTextReplyStatus.value = false
 
   isOnline.value = await getCurrAgentOnlineStatus()
 
@@ -500,22 +521,31 @@ const preHandleSendMessage = async (message: { text: string; image: string }) =>
       msg: JSON.stringify(msg),
     })
 
+    // @ts-ignore
     responseMessage.value.thinkingList.push({ title: 'Observing the environment', status: 'pending' })
 
-    setTimeout(() => {
+    setTimeoutId = setTimeout(() => {
       console.info('inputTextReplyStatus.value', inputTextReplyStatus.value)
       if (!inputTextReplyStatus.value) {
+        inputTextReplyStatus.value = true
+        // @ts-ignore
         responseMessage.value.thinkingList[responseMessage.value.thinkingList.length - 1].status = 'success'
+        // @ts-ignore
         responseMessage.value.thinkingList.push({ title: 'Think', status: 'pending' })
         handleSendMessage({ text: message.text, inputText: message.text, image: '' })
       }
     }, 10 * 1000)
   } else {
+    // @ts-ignore
+
     responseMessage.value.thinkingList.push({ title: 'Think', status: 'pending' })
 
     handleSendMessage({ text: message.text, inputText: message.text, image: '' })
   }
 }
+
+// 1. 新增 evtSourceRef 用于管理推理流
+const evtSourceRef = ref<any>(null)
 
 const handleSendMessage = async (message: { text: string; inputText: string; image: string }) => {
   if (!activeSession.value) {
@@ -552,6 +582,9 @@ const handleSendMessage = async (message: { text: string; inputText: string; ima
     },
     method: 'POST',
   })
+
+  // 记录当前推理流
+  evtSourceRef.value = evtSource
 
   let isThinking = false
   let buffer = ''
@@ -630,24 +663,32 @@ const handleSendMessage = async (message: { text: string; inputText: string; ima
         await addReasoningRecord(reasoningRecord.value)
 
         inputTextReplyStatus.value = true
+        // @ts-ignore
         responseMessage.value.thinkingList[responseMessage.value.thinkingList.length - 1].status = 'success'
 
+        // @ts-ignore
         responseMessage.value.thinkingList.push({ title: 'Think complete', status: 'success' })
       } else {
         const type = await isPhotoOrCelebrity(message.text)
 
         if (type === 'celebrity') {
+          // @ts-ignore
           responseMessage.value.thinkingList[responseMessage.value.thinkingList.length - 1].status = 'success'
+          // @ts-ignore
           responseMessage.value.thinkingList.push({ title: 'Generating postcard', status: 'pending' })
         } else if (type === 'photo') {
+          // @ts-ignore
           responseMessage.value.thinkingList[responseMessage.value.thinkingList.length - 1].status = 'success'
+          // @ts-ignore
           responseMessage.value.thinkingList.push({ title: 'Generating images', status: 'pending' })
         }
 
         if (type === 'other') {
           isProcessing.value = false
           sendLoading.value = false
+          // @ts-ignore
           responseMessage.value.thinkingList[responseMessage.value.thinkingList.length - 1].status = 'success'
+          // @ts-ignore
           responseMessage.value.thinkingList.push({ title: 'Think complete', status: 'success' })
           await saveMessage(chatMessage.value)
           await saveMessage(responseMessage.value)
@@ -673,6 +714,8 @@ const handleSendMessage = async (message: { text: string; inputText: string; ima
 
           setTimeout(async () => {
             if (!inputTextReplyStatus.value) {
+              console.info('autoReplyTweetsMedia inputTextReplyStatus.value', inputTextReplyStatus.value)
+
               inputTextReplyStatus.value = true
               isProcessing.value = false
               await saveMessage(chatMessage.value)
@@ -681,7 +724,9 @@ const handleSendMessage = async (message: { text: string; inputText: string; ima
               await addReasoningRecord(reasoningRecord.value)
 
               sendLoading.value = false
+              // @ts-ignore
               responseMessage.value.thinkingList[responseMessage.value.thinkingList.length - 1].status = 'success'
+              // @ts-ignore
               responseMessage.value.thinkingList.push({ title: 'Think complete', status: 'success' })
             }
           }, 30 * 1000)
@@ -895,6 +940,24 @@ const preHandleSelectAgent = (agent) => {
 
 // 添加选中方法
 const handleSelectAgent = (_agent) => {
+  // 终止推理逻辑
+  if (isProcessing.value || sendLoading.value) {
+    isProcessing.value = false
+    sendLoading.value = false
+    if (evtSourceRef.value) {
+      evtSourceRef.value.close()
+      evtSourceRef.value = null
+    }
+
+    loading.value = false
+    sendLoading.value = false
+
+    ElMessage({
+      type: 'warning',
+      message: 'Reasoning interrupted',
+      customClass: 'dark-message',
+    })
+  }
   showAgentList.value = false
   if (_agent) {
     selectAgent.value = _agent
@@ -903,11 +966,8 @@ const handleSelectAgent = (_agent) => {
     selectAgent.value = agentList.value[0]
     selectAgentId.value = agentList.value[0].id
   }
-
   console.info('selectAgentId.value', selectAgentId.value)
-
   getSessionList()
-
   handleSearchWeb(false)
 }
 
@@ -920,6 +980,7 @@ async function getMessageList() {
     },
     params: {
       aiSessionId: activeSession.value.id,
+      creatorId: loginUser.value.id,
       pageSize: -1,
       column: 'createTime',
       order: 'asc',

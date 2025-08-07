@@ -10,8 +10,8 @@
             >By accessing this website or any part of it, you agree to these Terms of Service (as amended from time to time, hereinafter referred to as “Terms of Service”), which constitute an agreement between you (“you” or “your”) and HyperAGI (“we,” “our”). These Terms of Service apply to your
             access and use of our website and the user interface hosted on the site (“Interface”), which can be used to interact with various products and services we offer, including the HyperAGI protocol on the HyperAGI blockchain (“Protocol”), as well as related content and functionalities
             provided through our websites located at</span
-          ><a target="_blank" rel="noopener noreferrer" href="https://www.hyperagi.network"
-            ><span style="background-color: transparent; color: #66b1ff; font-family: Arial, sans-serif; font-size: 11pt">&nbsp;</span><span style="background-color: transparent; color: #1155cc; font-family: Arial, sans-serif; font-size: 11pt"><u>https://www.hyperagi.network</u></span></a
+          ><a target="_blank" rel="noopener noreferrer" href="https://www.hyperagi.ai"
+            ><span style="background-color: transparent; color: #66b1ff; font-family: Arial, sans-serif; font-size: 11pt">&nbsp;</span><span style="background-color: transparent; color: #1155cc; font-family: Arial, sans-serif; font-size: 11pt"><u>https://www.hyperagi.ai</u></span></a
           ><span style="background-color: transparent; color: #e0e0e0; font-family: Arial, sans-serif; font-size: 11pt">
             and any other website where these Terms of Service are posted (collectively referred to as “Site”) and our related technologies (collectively with the Interface, Protocol, and Site, the “Service”).</span
           >
