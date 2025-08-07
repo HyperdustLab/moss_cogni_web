@@ -20,13 +20,17 @@ const emit = defineEmits<{
 // Message in input box
 const message = ref<Message>({ text: '', image: '' })
 
-// Prevent page scrolling when input is focused
+// Handle input focus and blur
 const handleFocus = () => {
-  document.body.style.overflow = 'hidden'
-  document.body.style.position = 'fixed'
+  // Remove the fixed positioning that prevents scrolling
+  // Only prevent overflow on desktop if needed
+  if (window.innerWidth > 768) {
+    document.body.style.overflow = 'hidden'
+  }
 }
 
 const handleBlur = () => {
+  // Restore normal scrolling
   document.body.style.overflow = ''
   document.body.style.position = ''
 }
@@ -68,7 +72,7 @@ const uploadToggleButton = () => {
     <div class="input-wrapper mt-10">
       <div class="input-container">
         <!-- Press enter to send, input box height is 3 lines -->
-        <el-input v-model="message.text" :autosize="false" :rows="1" class="input" resize="none" type="textarea" @keydown.enter.prevent="sendMessage" @touchmove.prevent @focus="handleFocus" @blur="handleBlur"></el-input>
+        <el-input v-model="message.text" :autosize="false" :rows="1" class="input" resize="none" type="textarea" @keydown.enter.prevent="sendMessage" @focus="handleFocus" @blur="handleBlur"></el-input>
         <el-button :loading="props.loading" round type="primary" class="send-button" @click="sendMessage">
           <el-icon class="el-icon--left">
             <Position />
@@ -103,9 +107,10 @@ const uploadToggleButton = () => {
     padding-right: 120px;
     padding-bottom: 50px;
     font-size: 16px;
-    touch-action: pan-y; // Allow vertical panning for text selection
-    overflow: hidden; // Hide scrollbar
+    touch-action: manipulation; // Better touch handling for mobile
+    overflow-y: auto; // Allow vertical scrolling when content overflows
     resize: none; // Disable manual resizing
+    -webkit-overflow-scrolling: touch; // Smooth scrolling on iOS
 
     &:hover,
     &:focus {
@@ -125,6 +130,12 @@ const uploadToggleButton = () => {
     height: auto;
     -webkit-overflow-scrolling: touch;
     overflow-y: auto;
+
+    // Ensure the input container doesn't interfere with scrolling
+    .input-container {
+      position: relative;
+      z-index: 1001;
+    }
   }
 }
 
