@@ -416,6 +416,7 @@ async function getSessionList() {
       pageSize: 10,
       column: 'createdTime',
       order: 'desc',
+      type:'3',
       creatorId: loginUser.value?.id || currSessionId.value,
       agentId: selectAgent.value.sid,
     },
@@ -766,6 +767,7 @@ const handleSessionCreate = async () => {
       agentId: selectAgent.value.sid,
       name: 'New Chat',
       creatorId: currSessionId.value,
+      type: '3',
     },
     headers: {
       'X-Access-Token': token.value,
@@ -980,7 +982,6 @@ async function getMessageList() {
     },
     params: {
       aiSessionId: activeSession.value.id,
-      creatorId: loginUser.value.id,
       pageSize: -1,
       column: 'createTime',
       order: 'asc',
