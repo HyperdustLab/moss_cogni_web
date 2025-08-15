@@ -1296,7 +1296,9 @@ const toggleSessionPanel = () => {
                 <div class="flex items-center space-x-3">
                   <div class="relative flex-shrink-0">
                     <el-avatar :size="20" :src="myAgent.avatar" class="mt-10" fit="contain" />
-                    <div v-if="myAgent.onlineStatus === 1" class="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-[#1e1e1e]"></div>
+                    <div v-if="myAgent.onlineStatus === 1" class="absolute bottom-0 right-0 w-3 h-3">
+                      <img src="@/assets/online.png" alt="online" class="w-3 h-3" />
+                    </div>
                   </div>
                   <span class="text-sm text-white leading-none">{{ myAgent.nickName }}</span>
                 </div>
@@ -1320,7 +1322,9 @@ const toggleSessionPanel = () => {
               <div v-for="agent in agentList" :key="agent.id" class="flex items-center space-x-3 p-2 bg-[#1e1e1e] hover:bg-[#2c2c2c] rounded-lg cursor-pointer transition-colors duration-200" :class="{ 'bg-[#2c2c2c]': selectAgentId === agent.id }" @click="preHandleSelectAgent(agent)">
                 <div class="relative">
                   <el-avatar :size="40" :src="agent.avatar" fit="contain" />
-                  <div v-if="agent.onlineStatus === 1" class="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-[#1e1e1e]"></div>
+                  <div v-if="agent.onlineStatus === 1" class="absolute bottom-0 right-0 w-3 h-3">
+                    <img src="@/assets/online.png" alt="online" class="w-3 h-3" />
+                  </div>
                 </div>
                 <div>
                   <div class="text-white text-sm flex items-center">
@@ -1497,7 +1501,9 @@ const toggleSessionPanel = () => {
                 <div v-for="agent in agentList" :key="agent.id" class="flex items-center space-x-3 p-2 bg-[#1e1e1e] hover:bg-[#2c2c2c] rounded-lg cursor-pointer transition-colors duration-200" :class="{ 'bg-[#2c2c2c]': selectAgentId === agent.id }" @click="preHandleSelectAgent(agent)">
                   <div class="relative">
                     <el-avatar :size="40" :src="agent.avatar" fit="contain" />
-                    <div v-if="agent.onlineStatus === 1" class="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-[#1e1e1e]"></div>
+                    <div v-if="agent.onlineStatus === 1" class="absolute bottom-0 right-0 w-3 h-3">
+                      <img src="@/assets/online.png" alt="online" class="w-3 h-3" />
+                    </div>
                   </div>
                   <div>
                     <div class="text-white text-sm flex items-center">
