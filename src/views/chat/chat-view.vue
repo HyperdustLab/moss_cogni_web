@@ -416,7 +416,7 @@ async function getSessionList() {
       pageSize: 10,
       column: 'createdTime',
       order: 'desc',
-      type:'3',
+      type: '3',
       creatorId: loginUser.value?.id || currSessionId.value,
       agentId: selectAgent.value.sid,
     },
@@ -886,11 +886,11 @@ const disconnect = () => {
 }
 
 const goHome = () => {
-  location.href = `https://www.mossai.com/`
+  location.href = `https://www.hyperagi.ai`
 }
 
 function goUser() {
-  location.href = `https://dashboard.mossai.com/login?token=${token.value}`
+  location.href = `https://dashboard.hyperagi.ai/login?token=${token.value}`
 }
 
 function showUploadEmbedding() {
