@@ -36,11 +36,13 @@ const handleBlur = () => {
 }
 
 const sendMessage = () => {
-  if (!message.value.text) {
-    ElMessage.warning('Please enter a message')
+  // 去除首尾空格并检查实际内容
+  const trimmedText = message.value.text?.trim()
+  if (!trimmedText) {
+    ElMessage.warning('请输入消息内容')
     return
   }
-  emit('send', message.value)
+  emit('send', { ...message.value, text: trimmedText })
   // Clear after sending
   message.value = { text: '', image: '' }
 }
@@ -72,12 +74,12 @@ const uploadToggleButton = () => {
     <div class="input-wrapper mt-10">
       <div class="input-container">
         <!-- Press enter to send, input box height is 3 lines -->
-        <el-input v-model="message.text" :autosize="false" :rows="1" class="input" resize="none" type="textarea" @keydown.enter.prevent="sendMessage" @focus="handleFocus" @blur="handleBlur"></el-input>
+        <el-input v-model="message.text" :autosize="false" :rows="1" class="input" resize="none" type="textarea" @keydown.enter.prevent="sendMessage" @focus="handleFocus" @blur="handleBlur" placeholder="请输入消息内容..."></el-input>
         <el-button :loading="props.loading" round type="primary" class="send-button" @click="sendMessage">
           <el-icon class="el-icon--left">
             <Position />
           </el-icon>
-          Send
+          发送
         </el-button>
       </div>
     </div>
