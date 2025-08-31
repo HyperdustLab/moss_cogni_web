@@ -222,6 +222,11 @@ const pageSize = ref(15)
 const total = ref(0)
 const noMore = ref(false)
 
+const agentCount = ref({
+  total: 0,
+  online: 0,
+})
+
 // 添加选中的agent id
 const selectAgent = ref(null)
 const selectAgentId = ref(null)
@@ -308,6 +313,9 @@ onMounted(async () => {
   }
 
   await getAgentList()
+
+  agentCount.value.online = await getAgentCount(true)
+  agentCount.value.total = await getAgentCount(false)
 
   if (sid) {
     const { result } = await request({
@@ -1156,6 +1164,19 @@ async function isPhotoOrCelebrity(question: string) {
   return 'other'
 }
 
+async function getAgentCount(online: boolean | null) {
+  const { result } = await request({
+    url: BASE_URL + '/mgn/agent/list',
+    method: 'GET',
+    params: {
+      selectOnline: online,
+      pageSize: 1,
+    },
+  })
+
+  return result.total
+}
+
 async function unbindX() {
   try {
     const confirmResult = await ElMessageBox.confirm('Are you sure you want to unbind X?', 'Warning', {
@@ -1296,7 +1317,7 @@ const toggleSessionPanel = () => {
                 <div class="flex items-center space-x-3">
                   <div class="relative flex-shrink-0">
                     <el-avatar :size="20" :src="myAgent.avatar" class="mt-10" fit="contain" />
-                    <div v-if="myAgent.onlineStatus === 1" class="absolute bottom-0 right-0 w-3 h-3">
+                    <div v-if="myAgent.tokenCount24h > 0" class="absolute bottom-0 right-0 w-3 h-3">
                       <img src="@/assets/online.png" alt="online" class="w-3 h-3" />
                     </div>
                   </div>
@@ -1313,7 +1334,13 @@ const toggleSessionPanel = () => {
           </div>
 
           <!-- 搜索框和列表内容 -->
-          <div class="text-white text-lg mb-4">Agent List</div>
+          <div class="text-white text-lg mb-4">
+            Agent List<span class="ml-10"
+              >(<span class="text-yellow-500">{{ agentCount.online }}</span
+              >/<span>{{ agentCount.total }}</span
+              >)</span
+            >
+          </div>
           <div class="mb-4">
             <el-input v-model="searchQuery" placeholder="Search agents..." class="w-full" :prefix-icon="Search"></el-input>
           </div>
@@ -1322,7 +1349,7 @@ const toggleSessionPanel = () => {
               <div v-for="agent in agentList" :key="agent.id" class="flex items-center space-x-3 p-2 bg-[#1e1e1e] hover:bg-[#2c2c2c] rounded-lg cursor-pointer transition-colors duration-200" :class="{ 'bg-[#2c2c2c]': selectAgentId === agent.id }" @click="preHandleSelectAgent(agent)">
                 <div class="relative">
                   <el-avatar :size="40" :src="agent.avatar" fit="contain" />
-                  <div v-if="agent.onlineStatus === 1" class="absolute bottom-0 right-0 w-3 h-3">
+                  <div v-if="agent.tokenCount24h > 0" class="absolute bottom-0 right-0 w-3 h-3">
                     <img src="@/assets/online.png" alt="online" class="w-3 h-3" />
                   </div>
                 </div>
@@ -1492,7 +1519,13 @@ const toggleSessionPanel = () => {
               </div>
             </div>
 
-            <div class="text-white text-lg mb-4">Agent List</div>
+            <div class="text-white text-lg mb-4">
+              Agent List<span class="ml-1"
+                >(<span class="text-yellow-500">{{ agentCount.online }}</span
+                >/<span>{{ agentCount.total }}</span
+                >)</span
+              >
+            </div>
             <div class="mb-4">
               <el-input v-model="searchQuery" placeholder="Search agents..." class="w-full" :prefix-icon="Search"></el-input>
             </div>
@@ -1501,7 +1534,7 @@ const toggleSessionPanel = () => {
                 <div v-for="agent in agentList" :key="agent.id" class="flex items-center space-x-3 p-2 bg-[#1e1e1e] hover:bg-[#2c2c2c] rounded-lg cursor-pointer transition-colors duration-200" :class="{ 'bg-[#2c2c2c]': selectAgentId === agent.id }" @click="preHandleSelectAgent(agent)">
                   <div class="relative">
                     <el-avatar :size="40" :src="agent.avatar" fit="contain" />
-                    <div v-if="agent.onlineStatus === 1" class="absolute bottom-0 right-0 w-3 h-3">
+                    <div v-if="agent.tokenCount24h > 0" class="absolute bottom-0 right-0 w-3 h-3">
                       <img src="@/assets/online.png" alt="online" class="w-3 h-3" />
                     </div>
                   </div>
