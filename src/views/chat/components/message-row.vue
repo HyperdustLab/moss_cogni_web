@@ -116,10 +116,10 @@ const handleDownload = async (imageUrl: string) => {
 
   .message-content {
     max-width: 85%;
-    background-color: #2b2b2b;
+    background-color: #f3f4f6;
     padding: 8px 12px;
     border-radius: 8px;
-    color: white;
+    color: black;
     word-break: break-word;
   }
 }
@@ -151,7 +151,7 @@ const handleDownload = async (imageUrl: string) => {
   .el-button {
     background-color: transparent;
     border: none;
-    color: white;
+    color: black;
     display: flex;
     align-items: center;
     gap: 4px;
@@ -159,7 +159,7 @@ const handleDownload = async (imageUrl: string) => {
     padding: 4px 8px;
 
     &:hover {
-      background-color: rgba(255, 255, 255, 0.1);
+      background-color: rgba(0, 0, 0, 0.1);
     }
   }
 }

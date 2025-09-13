@@ -39,8 +39,8 @@ const handleDeleteSession = () => {
 .session-item {
   /* Add padding to prevent content from touching edges */
   padding: 12px;
-  background-color: #1e1e1e;
-  color: #ffffff;
+  background-color: #ffffff;
+  color: #000000;
   /* Add border radius for rounded corners */
   border-radius: 10px;
   /* Fixed width */
@@ -59,7 +59,7 @@ const handleDeleteSession = () => {
     font-weight: 700;
     width: 200px;
     /* Lighter color after bold */
-    color: rgba(white, 0.8);
+    color: rgba(0, 0, 0, 0.8);
   }
 
   .count-time {
@@ -67,7 +67,7 @@ const handleDeleteSession = () => {
     margin-top: 10px;
     /* Smaller font than session name (14px) */
     font-size: 10px;
-    color: rgba(white, 0.5);
+    color: rgba(0, 0, 0, 0.5);
     /* Horizontal layout */
     display: flex;
     /* Space between count and time */
@@ -78,7 +78,7 @@ const handleDeleteSession = () => {
   &.active {
     /* Add transition */
     transition: all 0.12s linear;
-    background-color: #2c2c2c;
+    background-color: #f3f4f6;
   }
 
   /* Styles triggered on hover */
@@ -100,7 +100,7 @@ const handleDeleteSession = () => {
       right: 20px;
     }
 
-    background-color: #2c2c2c;
+    background-color: #f3f4f6;
   }
 
   .mask {
@@ -108,7 +108,7 @@ const handleDeleteSession = () => {
     transition: all 0.2s ease-out;
     /* Absolute position relative to parent */
     position: absolute;
-    background-color: rgba(white, 0.05);
+    background-color: rgba(0, 0, 0, 0.05);
     /* Full parent width */
     width: 100%;
     /* Full parent height */
@@ -123,7 +123,7 @@ const handleDeleteSession = () => {
 
   /* Delete button styling similar to mask */
   .btn-wrapper {
-    color: rgba(white, 0.5);
+    color: rgba(0, 0, 0, 0.5);
     transition: all 0.2s ease-out;
     position: absolute;
     top: 10px;
@@ -139,8 +139,8 @@ const handleDeleteSession = () => {
     border-radius: 50%;
 
     &:hover {
-      color: white;
-      background-color: rgba(0, 0, 0, 0.5);
+      color: black;
+      background-color: rgba(0, 0, 0, 0.1);
     }
 
     .edit {

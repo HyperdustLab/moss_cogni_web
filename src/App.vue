@@ -77,8 +77,8 @@ body {
     Helvetica,
     Arial,
     sans-serif;
-  background-color: #141414;
-  color: #ffffff;
+  background-color: #ffffff;
+  color: #000000;
 }
 
 .el-date-editor--datetime {

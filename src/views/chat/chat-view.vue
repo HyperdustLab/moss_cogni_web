@@ -9,7 +9,6 @@ import { ElIcon, ElMessage, type UploadProps, type UploadUserFile } from 'elemen
 import { getDictText, getDictItems } from '@/api/login'
 import { SSE } from 'sse.js'
 import { type AiMessage, useChatStore } from './store/chat-store'
-import type { AiMessageParams, AiMessageWrapper } from '@/apis/__generated/model/static'
 import Login from '@/components/Login/index.vue'
 
 import IntroductionBindAccount from '@/components/IntroductionBindAccount/index.vue'
@@ -1220,9 +1219,9 @@ const toggleSessionPanel = () => {
 }
 </script>
 <template>
-  <div class="home-view dark">
+  <div class="home-view light">
     <!-- LOGO部分调整到最左边 -->
-    <div class="w-full flex items-start px-4 border-b border-gray-700 fixed top-0 left-0 z-10 overflow-hidden">
+    <div class="w-full flex items-start px-4 border-b border-gray-300 fixed top-0 left-0 z-10 overflow-hidden">
       <div class="flex items-center justify-between w-full">
         <div class="flex items-center">
           <!-- 添加移动端菜单按钮 -->
@@ -1242,14 +1241,14 @@ const toggleSessionPanel = () => {
         <!-- 将登录按钮移到logo旁边 -->
         <div v-if="!loginUser" class="user-login-btn" @click="handleLogin">
           <el-avatar :size="16" :src="user" style="border: none" fit="contain" />
-          <span class="ml-1.25 text-white mobile:ml-0.5">Login In</span>
+          <span class="ml-1.25 text-black mobile:ml-0.5">Login In</span>
         </div>
         <el-dropdown v-else class="user-dropdown">
           <span class="el-dropdown-link flex items-center">
             <el-avatar :size="16" :src="loginUser.avatar || defAvatar" style="border: none" fit="contain" />
 
             <span class="ml-1.25 mobile:ml-0.5">
-              <Substring :copys="false" color="#ffffff" fontSize="13px" :value="loginUser.walletAddress || loginUser.email"></Substring>
+              <Substring :copys="false" color="#000000" fontSize="13px" :value="loginUser.walletAddress || loginUser.email"></Substring>
             </span>
 
             <el-icon size="13" class="el-icon--right mobile:hidden">
@@ -1257,7 +1256,7 @@ const toggleSessionPanel = () => {
             </el-icon>
           </span>
           <template #dropdown>
-            <el-card class="w-50 bg-[#303133] text-white mobile:w-40" style="border: none">
+            <el-card class="w-50 bg-white text-black mobile:w-40" style="border: 1px solid #e5e7eb">
               <template #header>
                 <div class="card-header flex items-center">
                   <el-avatar :size="25" :src="loginUser.avatar || defAvatar" fit="contain" />
@@ -1269,19 +1268,19 @@ const toggleSessionPanel = () => {
               </template>
 
               <p class="ml-1.25 flex items-center">
-                <el-icon size="20" class="text-white">
+                <el-icon size="20" class="text-black">
                   <User />
                 </el-icon>
 
-                <el-button type="text" @click="goUser" style="color: white" class="text-xs text-white" link>Dashboard</el-button>
+                <el-button type="text" @click="goUser" style="color: black" class="text-xs text-black" link>Dashboard</el-button>
               </p>
 
               <p class="ml-1.25 flex items-center mt-7.5">
-                <el-icon size="20" class="text-white flex-shrink-0">
+                <el-icon size="20" class="text-black flex-shrink-0">
                   <Message />
                 </el-icon>
 
-                <el-button type="text" @click="showBindEmail" style="color: white; white-space: nowrap; overflow: visible; text-overflow: unset" class="text-xs text-white ml-2 flex-shrink-0" link>
+                <el-button type="text" @click="showBindEmail" style="color: black; white-space: nowrap; overflow: visible; text-overflow: unset" class="text-xs text-black ml-2 flex-shrink-0" link>
                   {{ loginUser.email || 'Bind Email' }}
                 </el-button>
               </p>
@@ -1290,13 +1289,13 @@ const toggleSessionPanel = () => {
                 <el-icon size="20">
                   <SvgIcon width="1.5em" height="1.5em" name="metamask" />
                 </el-icon>
-                <el-button type="text" @click="showBindAccount" class="text-xs text-white" link> Bind Wallet </el-button>
+                <el-button type="text" @click="showBindAccount" class="text-xs text-black" link> Bind Wallet </el-button>
               </p>
 
               <p class="ml-1.25 flex items-center mt-7.5">
                 <el-image :src="logoutPng" class="w-5 h-5"></el-image>
 
-                <el-button type="text" @click="disconnect" style="color: white" class="text-xs text-white" link>Disconnect</el-button>
+                <el-button type="text" @click="disconnect" style="color: black" class="text-xs text-black" link>Disconnect</el-button>
               </p>
             </el-card>
           </template>
@@ -1307,10 +1306,10 @@ const toggleSessionPanel = () => {
     <!-- Entire chat panel -->
     <div class="chat-panel" v-loading="loading">
       <!-- 在非移动端显示联系人列表 -->
-      <div v-if="!isMobile" class="contact-panel w-70 border-r border-gray-700 bg-[#1e1e1e] h-full">
+      <div v-if="!isMobile" class="contact-panel w-70 border-r border-gray-300 bg-white h-full">
         <!-- 其他内容添加padding -->
         <div class="p-4">
-          <div class="text-white text-lg mb-4">My Agent</div>
+          <div class="text-black text-lg mb-4">My Agent</div>
           <div class="space-y-4 mb-6">
             <el-select v-if="myAgentList.length > 0" v-model="selectMyAgentId" clearable placeholder="Select an agent" @change="(val) => handleSelectAgent(myAgentList.find((a) => a.id === val))">
               <el-option v-for="(myAgent, index) in myAgentList" :key="index" :label="myAgent.nickName" :value="myAgent.id" class="dark-option">
@@ -1321,7 +1320,7 @@ const toggleSessionPanel = () => {
                       <img src="@/assets/online.png" alt="online" class="w-3 h-3" />
                     </div>
                   </div>
-                  <span class="text-sm text-white leading-none">{{ myAgent.nickName }}</span>
+                  <span class="text-sm text-black leading-none">{{ myAgent.nickName }}</span>
                 </div>
               </el-option>
             </el-select>
@@ -1334,7 +1333,7 @@ const toggleSessionPanel = () => {
           </div>
 
           <!-- 搜索框和列表内容 -->
-          <div class="text-white text-lg mb-4">
+          <div class="text-black text-lg mb-4">
             Agent List<span class="ml-10"
               >(<span class="text-yellow-500">{{ agentCount.online }}</span
               >/<span>{{ agentCount.total }}</span
@@ -1346,7 +1345,7 @@ const toggleSessionPanel = () => {
           </div>
           <div ref="contactListRef" class="h-[calc(75vh-80px)] overflow-y-auto custom-scrollbar" style="max-height: calc(90% - 120px)">
             <div class="space-y-2">
-              <div v-for="agent in agentList" :key="agent.id" class="flex items-center space-x-3 p-2 bg-[#1e1e1e] hover:bg-[#2c2c2c] rounded-lg cursor-pointer transition-colors duration-200" :class="{ 'bg-[#2c2c2c]': selectAgentId === agent.id }" @click="preHandleSelectAgent(agent)">
+              <div v-for="agent in agentList" :key="agent.id" class="flex items-center space-x-3 p-2 bg-white hover:bg-gray-100 rounded-lg cursor-pointer transition-colors duration-200" :class="{ 'bg-gray-100': selectAgentId === agent.id }" @click="preHandleSelectAgent(agent)">
                 <div class="relative">
                   <el-avatar :size="40" :src="agent.avatar" fit="contain" />
                   <div v-if="agent.tokenCount24h > 0" class="absolute bottom-0 right-0 w-3 h-3">
@@ -1354,7 +1353,7 @@ const toggleSessionPanel = () => {
                   </div>
                 </div>
                 <div>
-                  <div class="text-white text-sm flex items-center">
+                  <div class="text-black text-sm flex items-center">
                     {{ agent.nickName }}
                     <img v-if="agent.xname" src="../../assets/x.svg" alt="X" class="w-4 h-4 ml-6 mt-2" />
                   </div>
@@ -1430,7 +1429,7 @@ const toggleSessionPanel = () => {
                 <el-avatar :size="30" :src="selectAgent.avatar" class="mr-3" fit="contain" />
                 <div class="flex flex-col ml-10">
                   <div class="flex items-center">
-                    <span class="text-white text-base">{{ selectAgent.nickName }}</span>
+                    <span class="text-black text-base">{{ selectAgent.nickName }}</span>
 
                     <el-link v-if="!selectAgent.xname" class="flex items-center transition-all duration-300 hover:scale-105 ml-5 mt-2" @click="handleShareTwitter(selectAgent.sid)" :underline="false">
                       <el-icon size="18" class="text-blue-400 hover:text-blue-300 transition-colors duration-300">
@@ -1440,9 +1439,9 @@ const toggleSessionPanel = () => {
                   </div>
 
                   <div v-if="selectAgent.xname" class="mt-3 flex items-start rounded-lg transition-all duration-300 hover:bg-gray-700/10">
-                    <span class="text-gray-300 text-sm flex items-center group text-left">
+                    <span class="text-gray-600 text-sm flex items-center group text-left">
                       <img src="../../assets/x.svg" alt="X" class="w-4 h-4 mr-2 transition-transform duration-300 group-hover:scale-110 flex-shrink-0" />
-                      <a :href="`https://x.com/${selectAgent.xusername}`" target="_blank" class="font-medium truncate text-gray-400">@{{ selectAgent.xusername }}</a>
+                      <a :href="`https://x.com/${selectAgent.xusername}`" target="_blank" class="font-medium truncate text-gray-600">@{{ selectAgent.xusername }}</a>
                     </span>
                     <el-link class="flex items-center transition-all duration-300 hover:scale-105 ml-5 mt-2" :underline="false" @click="handleShareTwitter(selectAgent.sid)">
                       <el-icon size="18" class="text-blue-400 hover:text-blue-300 transition-colors duration-300">
@@ -1457,11 +1456,11 @@ const toggleSessionPanel = () => {
           <!-- Edit buttons at end -->
           <div class="flex items-center">
             <div class="rear">
-              <el-icon :size="20" style="margin-right: 10px; color: white">
+              <el-icon :size="20" style="margin-right: 10px; color: black">
                 <Delete @click="handleDeleteSession(activeSession.id)" />
               </el-icon>
 
-              <el-icon :size="20" style="color: white" @click="handleEditSession">
+              <el-icon :size="20" style="color: black" @click="handleEditSession">
                 <EditPen v-if="!isEdit" />
                 <Close v-else @click="handleCancelEdit" />
               </el-icon>
@@ -1496,9 +1495,9 @@ const toggleSessionPanel = () => {
     <el-drawer v-model="showAgentList" @close="handleCloseAgentList" direction="ltr" size="80%" :with-header="false" class="mobile-drawer dark-drawer overflow-hidden">
       <div class="drawer-content">
         <!-- 联系人列表 -->
-        <div class="contact-panel bg-[#1e1e1e] h-full overflow-hidden">
+        <div class="contact-panel bg-white h-full overflow-hidden">
           <div class="p-4">
-            <div class="text-white text-lg mb-4">My Agent</div>
+            <div class="text-black text-lg mb-4">My Agent</div>
             <div class="space-y-4 mb-6">
               <el-select v-if="myAgentList.length > 0" v-model="selectMyAgentId" clearable placeholder="Select an agent" @change="(val) => handleSelectAgent(myAgentList.find((a) => a.id === val))">
                 <el-option v-for="(myAgent, index) in myAgentList" :key="index" :label="myAgent.nickName" :value="myAgent.id" class="dark-option">
@@ -1507,7 +1506,7 @@ const toggleSessionPanel = () => {
                       <el-avatar :size="40" :src="myAgent.avatar" fit="contain" />
                       <div class="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-[#1e1e1e]"></div>
                     </div>
-                    <span class="text-sm text-white">{{ myAgent.nickName }}</span>
+                    <span class="text-sm text-black">{{ myAgent.nickName }}</span>
                   </div>
                 </el-option>
               </el-select>
@@ -1519,7 +1518,7 @@ const toggleSessionPanel = () => {
               </div>
             </div>
 
-            <div class="text-white text-lg mb-4">
+            <div class="text-black text-lg mb-4">
               Agent List<span class="ml-1"
                 >(<span class="text-yellow-500">{{ agentCount.online }}</span
                 >/<span>{{ agentCount.total }}</span
@@ -1531,7 +1530,7 @@ const toggleSessionPanel = () => {
             </div>
             <div ref="mobileContactListRef" class="h-[calc(100vh-10px)] overflow-y-auto custom-scrollbar" style="max-height: calc(90% - 120px)">
               <div class="space-y-2">
-                <div v-for="agent in agentList" :key="agent.id" class="flex items-center space-x-3 p-2 bg-[#1e1e1e] hover:bg-[#2c2c2c] rounded-lg cursor-pointer transition-colors duration-200" :class="{ 'bg-[#2c2c2c]': selectAgentId === agent.id }" @click="preHandleSelectAgent(agent)">
+                <div v-for="agent in agentList" :key="agent.id" class="flex items-center space-x-3 p-2 bg-white hover:bg-gray-100 rounded-lg cursor-pointer transition-colors duration-200" :class="{ 'bg-gray-100': selectAgentId === agent.id }" @click="preHandleSelectAgent(agent)">
                   <div class="relative">
                     <el-avatar :size="40" :src="agent.avatar" fit="contain" />
                     <div v-if="agent.tokenCount24h > 0" class="absolute bottom-0 right-0 w-3 h-3">
@@ -1539,7 +1538,7 @@ const toggleSessionPanel = () => {
                     </div>
                   </div>
                   <div>
-                    <div class="text-white text-sm flex items-center">
+                    <div class="text-black text-sm flex items-center">
                       {{ agent.nickName }}
                       <img v-if="agent.xname" src="../../assets/x.svg" alt="X" class="w-4 h-4 ml-6 mt-2" />
                     </div>
@@ -1556,7 +1555,7 @@ const toggleSessionPanel = () => {
     <el-drawer v-model="showSessionList" direction="ltr" size="80%" :with-header="false" class="mobile-drawer dark-drawer">
       <div class="drawer-content">
         <div class="session-list mt-4">
-          <div class="text-white text-lg mb-4 px-4">Sessions</div>
+          <div class="text-black text-lg mb-4 px-4">Sessions</div>
 
           <div class="create-session-btn cursor-pointer flex items-center px-4 py-2 text-sm hover:bg-gray-700 rounded" @click="handleSessionCreate">
             <img src="../../assets/create.png" alt="create" class="create-icon w-8 h-8" />
@@ -1681,7 +1680,7 @@ const toggleSessionPanel = () => {
 :deep(.el-form-item--small .el-form-item__label) {
   height: 24px;
   line-height: 24px;
-  color: white;
+  color: black;
 }
 
 .home-view {
@@ -1698,7 +1697,7 @@ const toggleSessionPanel = () => {
       padding: 8px 4px;
       height: 60px;
       align-items: center;
-      background-color: #000000;
+      background-color: #ffffff;
       border-bottom: none;
 
       .flex.items-center {
@@ -1735,7 +1734,7 @@ const toggleSessionPanel = () => {
     margin: 0 auto;
     width: 99%;
     display: flex;
-    background-color: #1e1e1e;
+    background-color: #ffffff;
     height: 90vh;
     box-shadow: 0 0 10px rgba(black, 0.1);
     border-radius: 10px;
@@ -1748,7 +1747,7 @@ const toggleSessionPanel = () => {
       padding: 10px;
       position: relative;
       border-right: none;
-      background-color: #141414;
+      background-color: #f8f9fa;
       height: 100%;
       overflow: hidden;
       width: 64px;
@@ -1779,7 +1778,7 @@ const toggleSessionPanel = () => {
         justify-content: center;
         border-radius: 8px;
         transition: all 0.3s ease;
-        background-color: #1e1e1e;
+        background-color: #ffffff;
         cursor: pointer;
         margin: 0;
         padding: 0;
@@ -1787,11 +1786,11 @@ const toggleSessionPanel = () => {
         outline: none;
 
         &:hover {
-          background-color: rgba(255, 255, 255, 0.1);
+          background-color: rgba(0, 0, 0, 0.1);
         }
 
         .el-icon {
-          color: white;
+          color: black;
           font-size: 20px;
         }
       }
@@ -1855,13 +1854,13 @@ const toggleSessionPanel = () => {
         /* Front title and message count */
         .front {
           .title {
-            color: rgba(255, 255, 255, 0.7);
+            color: rgba(0, 0, 0, 0.7);
             font-size: 16px;
           }
 
           .description {
             margin-top: 10px;
-            color: rgba(255, 255, 255, 0.5);
+            color: rgba(0, 0, 0, 0.5);
           }
         }
 
@@ -2013,27 +2012,27 @@ const toggleSessionPanel = () => {
 
 :deep(.el-input) {
   .el-input__wrapper {
-    background-color: #1e1e1e !important;
-    background-color: #1e1e1e;
-    box-shadow: none !important;
-    border: none !important;
+    background-color: #ffffff !important;
+    background-color: #ffffff;
+    box-shadow: 0 0 0 1px #d1d5db inset !important;
+    border: 1px solid #d1d5db !important;
 
     &.is-focus {
-      box-shadow: none !important;
-      border: none !important;
+      box-shadow: 0 0 0 1px #3b82f6 inset !important;
+      border: 1px solid #3b82f6 !important;
     }
 
     &:hover {
-      box-shadow: none !important;
-      border: none !important;
+      box-shadow: 0 0 0 1px #9ca3af inset !important;
+      border: 1px solid #9ca3af !important;
     }
   }
 
   .el-input__inner {
-    color: white !important;
+    color: black !important;
 
     &::placeholder {
-      color: #606266;
+      color: #9ca3af;
     }
   }
 }
@@ -2057,118 +2056,118 @@ const toggleSessionPanel = () => {
 
 :deep(.el-select) {
   .el-input__wrapper {
-    background-color: #1e1e1e !important;
-    box-shadow: none !important;
-    border: none !important;
+    background-color: #ffffff !important;
+    box-shadow: 0 0 0 1px #d1d5db inset !important;
+    border: 1px solid #d1d5db !important;
 
     &:hover {
-      box-shadow: none !important;
-      border: none !important;
+      box-shadow: 0 0 0 1px #9ca3af inset !important;
+      border: 1px solid #9ca3af !important;
     }
 
     &.is-focus {
-      box-shadow: none !important;
-      border: none !important;
+      box-shadow: 0 0 0 1px #3b82f6 inset !important;
+      border: 1px solid #3b82f6 !important;
     }
   }
 
   .el-input__inner {
-    color: #ffffff !important;
+    color: #000000 !important;
 
     &::placeholder {
-      color: #606266;
+      color: #9ca3af;
     }
   }
 }
 
 :deep(.el-select-dropdown) {
-  background-color: #1e1e1e !important;
-  border: none;
+  background-color: #ffffff !important;
+  border: 1px solid #d1d5db;
 
   .el-select-dropdown__item {
-    color: #ffffff;
+    color: #000000;
 
     &:hover {
-      background-color: #2c2c2c;
+      background-color: #f3f4f6;
     }
 
     &.selected {
-      color: #409eff;
-      background-color: #2c2c2c;
+      color: #3b82f6;
+      background-color: #f3f4f6;
     }
   }
 }
 
 .dark-select {
   .el-input__wrapper {
-    background-color: #1e1e1e !important;
-    box-shadow: 0 0 0 1px #303133 inset;
+    background-color: #ffffff !important;
+    box-shadow: 0 0 0 1px #d1d5db inset;
 
     &:hover {
-      box-shadow: 0 0 0 1px #409eff inset;
+      box-shadow: 0 0 0 1px #3b82f6 inset;
     }
 
     &.is-focus {
-      box-shadow: 0 0 0 1px #409eff inset;
+      box-shadow: 0 0 0 1px #3b82f6 inset;
     }
   }
 
   .el-input__inner {
-    color: #ffffff !important;
+    color: #000000 !important;
 
     &::placeholder {
-      color: #606266;
+      color: #9ca3af;
     }
   }
 }
 
 :deep(.dark-option) {
-  background-color: #1e1e1e !important;
-  color: #ffffff !important;
+  background-color: #ffffff !important;
+  color: #000000 !important;
   margin-top: 50px;
 
   &:hover {
-    background-color: #2c2c2c !important;
+    background-color: #f3f4f6 !important;
   }
 
   &.selected {
-    color: #409eff !important;
-    background-color: #2c2c2c !important;
+    color: #3b82f6 !important;
+    background-color: #f3f4f6 !important;
   }
 }
 
-// 添加全局暗黑模式样式
-.dark {
+// 添加全局浅色模式样式
+.light {
   .el-drawer {
     :deep {
-      background-color: #1e1e1e;
+      background-color: #ffffff;
     }
 
     :deep(.el-drawer__header) {
-      background-color: #1e1e1e;
-      border-bottom: none;
+      background-color: #ffffff;
+      border-bottom: 1px solid #e5e7eb;
       margin-bottom: 0;
       padding: 12px 16px;
-      color: white;
+      color: black;
     }
   }
 
   .el-card {
     :deep {
-      background-color: #1e1e1e;
-      border-color: #303133;
+      background-color: #ffffff;
+      border-color: #e5e7eb;
     }
 
     :deep(.el-card__header) {
-      border-bottom-color: transparent;
+      border-bottom-color: #e5e7eb;
     }
   }
 }
 
 .mobile-drawer {
   :deep(.el-drawer) {
-    background-color: #1e1e1e;
-    border: none;
+    background-color: #ffffff;
+    border: 1px solid #e5e7eb;
     overflow-x: hidden;
     touch-action: pan-y;
     max-width: 100vw;
@@ -2176,8 +2175,8 @@ const toggleSessionPanel = () => {
   }
 
   :deep(.el-drawer__header) {
-    color: white;
-    border-bottom: none;
+    color: black;
+    border-bottom: 1px solid #e5e7eb;
   }
 
   :deep(.el-drawer__body) {
@@ -2194,7 +2193,7 @@ const toggleSessionPanel = () => {
   height: 100%;
   display: flex;
   flex-direction: column;
-  background-color: #000;
+  background-color: #ffffff;
   overflow-x: hidden;
   width: 100%;
   touch-action: pan-y;
@@ -2276,18 +2275,18 @@ const toggleSessionPanel = () => {
 // 自定义滚动条样式
 .custom-scrollbar {
   scrollbar-width: thin;
-  scrollbar-color: #666 #1e1e1e;
+  scrollbar-color: #d1d5db #f3f4f6;
 
   &::-webkit-scrollbar {
     width: 4px;
   }
 
   &::-webkit-scrollbar-track {
-    background: #1e1e1e;
+    background: #f3f4f6;
   }
 
   &::-webkit-scrollbar-thumb {
-    background-color: #666;
+    background-color: #d1d5db;
     border-radius: 4px;
   }
 }
@@ -2317,23 +2316,23 @@ const toggleSessionPanel = () => {
 }
 
 .dark-button {
-  background-color: #1e1e1e !important;
-  border-color: #303133 !important;
-  color: white !important;
+  background-color: #ffffff !important;
+  border-color: #d1d5db !important;
+  color: black !important;
 
   &:hover {
-    background-color: #2c2c2c !important;
-    border-color: #409eff !important;
+    background-color: #f3f4f6 !important;
+    border-color: #3b82f6 !important;
   }
 
   &:active {
-    background-color: #2c2c2c !important;
-    border-color: #409eff !important;
+    background-color: #f3f4f6 !important;
+    border-color: #3b82f6 !important;
   }
 }
 
 .user-dropdown {
-  background-color: #303133;
+  background-color: #f3f4f6;
   border-radius: 9999px;
   height: 28px;
   width: 160px;
@@ -2345,7 +2344,7 @@ const toggleSessionPanel = () => {
   transition: all 0.3s ease;
 
   &:hover {
-    background-color: #2c2c2c;
+    background-color: #e5e7eb;
   }
 
   @media screen and (max-width: 768px) {
@@ -2354,7 +2353,7 @@ const toggleSessionPanel = () => {
 }
 
 .user-login-btn {
-  background-color: #303133;
+  background-color: #f3f4f6;
   border-radius: 9999px;
   height: 28px;
   width: 160px;
@@ -2366,7 +2365,7 @@ const toggleSessionPanel = () => {
   transition: all 0.3s ease;
 
   &:hover {
-    background-color: #2c2c2c;
+    background-color: #e5e7eb;
   }
 
   @media screen and (max-width: 768px) {
@@ -2398,7 +2397,7 @@ const toggleSessionPanel = () => {
   position: sticky;
   bottom: 0;
   width: 100%;
-  background-color: #1e1e1e;
+  background-color: #ffffff;
   padding: 15px;
   z-index: 10;
 }

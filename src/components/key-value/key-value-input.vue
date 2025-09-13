@@ -34,7 +34,11 @@
 import { ref, watch } from 'vue'
 import { Close, Plus } from '@element-plus/icons-vue'
 import ValueInput from './value-input.vue'
-import type { KeyValue } from '@/apis/__generated/model/static'
+// 定义本地类型替代 @/apis 引入
+export type KeyValue = {
+  name: string
+  values: any[]
+}
 
 const props = defineProps<{ modelValue?: KeyValue[] }>()
 const emit = defineEmits<{

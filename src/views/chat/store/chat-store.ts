@@ -1,8 +1,28 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
-import type { AiSessionDto } from '@/apis/__generated/model/dto'
+// 定义本地类型替代 @/apis 引入
+export type AiSessionDto = {
+  'AiSessionRepository/FETCHER': {
+    id: string
+    name: string
+    editedTime: string
+  }
+}
+
+export type AiMessageInput = {
+  textContent?: string
+  medias?: any[]
+  type?: string
+  sessionId?: string
+}
+
+export type AiSessionInput = {
+  id?: string
+  name?: string
+  editedTime?: string
+}
+
 import { api } from '@/utils/api-instance'
-import type { AiMessageInput, AiSessionInput } from '@/apis/__generated/model/static'
 import { ElMessageBox } from 'element-plus'
 
 export type AiSession = Pick<AiSessionDto['AiSessionRepository/FETCHER'], 'id' | 'name' | 'editedTime'> & {
@@ -17,22 +37,32 @@ export const useChatStore = defineStore('ai-chat', () => {
   const activeSession = ref<AiSession>()
   const sessionList = ref<AiSession[]>([])
   const handleCreateSession = async (session: AiSessionInput) => {
-    const res = await api.aiSessionController.save({ body: session })
-    const { result } = await api.aiSessionController.findById({ id: res.result })
-    sessionList.value.unshift(result)
-    activeSession.value = sessionList.value[0]
+    try {
+      const res = (await api.aiSessionController.save({ body: session })) as { result: string }
+      const { result } = (await api.aiSessionController.findById({ id: res.result })) as { result: any }
+      sessionList.value.unshift(result)
+      activeSession.value = sessionList.value[0]
+    } catch (error) {
+      console.error('创建会话失败:', error)
+      // TODO: 处理错误，可能需要显示用户友好的错误消息
+    }
   }
   // 从会话列表中删除会话
   const handleDeleteSession = async (session: AiSession) => {
-    await api.aiSessionController.delete({ body: [session.id] })
-    const index = sessionList.value.findIndex((value) => {
-      return value.id === session.id
-    })
-    sessionList.value.splice(index, 1)
-    if (index == sessionList.value.length) {
-      activeSession.value = sessionList.value[index - 1]
-    } else {
-      activeSession.value = sessionList.value[index]
+    try {
+      await api.aiSessionController.delete({ body: [session.id] })
+      const index = sessionList.value.findIndex((value) => {
+        return value.id === session.id
+      })
+      sessionList.value.splice(index, 1)
+      if (index == sessionList.value.length) {
+        activeSession.value = sessionList.value[index - 1]
+      } else {
+        activeSession.value = sessionList.value[index]
+      }
+    } catch (error) {
+      console.error('删除会话失败:', error)
+      // TODO: 处理错误，可能需要显示用户友好的错误消息
     }
   }
   // 修改会话
@@ -40,22 +70,32 @@ export const useChatStore = defineStore('ai-chat', () => {
     if (!activeSession.value) {
       return
     }
-    await api.aiSessionController.save({
-      body: { ...activeSession.value },
-    })
-    isEdit.value = false
+    try {
+      await api.aiSessionController.save({
+        body: { ...activeSession.value },
+      })
+      isEdit.value = false
+    } catch (error) {
+      console.error('更新会话失败:', error)
+      // TODO: 处理错误，可能需要显示用户友好的错误消息
+    }
   }
   const handleClearMessage = async (sessionId: string) => {
-    await ElMessageBox.confirm('Clear chat history?', 'Confirm', {
-      customClass: 'dark-message-box',
-    })
-    await api.aiMessageController.deleteHistory({ sessionId })
-    const index = sessionList.value.findIndex((value) => {
-      return value.id === sessionId
-    })
-    const { result } = await api.aiSessionController.findById({ id: sessionId })
-    activeSession.value = result
-    sessionList.value[index] = result
+    try {
+      await ElMessageBox.confirm('Clear chat history?', 'Confirm', {
+        customClass: 'dark-message-box',
+      })
+      await api.aiMessageController.deleteHistory({ sessionId })
+      const index = sessionList.value.findIndex((value) => {
+        return value.id === sessionId
+      })
+      const { result } = (await api.aiSessionController.findById({ id: sessionId })) as { result: any }
+      activeSession.value = result
+      sessionList.value[index] = result
+    } catch (error) {
+      console.error('清空消息历史失败:', error)
+      // TODO: 处理错误，可能需要显示用户友好的错误消息
+    }
   }
   return {
     isEdit,

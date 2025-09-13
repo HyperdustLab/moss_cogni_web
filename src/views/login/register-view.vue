@@ -5,7 +5,6 @@ import logo from '@/assets/logo.png'
 import router from '@/router'
 import background from '@/assets/background.jpg'
 import { api } from '@/utils/api-instance'
-import type { UserRegisterInput } from '@/apis/__generated/model/static'
 import { assertFormValidate } from '@/utils/common'
 
 const registerForm = reactive<UserRegisterInput>({ phone: '', password: '' })

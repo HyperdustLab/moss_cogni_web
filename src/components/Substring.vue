@@ -65,7 +65,7 @@ const copy = async (msg) => {
 <template>
   <span class="address spaceBetween">
     <span :style="{ color: color, 'font-size': fontSize }">{{ text }}</span>
-    <el-icon style="margin-left: 10px; color: #fff" @click.stop="touchCopy" v-if="copys">
+    <el-icon style="margin-left: 10px; color: #000" @click.stop="touchCopy" v-if="copys">
       <CopyDocument />
     </el-icon>
   </span>

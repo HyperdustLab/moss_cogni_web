@@ -193,12 +193,12 @@ defineExpose({
 }
 
 :deep(.el-upload-dragger) {
-  background-color: #1e1e1e;
-  border: 1px dashed #606266;
+  background-color: #f3f4f6;
+  border: 1px dashed #d1d5db;
 }
 
 :deep(.el-upload-dragger:hover) {
-  border-color: #409eff;
+  border-color: #3b82f6;
 }
 
 :deep(.el-icon--upload) {
@@ -210,7 +210,7 @@ defineExpose({
 }
 
 :deep(.el-upload__text em) {
-  color: #409eff;
+  color: #3b82f6;
   font-style: normal;
 }
 </style>

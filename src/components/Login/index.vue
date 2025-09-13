@@ -2,15 +2,15 @@
   <el-dialog v-model="dialogVisible" fullscreen title="Login" width="45%" :close-on-click-modal="false" :close-on-press-escape="false" :modal="true" :modal-append-to-body="true" modal-class="modal-mask" :lock-scroll="true" :append-to-body="true">
     <div>
       <!-- component -->
-      <div class="w-70% relative py-11 bg-black h-180 flex items-center justify-center" style="margin-left: 15%">
-        <div class="relative m-auto px-4 text-gray-300 md:px-8 xl:px-28 h-full">
+      <div class="w-70% relative py-11 bg-white h-180 flex items-center justify-center" style="margin-left: 15%">
+        <div class="relative m-auto px-4 text-gray-600 md:px-8 xl:px-28 h-full">
           <div class="m-auto md:w-8/12 lg:w-6/12 xl:w-10/12 h-full">
             <div class="rounded-xl shadow-xl h-full">
               <div class="p-4 sm:p-11 h-full">
                 <div class="space-y-3">
                   <div class="flex justify-center">
                     <div class="flex flex-col items-center gap-3">
-                      <img src="../../assets/logo2.png" style="width: 5rem; height: auto;" class="object-contain" loading="lazy" alt="tailus logo" />
+                      <img src="../../assets/logo2.png" style="width: 5rem; height: auto" class="object-contain" loading="lazy" alt="tailus logo" />
                     </div>
                   </div>
                 </div>
@@ -19,13 +19,13 @@
                   <button @click="loginWithGoogle" class="group h-10 px-4 border-2 border-gray-600 rounded-full transition duration-300 hover:border-blue-400 focus:bg-blue-900 active:bg-blue-800">
                     <div class="relative flex items-center justify-center">
                       <img :src="googleIcon" class="w-5 mr-2" alt="google logo" />
-                      <span class="block w-max font-semibold tracking-wide text-gray-300 text-sm transition duration-300 group-hover:text-blue-400 sm:text-base">Google</span>
+                      <span class="block w-max font-semibold tracking-wide text-gray-600 text-sm transition duration-300 group-hover:text-blue-400 sm:text-base">Google</span>
                     </div>
                   </button>
                   <button @click="handleMetamaskLogin" class="group h-10 px-4 border-2 border-gray-600 rounded-full transition duration-300 hover:border-blue-400 focus:bg-blue-900 active:bg-blue-800">
                     <div class="relative flex items-center justify-center">
                       <img :src="metamaskIcon" class="w-5 mr-2" alt="google logo" />
-                      <span class="block w-max font-semibold tracking-wide text-gray-300 text-sm transition duration-300 group-hover:text-blue-400 sm:text-base">MetaMask</span>
+                      <span class="block w-max font-semibold tracking-wide text-gray-600 text-sm transition duration-300 group-hover:text-blue-400 sm:text-base">MetaMask</span>
                     </div>
                   </button>
                 </div>
@@ -61,7 +61,7 @@
                   </div>
                 </div>
 
-                <div class="mt-22 space-y-3 text-gray-400 text-center sm:-mb-6">
+                <div class="mt-22 space-y-3 text-gray-600 text-center sm:-mb-6">
                   <p class="text-xs">By proceeding, you agree to our <a href="/termsService" class="underline" target="_blank">Terms of Use</a> and confirm you have read our <a href="/privacyPolicy" class="underline" target="_blank">Privacy and Cookie Statement</a>.</p>
                   <p class="text-xs">This site is protected by reCAPTCHA and the <a href="https://policies.google.com/privacy" class="underline" target="_blank">Google Privacy Policy</a> and <a href="https://policies.google.com/terms" class="underline" target="_blank">Terms of Service</a> apply.</p>
                 </div>

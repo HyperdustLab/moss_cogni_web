@@ -94,7 +94,7 @@ const uploadToggleButton = () => {
   border-right: 1px solid transparent;
   border-top-right-radius: 5px;
   border-top-left-radius: 5px;
-  background-color: #1e1e1e;
+  background-color: #ffffff;
   margin-bottom: 10px;
 
   .el-form-item {
@@ -102,10 +102,10 @@ const uploadToggleButton = () => {
   }
 
   :deep(.el-textarea__inner) {
-    background-color: #2b2b2b;
-    border-color: transparent;
-    color: #ffffff;
-    box-shadow: 0 0 0 1px transparent inset;
+    background-color: #f3f4f6;
+    border-color: #d1d5db;
+    color: #000000;
+    box-shadow: 0 0 0 1px #d1d5db inset;
     padding-right: 120px;
     padding-bottom: 50px;
     font-size: 16px;
@@ -116,7 +116,8 @@ const uploadToggleButton = () => {
 
     &:hover,
     &:focus {
-      border-color: #409eff;
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 1px #3b82f6 inset;
     }
   }
 
