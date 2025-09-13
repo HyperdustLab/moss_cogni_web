@@ -8,7 +8,7 @@ defineProps<{ message: string }>()
 
 const markdownStyle = {
   '--md-font-family': '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
-  '--md-color': '#ffffff',
+  '--md-color': '#303133',
   '--md-font-size': '14px',
   '--md-line-height': '1.8',
 }
@@ -28,8 +28,8 @@ const markdownStyle = {
 }
 
 .custom-markdown .md-editor-preview-wrapper {
-  background-color: #1e1e1e !important;
-  color: #ffffff !important;
+  background-color: #ffffff !important;
+  color: #000000 !important;
 }
 
 .custom-markdown .md-editor-preview-wrapper * {
@@ -40,7 +40,7 @@ const markdownStyle = {
 .custom-markdown .md-editor-preview-wrapper p {
   font-size: 14px !important;
   margin: 1em 0 !important;
-  color: #ffffff !important;
+  color: #303133 !important;
   word-spacing: 0.05em !important;
   letter-spacing: 0.01em !important;
 }

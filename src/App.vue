@@ -45,18 +45,18 @@ import enUs from 'element-plus/dist/locale/en.mjs'
   border-color: #4c4d4f;
 
   .el-message-box__title {
-    color: #ffffff;
+    color: #303133;
   }
 
   .el-message-box__content {
-    color: #ffffff;
+    color: #303133;
   }
 
   .el-message-box__btns {
     .el-button {
       background-color: #626262;
       border-color: #4c4d4f;
-      color: #ffffff;
+      color: #303133;
 
       &:hover {
         background-color: #8a8a8a;

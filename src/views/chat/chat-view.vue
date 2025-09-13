@@ -1573,7 +1573,7 @@ const toggleSessionPanel = () => {
 </template>
 <style lang="scss" scoped>
 :deep .el-card {
-  --el-card-border-color: #303133;
+  --el-card-border-color: #e4e7ed;
   --el-card-border-radius: 4px;
   --el-card-padding: 20px;
   --el-card-bg-color: var(--el-fill-color-blank);
@@ -1666,7 +1666,7 @@ const toggleSessionPanel = () => {
   text-align: center;
   padding: 10px;
   font-size: 16px;
-  color: white;
+  color: #303133;
 }
 
 :deep(.el-divider--horizontal) {
@@ -2307,7 +2307,7 @@ const toggleSessionPanel = () => {
   background: transparent;
   border: none;
   padding: 0;
-  color: white;
+  color: #303133;
 
   &:hover {
     background: transparent;

@@ -451,11 +451,11 @@ export default {
   max-width: 1200px;
   margin: 0 auto;
   padding: 40px 20px;
-  background-color: #141414;
+  background-color: #ffffff;
 }
 
 .terms-content {
-  background: #141414;
+  background: #ffffff;
   border-radius: 8px;
   padding: 32px;
   box-shadow: none;
@@ -464,7 +464,7 @@ export default {
 .terms-title {
   font-size: 28px;
   font-weight: 600;
-  color: #ffffff;
+  color: #303133;
   margin-bottom: 24px;
   text-align: center;
 }
@@ -514,12 +514,12 @@ export default {
 }
 
 .terms-section h1 span {
-  color: #ffffff !important;
+  color: #303133 !important;
 }
 
 .dark #app {
   color: #c0c4cc;
-  background-color: #303133;
+  background-color: #f5f5f5;
   height: auto;
 }
 

@@ -34,7 +34,7 @@ defineProps<{
 <style scoped lang="scss">
 .thought-chain {
   padding: 20px;
-  background: #1e1e1e;
+  background: #ffffff;
   border-radius: 8px;
 
   .run-next-btn {
@@ -85,7 +85,7 @@ defineProps<{
 
   .timeline-content {
     h4 {
-      color: #ffffff;
+      color: #303133;
       margin: 0 0 8px 0;
       font-size: 16px;
     }
