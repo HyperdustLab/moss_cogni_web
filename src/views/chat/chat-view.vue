@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import { nextTick, normalizeClass, onMounted, onUnmounted, ref, Text, watch } from 'vue'
 import SessionItem from './components/session-item.vue'
-import { ChatRound, Close, Delete, EditPen, Upload, Share, Message } from '@element-plus/icons-vue'
+import { ChatRound, Close, Delete, EditPen, Upload, Share, Message, Document, User } from '@element-plus/icons-vue'
 import MessageRow from './components/message-row.vue'
 import MessageInput from './components/message-input.vue'
 import { storeToRefs } from 'pinia'
@@ -20,6 +20,7 @@ import { ElMessageBox } from 'element-plus'
 import UploadEmbedding from './components/uploadEmbedding.vue'
 
 import user from '@/assets/user.png'
+import agent from '@/assets/agent.png'
 
 import { request } from '@/utils/request'
 
@@ -60,6 +61,8 @@ const loading = ref(false)
 const sendLoading = ref(false)
 
 let setTimeoutId = null
+
+const showContactPanel = ref(false)
 
 const defaultWelcomeMessage = ref('')
 
@@ -255,7 +258,7 @@ const defaultContent = ref(null)
 
 const isOnline = ref(false)
 
-const defAvatar = ref('https://s3.hyperdust.io/upload/20250411/67f8cbcbe4b0bc355fbb060e.png')
+const defAvatar = ref(agent)
 
 const options = ref<AiMessageParams>({
   enableVectorStore: true,
@@ -269,6 +272,8 @@ const isMobile = ref(false)
 const drawerVisible = ref(false)
 const showAgentList = ref(false)
 const showSessionList = ref(false)
+const showAgentPanel = ref(false) // 控制非移动端agent面板显示/隐藏
+const isSidebarCollapsed = ref(false) // 控制整个左边区域（侧边栏）的折叠状态
 
 // 添加检测移动端的函数
 const checkMobile = () => {
@@ -276,12 +281,20 @@ const checkMobile = () => {
 }
 
 function handleShowAgentList() {
-  showAgentList.value = true
-  nextTick(() => {
-    if (mobileContactListRef.value) {
-      mobileContactListRef.value.addEventListener('scroll', handleMobileScroll)
-    }
-  })
+  showAgentList.value = !showAgentList.value
+  if (showAgentList.value) {
+    nextTick(() => {
+      if (mobileContactListRef.value) {
+        mobileContactListRef.value.addEventListener('scroll', handleMobileScroll)
+      }
+    })
+  }
+}
+
+// 控制非移动端agent面板显示/隐藏
+function toggleAgentPanel() {
+  showAgentPanel.value = !showAgentPanel.value
+  showContactPanel.value = !showContactPanel.value
 }
 
 const handleMobileScroll = () => {
@@ -1215,31 +1228,41 @@ async function unbindX() {
 }
 
 const toggleSessionPanel = () => {
+  showContactPanel.value = !showContactPanel.value
   isSessionPanelCollapsed.value = !isSessionPanelCollapsed.value
+}
+
+// 切换侧边栏折叠状态
+const toggleSidebar = () => {
+  isSidebarCollapsed.value = !isSidebarCollapsed.value
+  showContactPanel.value = !showContactPanel.value
 }
 </script>
 <template>
   <div class="home-view light">
-    <!-- LOGO部分调整到最左边 -->
-    <div class="w-full flex items-start px-4 border-b border-gray-300 fixed top-0 left-0 z-10 overflow-hidden">
-      <div class="flex items-center justify-between w-full">
-        <div class="flex items-center">
+    <!-- 参考截图的顶部导航栏设计 -->
+    <div class="top-navbar">
+      <div class="navbar-content">
+        <div class="navbar-left">
           <!-- 添加移动端菜单按钮 -->
           <template v-if="isMobile">
-            <el-button class="mr-0.5 dark-button" @click="handleShowAgentList">
+            <el-button class="mobile-menu-btn" @click="handleShowAgentList">
               <el-icon><Menu /></el-icon>
             </el-button>
-            <el-button class="mr-0.5 dark-button" style="margin-left: 0.1rem" @click="showSessionList = !showSessionList">
+            <el-button class="mobile-menu-btn" @click="showSessionList = !showSessionList">
               <el-icon><ChatRound /></el-icon>
             </el-button>
           </template>
-          <div class="flex items-center cursor-pointer w-[20rem]" @click="goHome">
-            <img @click="goHome" src="../../assets/logo2.png" loading="lazy" class="cursor-pointer max-w-12 max-h-12 object-contain ml-20" alt="logo" />
+
+          <!-- 参考截图的LOGO设计 -->
+          <div class="logo-container" @click="goHome">
+            <img src="/logo2.png" alt="Logo" class="logo-shape" />
+            <span class="logo-text">HYPERAGI</span>
           </div>
         </div>
 
         <!-- 将登录按钮移到logo旁边 -->
-        <div v-if="!loginUser" class="user-login-btn" @click="handleLogin">
+        <!-- <div v-if="!loginUser" class="user-login-btn" @click="handleLogin">
           <el-avatar :size="16" :src="user" style="border: none" fit="contain" />
           <span class="ml-1.25 text-black mobile:ml-0.5">Login In</span>
         </div>
@@ -1298,40 +1321,41 @@ const toggleSessionPanel = () => {
                 <el-button type="text" @click="disconnect" style="color: black" class="text-xs text-black" link>Disconnect</el-button>
               </p>
             </el-card>
-          </template>
-        </el-dropdown>
+          </template> 
+        </el-dropdown>-->
       </div>
     </div>
 
     <!-- Entire chat panel -->
     <div class="chat-panel" v-loading="loading">
       <!-- 在非移动端显示联系人列表 -->
-      <div v-if="!isMobile" class="contact-panel w-70 border-r border-gray-300 bg-white h-full">
-        <!-- 其他内容添加padding -->
-        <div class="p-4">
-          <div class="text-black text-lg mb-4">My Agent</div>
-          <div class="space-y-4 mb-6">
-            <el-select v-if="myAgentList.length > 0" v-model="selectMyAgentId" clearable placeholder="Select an agent" @change="(val) => handleSelectAgent(myAgentList.find((a) => a.id === val))">
-              <el-option v-for="(myAgent, index) in myAgentList" :key="index" :label="myAgent.nickName" :value="myAgent.id" class="dark-option">
-                <div class="flex items-center space-x-3">
-                  <div class="relative flex-shrink-0">
-                    <el-avatar :size="20" :src="myAgent.avatar" class="mt-10" fit="contain" />
-                    <div v-if="myAgent.tokenCount24h > 0" class="absolute bottom-0 right-0 w-3 h-3">
-                      <img src="@/assets/online.png" alt="online" class="w-3 h-3" />
-                    </div>
-                  </div>
-                  <span class="text-sm text-black leading-none">{{ myAgent.nickName }}</span>
-                </div>
-              </el-option>
-            </el-select>
-
-            <div v-else>
-              <div class="flex items-center justify-center p-2 hover:bg-gray-700 rounded-lg cursor-pointer transition-colors duration-200">
-                <el-button @click="handleCreateMyAgent" round type="primary" class="w-full text-xs whitespace-normal leading-tight py-2 px-3">Download AiPod to create your agent</el-button>
-              </div>
-            </div>
+      <div class="contact-panel border-r border-gray-300 bg-white h-full" :class="showContactPanel ? 'w-70' : 'w-20'">
+        <!-- 菜单按钮 - 根据面板状态调整位置 -->
+        <div
+          class="menu-toggle-btn"
+          :class="{ 'menu-btn-collapsed': isSidebarCollapsed }"
+          :style="{
+            right: showContactPanel ? '16px' : 'auto',
+            left: showContactPanel ? 'auto' : '16px',
+          }"
+          @click="toggleSidebar"
+        >
+          <img src="/src/assets/image/menu.png" alt="menu" class="w-5 h-5" />
+        </div>
+        <!-- 参考截图的侧边栏设计 - 始终显示图标 -->
+        <div class="sidebar-icons" style="margin-top: 80px">
+          <div class="icon-item agent-item" @click="toggleSessionPanel">
+            <el-icon size="20"><ChatRound /></el-icon>
+            <span v-if="showContactPanel" class="agent-text">New Chat </span>
           </div>
+          <div class="icon-item agent-item" @click="toggleAgentPanel">
+            <img src="@/assets/agent.png" alt="agent" style="width: 20px; height: 20px" />
+            <span v-if="showContactPanel" class="agent-text">Agent List</span>
+          </div>
+        </div>
 
+        <!-- 其他内容添加padding -->
+        <div v-if="showAgentPanel" class="p-4">
           <!-- 搜索框和列表内容 -->
           <div class="text-black text-lg mb-4">
             Agent List<span class="ml-10"
@@ -1340,6 +1364,7 @@ const toggleSessionPanel = () => {
               >)</span
             >
           </div>
+
           <div class="mb-4">
             <el-input v-model="searchQuery" placeholder="Search agents..." class="w-full" :prefix-icon="Search"></el-input>
           </div>
@@ -1374,15 +1399,9 @@ const toggleSessionPanel = () => {
       </div>
 
       <!-- 会话列表面板 -->
-      <div v-if="!isMobile" class="session-panel" :class="{ collapsed: isSessionPanelCollapsed }">
+      <div v-if="!isMobile && !isSidebarCollapsed" class="session-panel" :class="{ collapsed: isSessionPanelCollapsed }">
         <div class="button-wrapper mt-20">
           <div class="flex items-center justify-between w-full">
-            <div class="toggle-panel-btn cursor-pointer flex items-center py-10 text-sm hover:bg-gray-700 rounded" @click="toggleSessionPanel">
-              <el-icon :size="20" style="color: white">
-                <component :is="isSessionPanelCollapsed ? 'ArrowRight' : 'ArrowLeft'" />
-              </el-icon>
-            </div>
-
             <div v-if="!isSessionPanelCollapsed" class="create-session-btn cursor-pointer flex items-center px-4 py-2 text-sm hover:bg-gray-700 rounded" @click="handleSessionCreate">
               <img src="../../assets/create.png" alt="create" class="create-icon w-5 h-5" />
             </div>
@@ -1419,7 +1438,7 @@ const toggleSessionPanel = () => {
       </div>
 
       <!-- 消息面板 -->
-      <div class="message-panel">
+      <div class="message-panel" :class="{ 'full-width': isSidebarCollapsed }">
         <!-- Session name -->
         <div class="header" :class="{ 'mt-50': isMobile }" v-if="activeSession">
           <div class="front">
@@ -1692,39 +1711,98 @@ const toggleSessionPanel = () => {
   justify-content: center;
   overflow: hidden;
 
-  .w-full {
-    &.flex.items-start {
-      padding: 8px 4px;
-      height: 60px;
+  .top-navbar {
+    width: 100%;
+    height: 60px;
+    background-color: #ffffff;
+    border-bottom: 1px solid #e5e7eb;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    padding: 0 20px;
+
+    .navbar-content {
+      width: 100%;
+      display: flex;
       align-items: center;
-      background-color: #ffffff;
-      border-bottom: none;
+      justify-content: space-between;
+    }
 
-      .flex.items-center {
-        gap: 4px;
+    .navbar-left {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+
+      .mobile-menu-btn {
+        background-color: #f3f4f6;
+        border: 1px solid #e5e7eb;
+        color: #374151;
+        border-radius: 8px;
+        padding: 8px;
+        min-width: 36px;
+        height: 36px;
+
+        &:hover {
+          background-color: #e5e7eb;
+          border-color: #d1d5db;
+        }
       }
 
-      // 添加logo容器样式
-      .flex.items-center.cursor-pointer {
-        margin-left: -4px;
-        padding-left: 4px;
+      .agent-toggle-btn {
+        background-color: #f3f4f6;
+        border: 1px solid #e5e7eb;
+        color: #374151;
+        border-radius: 8px;
+        padding: 8px;
+        min-width: 36px;
+        height: 36px;
+        margin-right: 12px;
+
+        &:hover {
+          background-color: #e5e7eb;
+          border-color: #d1d5db;
+        }
       }
 
-      // 添加logo图片样式
-      img {
-        width: 4rem;
-        height: 4rem;
-      }
+      .logo-container {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        cursor: pointer;
+        transition: all 0.2s ease;
 
-      // 添加logo文字样式
-      .text-2xl {
-        font-size: 1rem;
-        margin-left: 0.25rem;
-      }
+        &:hover {
+          opacity: 0.8;
+        }
 
-      @media screen and (max-width: 768px) {
-        .flex.items-center.cursor-pointer {
-          padding-left: 0;
+        .logo-shape {
+          width: 24px;
+          height: 24px;
+          object-fit: contain;
+        }
+
+        .logo-text {
+          font-size: 18px;
+          font-weight: 600;
+          color: #000000;
+          letter-spacing: 0.5px;
+        }
+      }
+    }
+
+    @media screen and (max-width: 768px) {
+      padding: 0 16px;
+
+      .navbar-left {
+        gap: 12px;
+
+        .logo-container {
+          .logo-text {
+            font-size: 16px;
+          }
         }
       }
     }
@@ -1732,12 +1810,11 @@ const toggleSessionPanel = () => {
 
   .chat-panel {
     margin: 0 auto;
-    width: 99%;
+    width: 100%;
     display: flex;
     background-color: #ffffff;
-    height: 90vh;
-    box-shadow: 0 0 10px rgba(black, 0.1);
-    border-radius: 10px;
+    height: calc(100vh - 60px);
+    margin-top: 60px;
     overflow: hidden;
 
     .session-panel {
@@ -1818,7 +1895,7 @@ const toggleSessionPanel = () => {
     /* Right message history panel */
     .message-panel {
       width: calc(100%);
-      height: 95%;
+      height: 100%;
       display: flex;
       flex-direction: column;
       overflow: hidden;
@@ -1827,6 +1904,13 @@ const toggleSessionPanel = () => {
       -webkit-overflow-scrolling: none;
       overscroll-behavior: none;
       -webkit-overscroll-behavior: none;
+      background-color: #ffffff;
+      transition: width 0.3s ease;
+
+      &.full-width {
+        width: 100vw;
+        max-width: 100vw;
+      }
 
       @media screen and (max-width: 768px) {
         width: 100vw;
@@ -1872,8 +1956,8 @@ const toggleSessionPanel = () => {
       }
 
       .message-list {
-        padding: 15px;
-        padding-bottom: 100px;
+        padding: 20px;
+        padding-bottom: 120px;
         width: 100%;
         flex: 1;
         box-sizing: border-box;
@@ -1882,9 +1966,9 @@ const toggleSessionPanel = () => {
         touch-action: pan-y;
         max-width: 100vw;
         scroll-behavior: smooth;
-        margin-bottom: 20px;
         overscroll-behavior: none;
         -webkit-overscroll-behavior: none;
+        background-color: #ffffff;
 
         @media screen and (max-width: 768px) {
           overflow-y: auto;
@@ -1955,6 +2039,7 @@ const toggleSessionPanel = () => {
 
 // Hide scrollbars for contact list
 .contact-panel {
+  position: relative;
   &::-webkit-scrollbar {
     width: 0 !important;
     height: 0 !important;
@@ -1962,6 +2047,95 @@ const toggleSessionPanel = () => {
   }
   scrollbar-width: none !important;
   -ms-overflow-style: none !important;
+  transition:
+    width 0.3s ease,
+    padding 0.3s ease;
+
+  &.w-0 {
+    width: 0 !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+    border-right: none !important;
+  }
+
+  .menu-toggle-btn {
+    position: absolute !important;
+    top: 20px !important;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background-color: #ffffff;
+    border: 1px solid #e5e7eb;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    z-index: 1001;
+
+    &:hover {
+      background-color: #f3f4f6;
+      border-color: #d1d5db;
+      transform: scale(1.05);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    }
+
+    &:active {
+      transform: scale(0.95);
+    }
+
+    // 位置由内联样式控制，这里只保留其他样式
+  }
+
+  .sidebar-icons {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 20px 16px;
+    gap: 16px;
+    border-bottom: 1px solid #e5e7eb;
+    background-color: #f9fafb;
+    // margin-top 由 Tailwind/UnoCSS 类控制
+
+    .icon-item {
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .icon-item.agent-item {
+      width: auto;
+      padding: 0 12px;
+      gap: 8px;
+    }
+
+    .agent-text {
+      font-size: 14px;
+      color: #374151;
+      white-space: nowrap;
+    }
+
+    .icon-item {
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      color: #6b7280;
+
+      &:hover {
+        background-color: #e5e7eb;
+        color: #374151;
+      }
+
+      &.active {
+        background-color: #3b82f6;
+        color: #ffffff;
+        box-shadow: 0 2px 4px rgba(59, 130, 246, 0.2);
+      }
+    }
+  }
 }
 
 // Hide scrollbars for drawer content

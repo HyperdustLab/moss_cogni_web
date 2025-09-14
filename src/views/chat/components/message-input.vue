@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import { ref, reactive } from 'vue'
-import { Position } from '@element-plus/icons-vue'
+import { Position, ArrowDown } from '@element-plus/icons-vue'
 import ImageUpload from '@/components/image/image-upload.vue'
 import { ElMessage } from 'element-plus'
 type Message = {
@@ -64,23 +64,39 @@ const uploadToggleButton = () => {
 
 <template>
   <div class="message-input">
-    <div>
-      <div style="display: flex; align-items: center">
-        <el-button :style="{ backgroundColor: '#2d2736', color: 'white', border: 'aliceblue' }" icon="Plus" round disabled class="toggle-button">
-          <img style="width: 20px; height: 20px" src="../../../assets/upload.svg" alt="upload" />
-        </el-button>
-      </div>
-    </div>
-    <div class="input-wrapper mt-10">
+    <div class="input-wrapper">
       <div class="input-container">
-        <!-- Press enter to send, input box height is 3 lines -->
-        <el-input v-model="message.text" :autosize="false" :rows="1" class="input" resize="none" type="textarea" @keydown.enter.prevent="sendMessage" @focus="handleFocus" @blur="handleBlur" placeholder="Please enter message content..."></el-input>
-        <el-button :loading="props.loading" round type="primary" class="send-button" @click="sendMessage">
-          <el-icon class="el-icon--left">
-            <Position />
-          </el-icon>
-          Send
-        </el-button>
+        <!-- 参考截图的输入框设计 -->
+        <div class="input-field">
+          <div class="input-content">
+            <!-- 可输入的文本框 -->
+            <el-input v-model="message.text" class="message-input-field" @keydown.enter.prevent="sendMessage" @focus="handleFocus" @blur="handleBlur" placeholder="Message Dancer"></el-input>
+            <div class="input-controls">
+              <div class="agent-dropdown">
+                <span class="dropdown-label">Agent</span>
+                <el-icon class="dropdown-icon"><ArrowDown /></el-icon>
+              </div>
+              <div class="control-buttons">
+                <button class="control-btn browser-btn">
+                  <el-icon><Position /></el-icon>
+                  <span>Browser Use</span>
+                </button>
+                <button class="control-btn ai-world-btn">
+                  <div class="ai-world-icon">
+                    <div class="dot"></div>
+                    <div class="dot"></div>
+                  </div>
+                  <span>AI World</span>
+                </button>
+                <button class="send-btn" @click="sendMessage" :disabled="props.loading">
+                  <el-icon v-if="!props.loading"><Position /></el-icon>
+                  <span v-if="props.loading">Sending...</span>
+                  <span v-else>Send</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -88,36 +104,195 @@ const uploadToggleButton = () => {
 
 <style lang="scss" scoped>
 .message-input {
-  padding: 20px 20px 0 20px;
-  border-top: 1px solid transparent;
-  border-left: 1px solid transparent;
-  border-right: 1px solid transparent;
-  border-top-right-radius: 5px;
-  border-top-left-radius: 5px;
+  padding: 20px;
   background-color: #ffffff;
-  margin-bottom: 10px;
+  border-top: 1px solid #e5e7eb;
 
-  .el-form-item {
-    align-items: center;
+  .input-wrapper {
+    width: 100%;
   }
 
-  :deep(.el-textarea__inner) {
-    background-color: #f3f4f6;
-    border-color: #d1d5db;
-    color: #000000;
-    box-shadow: 0 0 0 1px #d1d5db inset;
-    padding-right: 120px;
-    padding-bottom: 50px;
-    font-size: 16px;
-    touch-action: manipulation; // Better touch handling for mobile
-    overflow-y: auto; // Allow vertical scrolling when content overflows
-    resize: none; // Disable manual resizing
-    -webkit-overflow-scrolling: touch; // Smooth scrolling on iOS
+  .input-container {
+    position: relative;
+    width: 100%;
+  }
 
-    &:hover,
-    &:focus {
+  .input-field {
+    position: relative;
+    width: 100%;
+    background-color: #f9fafb;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 16px;
+    box-shadow: none;
+    transition: all 0.2s ease;
+
+    &:hover {
+      border-color: #d1d5db;
+    }
+
+    &:focus-within {
       border-color: #3b82f6;
-      box-shadow: 0 0 0 1px #3b82f6 inset;
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+  }
+
+  .input-content {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .message-input-field {
+    :deep(.el-input__wrapper) {
+      background-color: transparent !important;
+      border: none !important;
+      border-radius: 0 !important;
+      box-shadow: none !important;
+      padding: 0 !important;
+      font-size: 16px;
+      font-weight: 400;
+      line-height: 1.5;
+    }
+
+    :deep(.el-input__inner) {
+      background-color: transparent !important;
+      border: none !important;
+      color: #374151;
+      font-size: 16px;
+      font-weight: 400;
+      line-height: 1.5;
+      padding: 0 !important;
+
+      &::placeholder {
+        color: #9ca3af;
+      }
+
+      &:focus {
+        outline: none !important;
+        border: none !important;
+        box-shadow: none !important;
+      }
+    }
+
+    :deep(.el-input) {
+      border: none !important;
+    }
+
+    :deep(.el-input__wrapper):hover {
+      border: none !important;
+      box-shadow: none !important;
+    }
+
+    :deep(.el-input__wrapper.is-focus) {
+      border: none !important;
+      box-shadow: none !important;
+    }
+  }
+
+  .input-controls {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  .agent-dropdown {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 10px;
+    background-color: #ffffff;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+
+    &:hover {
+      background-color: #f9fafb;
+      border-color: #9ca3af;
+    }
+
+    .dropdown-label {
+      color: #374151;
+      font-size: 13px;
+      font-weight: 500;
+    }
+
+    .dropdown-icon {
+      color: #6b7280;
+      font-size: 10px;
+    }
+  }
+
+  .control-buttons {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .control-btn {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 6px 10px;
+    background-color: #ffffff;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    color: #374151;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+
+    &:hover {
+      background-color: #f9fafb;
+      border-color: #9ca3af;
+    }
+
+    .el-icon {
+      font-size: 14px;
+    }
+  }
+
+  .ai-world-icon {
+    display: flex;
+    gap: 2px;
+
+    .dot {
+      width: 4px;
+      height: 4px;
+      background-color: #6b7280;
+      border-radius: 50%;
+    }
+  }
+
+  .send-btn {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 6px 12px;
+    background-color: #3b82f6;
+    border: 1px solid #3b82f6;
+    border-radius: 6px;
+    color: #ffffff;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+
+    &:hover:not(:disabled) {
+      background-color: #2563eb;
+      border-color: #2563eb;
+    }
+
+    &:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .el-icon {
+      font-size: 14px;
     }
   }
 
@@ -134,25 +309,26 @@ const uploadToggleButton = () => {
     -webkit-overflow-scrolling: touch;
     overflow-y: auto;
 
-    // Ensure the input container doesn't interfere with scrolling
     .input-container {
       position: relative;
       z-index: 1001;
     }
+
+    .input-controls {
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .control-btn {
+      padding: 6px 10px;
+      font-size: 13px;
+    }
+
+    .send-btn {
+      padding: 6px 12px;
+      font-size: 13px;
+    }
   }
-}
-
-.input-container {
-  position: relative;
-  width: 100%;
-}
-
-.send-button {
-  position: absolute;
-  right: 16px;
-  bottom: 22px;
-  height: 32px;
-  z-index: 1;
 }
 
 .button-wrapper {
@@ -160,6 +336,7 @@ const uploadToggleButton = () => {
   justify-content: flex-end;
   align-items: center;
   padding: 20px;
+
   .image {
     margin-right: 20px;
   }
