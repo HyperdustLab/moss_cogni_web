@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import { nextTick, normalizeClass, onMounted, onUnmounted, ref, Text, watch } from 'vue'
 import SessionItem from './components/session-item.vue'
-import { ChatRound, Close, Delete, EditPen, Upload, Share, Message, Document, User } from '@element-plus/icons-vue'
+import { ChatRound, Close, Delete, EditPen, Upload, Share, Message, Document, User, Plus, Edit } from '@element-plus/icons-vue'
 import MessageRow from './components/message-row.vue'
 import MessageInput from './components/message-input.vue'
 import { storeToRefs } from 'pinia'
@@ -274,6 +274,7 @@ const showAgentList = ref(false)
 const showSessionList = ref(false)
 const showAgentPanel = ref(false) // 控制非移动端agent面板显示/隐藏
 const isSidebarCollapsed = ref(false) // 控制整个左边区域（侧边栏）的折叠状态
+const activeLeftPanel = ref('session') // 控制左侧面板显示：'session' 或 'agent'
 
 // 添加检测移动端的函数
 const checkMobile = () => {
@@ -293,8 +294,9 @@ function handleShowAgentList() {
 
 // 控制非移动端agent面板显示/隐藏
 function toggleAgentPanel() {
-  showAgentPanel.value = !showAgentPanel.value
-  showContactPanel.value = !showContactPanel.value
+  activeLeftPanel.value = 'agent'
+  showAgentPanel.value = true
+  showContactPanel.value = true
 }
 
 const handleMobileScroll = () => {
@@ -1228,8 +1230,10 @@ async function unbindX() {
 }
 
 const toggleSessionPanel = () => {
-  showContactPanel.value = !showContactPanel.value
-  isSessionPanelCollapsed.value = !isSessionPanelCollapsed.value
+  activeLeftPanel.value = 'session'
+  showAgentPanel.value = false
+  showContactPanel.value = true
+  isSessionPanelCollapsed.value = false
 }
 
 // 切换侧边栏折叠状态
@@ -1354,52 +1358,82 @@ const toggleSidebar = () => {
           </div>
         </div>
 
-        <!-- 其他内容添加padding -->
-        <div v-if="showAgentPanel" class="p-4">
-          <!-- 搜索框和列表内容 -->
-          <div class="text-black text-lg mb-4">
-            Agent List<span class="ml-10"
-              >(<span class="text-yellow-500">{{ agentCount.online }}</span
-              >/<span>{{ agentCount.total }}</span
-              >)</span
-            >
-          </div>
+        <!-- 左侧面板内容 - 根据 activeLeftPanel 切换显示 -->
+        <div v-if="showContactPanel" class="p-4">
+          <!-- Agent List 面板 -->
+          <div v-if="activeLeftPanel === 'agent'">
+            <div class="text-black text-lg mb-4">
+              Agent List<span class="ml-10"
+                >(<span class="text-yellow-500">{{ agentCount.online }}</span
+                >/<span>{{ agentCount.total }}</span
+                >)</span
+              >
+            </div>
 
-          <div class="mb-4">
-            <el-input v-model="searchQuery" placeholder="Search agents..." class="w-full" :prefix-icon="Search"></el-input>
-          </div>
-          <div ref="contactListRef" class="h-[calc(75vh-80px)] overflow-y-auto custom-scrollbar" style="max-height: calc(90% - 120px)">
-            <div class="space-y-2">
-              <div v-for="agent in agentList" :key="agent.id" class="flex items-center space-x-3 p-2 bg-white hover:bg-gray-100 rounded-lg cursor-pointer transition-colors duration-200" :class="{ 'bg-gray-100': selectAgentId === agent.id }" @click="preHandleSelectAgent(agent)">
-                <div class="relative">
-                  <el-avatar :size="40" :src="agent.avatar" fit="contain" />
-                  <div v-if="agent.tokenCount24h > 0" class="absolute bottom-0 right-0 w-3 h-3">
-                    <img src="@/assets/online.png" alt="online" class="w-3 h-3" />
+            <div class="mb-4">
+              <el-input v-model="searchQuery" placeholder="Search agents..." class="w-full" :prefix-icon="Search"></el-input>
+            </div>
+            <div ref="contactListRef" class="h-[calc(75vh-80px)] overflow-y-auto custom-scrollbar" style="max-height: calc(90% - 120px)">
+              <div class="space-y-2">
+                <div v-for="agent in agentList" :key="agent.id" class="flex items-center space-x-3 p-2 bg-white hover:bg-gray-100 rounded-lg cursor-pointer transition-colors duration-200" :class="{ 'bg-gray-100': selectAgentId === agent.id }" @click="preHandleSelectAgent(agent)">
+                  <div class="relative">
+                    <el-avatar :size="40" :src="agent.avatar" fit="contain" />
+                    <div v-if="agent.tokenCount24h > 0" class="absolute bottom-0 right-0 w-3 h-3">
+                      <img src="@/assets/online.png" alt="online" class="w-3 h-3" />
+                    </div>
+                  </div>
+                  <div>
+                    <div class="text-black text-sm flex items-center">
+                      {{ agent.nickName }}
+                      <img v-if="agent.xname" src="../../assets/x.svg" alt="X" class="w-4 h-4 ml-6 mt-2" />
+                    </div>
                   </div>
                 </div>
-                <div>
-                  <div class="text-black text-sm flex items-center">
-                    {{ agent.nickName }}
-                    <img v-if="agent.xname" src="../../assets/x.svg" alt="X" class="w-4 h-4 ml-6 mt-2" />
-                  </div>
+
+                <!-- Loading status -->
+                <div v-if="loading" class="text-center py-4 text-gray-400">Loading...</div>
+
+                <!-- No more data -->
+                <div v-if="noMore && agentList.length > 0" class="text-center py-4 text-gray-400">No more data</div>
+
+                <!-- No data -->
+                <div v-if="!loading && agentList.length === 0" class="text-center py-4 text-gray-400">No data</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Session List 面板 -->
+          <div v-else-if="activeLeftPanel === 'session'">
+            <div class="text-black text-lg mb-4">Sessions</div>
+
+            <!-- 创建新会话按钮 -->
+            <div class="mb-4">
+              <div class="create-session-btn cursor-pointer flex items-center justify-center px-4 py-3 text-sm bg-white hover:bg-gray-50 rounded border border-gray-300 transition-colors duration-200" @click="handleSessionCreate">
+                <el-icon size="20" class="mr-2 text-gray-600">
+                  <Edit />
+                </el-icon>
+                <span class="text-gray-800">New Session</span>
+              </div>
+            </div>
+
+            <!-- 会话列表 -->
+            <div class="h-[calc(75vh-80px)] overflow-y-auto custom-scrollbar" style="max-height: calc(90% - 120px)">
+              <div class="space-y-2">
+                <session-item v-for="session in sessionList" :key="session.id" :active="activeSession && session.id === activeSession.id" :session="session" class="session" @click="handleSelectSession(session)" @delete="handleDeleteSession(session.id)" />
+
+                <!-- Empty state -->
+                <div v-if="sessionList.length === 0" class="text-center py-8 text-gray-400">
+                  <div class="text-lg mb-2">No sessions yet</div>
+                  <div class="text-sm">Create your first session to get started</div>
                 </div>
               </div>
-
-              <!-- Loading status -->
-              <div v-if="loading" class="text-center py-4 text-gray-400">Loading...</div>
-
-              <!-- No more data -->
-              <div v-if="noMore && agentList.length > 0" class="text-center py-4 text-gray-400">No more data</div>
-
-              <!-- No data -->
-              <div v-if="!loading && agentList.length === 0" class="text-center py-4 text-gray-400">No data</div>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- 会话列表面板 -->
-      <div v-if="!isMobile && !isSidebarCollapsed" class="session-panel" :class="{ collapsed: isSessionPanelCollapsed }">
+      <!-- 会话列表面板 - 已集成到左侧面板中，这里隐藏 -->
+      <div v-if="false" class="session-panel" :class="{ collapsed: isSessionPanelCollapsed }">
         <div class="button-wrapper mt-20">
           <div class="flex items-center justify-between w-full">
             <div v-if="!isSessionPanelCollapsed" class="create-session-btn cursor-pointer flex items-center px-4 py-2 text-sm hover:bg-gray-700 rounded" @click="handleSessionCreate">
@@ -2549,19 +2583,26 @@ const toggleSidebar = () => {
 }
 
 .create-session-btn {
-  margin: 0 16px;
+  margin: 0;
+  transition: all 0.2s ease;
+  border: 1px solid #d1d5db;
+  background-color: #ffffff;
 
   img {
     transition: transform 0.3s ease;
   }
 
   &:hover {
+    background-color: #f9fafb;
+    border-color: #9ca3af;
+
     img {
       transform: rotate(90deg);
     }
   }
 
   &:active {
+    background-color: #f3f4f6;
     transform: scale(0.98);
   }
 }
