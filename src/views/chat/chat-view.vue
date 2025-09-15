@@ -2066,13 +2066,13 @@ const groupedSessions = computed(() => {
 
   .menu-toggle-btn {
     position: absolute !important;
-    top: 20px !important;
-    right: 0px !important;
+    top: 40px !important;
+    right: 20px !important;
     width: 40px;
     height: 40px;
     display: flex;
     align-items: center;
-    justify-content: flex-end;
+    justify-content: center;
     border-radius: 8px;
     cursor: pointer;
     transition: all 0.2s ease;
@@ -2085,6 +2085,8 @@ const groupedSessions = computed(() => {
     z-index: 1001;
 
     &.menu-btn-collapsed {
+      top: 40px !important;
+      right: -12px !important;
       justify-content: center;
     }
 
