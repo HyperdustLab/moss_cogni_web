@@ -1496,7 +1496,7 @@ const groupedSessions = computed(() => {
       <!-- Session List 面板 - 独立容器 -->
       <div v-if="showSessionPanel" class="w-65 border-r mt-[5rem] border-gray-200 flex flex-col h-auto ml-20" style="background-color: rgb(249, 250, 251)">
         <!-- 创建新会话按钮 -->
-        <div class="mb-4">
+        <div class="mb-4 px-4">
           <div class="create-session-btn cursor-pointer flex items-center justify-center px-4 py-3 text-sm bg-white hover:bg-gray-50 rounded border border-gray-300 transition-colors duration-200" @click="handleSessionCreate">
             <el-icon size="20" class="mr-2 text-gray-600">
               <Edit />
@@ -1506,11 +1506,11 @@ const groupedSessions = computed(() => {
         </div>
 
         <!-- 会话列表 -->
-        <div class="h-[calc(75vh-140px)] overflow-y-auto custom-scrollbar" style="max-height: calc(90% - 180px)">
+        <div class="h-[calc(75vh-140px)] overflow-y-auto custom-scrollbar px-4" style="max-height: calc(90% - 180px)">
           <div class="space-y-4">
             <!-- 按时间分组显示sessions -->
             <div v-for="group in groupedSessions" :key="group.label" class="session-group">
-              <div class="group-label text-sm text-gray-500 mb-2 px-2">{{ group.label }}</div>
+              <div class="group-label text-sm text-gray-500 mb-2 px-1">{{ group.label }}</div>
               <div class="space-y-1">
                 <session-item v-for="session in group.sessions" :key="session?.id || Math.random()" :active="activeSession && session?.id === activeSession?.id" :session="session" class="session" @click="handleSelectSession(session)" @delete="handleDeleteSession(session?.id)" />
               </div>
