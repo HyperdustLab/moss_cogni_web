@@ -16,16 +16,16 @@
                 </div>
 
                 <div class="mt-11 grid space-y-3">
-                  <button @click="loginWithGoogle" class="group h-10 px-4 border-2 border-gray-600 rounded-full transition duration-300 hover:border-blue-400 focus:bg-white active:bg-white">
+                  <button @click="loginWithGoogle" class="group h-12 w-1/2 mx-auto px-6 border-2 border-black rounded-full transition duration-300 hover:border-black focus:bg-black active:bg-black bg-black shadow-sm hover:shadow-md">
                     <div class="relative flex items-center justify-center">
-                      <img :src="googleIcon" class="w-5 mr-2" alt="google logo" />
-                      <span class="block w-max font-semibold tracking-wide text-gray-600 text-sm transition duration-300 group-hover:text-blue-400 sm:text-base">Google</span>
+                      <img :src="googleIcon" class="w-5 mr-2 flex-shrink-0" alt="google logo" />
+                      <span class="block font-semibold tracking-wide text-white text-sm transition duration-300 group-hover:text-white sm:text-base">Continue with Google</span>
                     </div>
                   </button>
-                  <button @click="handleMetamaskLogin" class="group h-10 px-4 border-2 border-gray-600 rounded-full transition duration-300 hover:border-blue-400 focus:bg-white active:bg-white">
+                  <button @click="handleMetamaskLogin" class="group h-12 w-1/2 mx-auto px-6 border-2 border-black rounded-full transition duration-300 hover:border-black focus:bg-black active:bg-black bg-black shadow-sm hover:shadow-md">
                     <div class="relative flex items-center justify-center">
-                      <img :src="metamaskIcon" class="w-5 mr-2" alt="google logo" />
-                      <span class="block w-max font-semibold tracking-wide text-gray-600 text-sm transition duration-300 group-hover:text-blue-400 sm:text-base">MetaMask</span>
+                      <img :src="metamaskIcon" class="w-5 mr-2 flex-shrink-0" alt="google logo" />
+                      <span class="block font-semibold tracking-wide text-white text-sm transition duration-300 group-hover:text-white sm:text-base">Continue with MetaMask</span>
                     </div>
                   </button>
                 </div>
@@ -44,21 +44,17 @@
                     <el-form-item label="Verification Code" prop="code">
                       <el-input v-model="form.code" size="large">
                         <template #append>
-                          <el-button :disabled="sendCodeDisabled" :loading="loading" @click="sendCode">{{ sendCodeTxt }}</el-button>
+                          <el-button :disabled="sendCodeDisabled" :loading="loading" @click="sendCode" class="bg-black text-white border-black hover:bg-gray-800">{{ sendCodeTxt }}</el-button>
                         </template>
                       </el-input>
                     </el-form-item>
                   </el-form>
 
-                  <div>
-                    <div class="flex justify-center">
-                      <el-button type="primary" @click="emailLogin" class="group h-10 w-80/100 px-8 border-2 border-gray-600 rounded-full transition duration-300 hover:border-blue-400 focus:bg-white active:bg-white" style="background-color: #00ff01; border-color: #00ff01">
-                        <div class="relative flex items-center space-x-3 justify-center">
-                          <span class="block w-max font-semibold tracking-wide text-black text-sm transition duration-300 group-hover:text-blue-400 sm:text-base">Login with Email</span>
-                        </div>
-                      </el-button>
+                  <el-button type="primary" @click="emailLogin" class="group h-12 w-1/2 mx-auto px-12 border-2 border-black rounded-full transition duration-300 shadow-sm hover:shadow-md bg-black hover:bg-black">
+                    <div class="relative flex items-center justify-center">
+                      <span class="block font-semibold tracking-wide text-white text-sm transition duration-300 group-hover:text-white sm:text-base">Login with Email</span>
                     </div>
-                  </div>
+                  </el-button>
                 </div>
 
                 <div class="mt-22 space-y-3 text-gray-600 text-center sm:-mb-6">
@@ -306,5 +302,33 @@ function handleMessage(event: any) {
 .modal-mask {
   background-color: rgba(0, 0, 0, 0.95) !important;
   backdrop-filter: blur(8px);
+}
+
+/* 取消Element Plus按钮的绿色边框 */
+::v-deep .el-button:focus {
+  outline: none !important;
+  border-color: black !important;
+}
+
+::v-deep .el-button:focus-visible {
+  outline: none !important;
+  border-color: black !important;
+}
+
+::v-deep .el-button:hover {
+  border-color: black !important;
+}
+
+::v-deep .el-button:active {
+  border-color: black !important;
+}
+
+::v-deep .el-button.is-focus {
+  border-color: black !important;
+}
+
+/* 取消所有Element Plus按钮的默认样式 */
+::v-deep .el-button {
+  border-color: black !important;
 }
 </style>
