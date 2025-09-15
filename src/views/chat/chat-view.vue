@@ -1,7 +1,7 @@
 <script lang="ts" setup>
-import { nextTick, normalizeClass, onMounted, onUnmounted, ref, Text, watch } from 'vue'
+import { nextTick, normalizeClass, onMounted, onUnmounted, ref, Text, watch, computed } from 'vue'
 import SessionItem from './components/session-item.vue'
-import { ChatRound, Close, Delete, EditPen, Upload, Share, Message, Document, User, Plus, Edit } from '@element-plus/icons-vue'
+import { ChatRound, Close, Delete, EditPen, Upload, Share, Message, Document, User, Plus, Edit, Search } from '@element-plus/icons-vue'
 import MessageRow from './components/message-row.vue'
 import MessageInput from './components/message-input.vue'
 import { storeToRefs } from 'pinia'
@@ -49,8 +49,8 @@ const chatStore = useChatStore()
 // const { activeSession, sessionList, isEdit } = storeToRefs(chatStore)
 const messageListRef = ref<InstanceType<typeof HTMLDivElement>>()
 
-const activeSession = ref(null)
-const sessionList = ref([])
+const activeSession = ref<any>(null)
+const sessionList = ref<any[]>([])
 
 import logoutPng from '@/assets/image/logout.png?url'
 
@@ -60,7 +60,7 @@ const loading = ref(false)
 
 const sendLoading = ref(false)
 
-let setTimeoutId = null
+let setTimeoutId: any = null
 
 const showContactPanel = ref(false)
 
@@ -100,7 +100,9 @@ const chatMessage = ref<AiMessage>({
 })
 
 function showBindEmail() {
-  introductionBindAccountRef.value.show('email')
+  if (introductionBindAccountRef.value) {
+    introductionBindAccountRef.value.show('email')
+  }
 }
 
 const wsUrl = BASE_URL.replace('http', 'ws').replace('https', 'wss') + '/ws/app/websocket/' + wsUserId
@@ -149,7 +151,9 @@ const { status, data, send, open, close } = useWebSocket(wsUrl, {
 
             console.log('messageList.value[messageList.value.length - 1]', messageList.value[messageList.value.length - 1])
 
-            reasoningRecord.value.inputReplyMediaFileUrls = inputReplyMediaFileUrls.value
+            if (reasoningRecord.value) {
+              reasoningRecord.value.inputReplyMediaFileUrls = inputReplyMediaFileUrls.value
+            }
 
             // @ts-ignore
             responseMessage.value.thinkingList[responseMessage.value.thinkingList.length - 1].status = 'success'
@@ -205,9 +209,9 @@ window.setInterval(() => {
   send('PING')
 }, 10000)
 
-const myAgentList = ref([])
+const myAgentList = ref<any[]>([])
 
-const messageList = ref([])
+const messageList = ref<any[]>([])
 
 const showSessionEdit = ref(false)
 const isSessionPanelCollapsed = ref(true)
@@ -216,7 +220,7 @@ const token = ref(localStorage.getItem('X-Token'))
 
 const uploadEmbeddingRef = ref<InstanceType<typeof UploadEmbedding>>()
 
-const agentList = ref([])
+const agentList = ref<any[]>([])
 
 // 添加分页相关参数
 const pageNum = ref(1)
@@ -230,8 +234,8 @@ const agentCount = ref({
 })
 
 // 添加选中的agent id
-const selectAgent = ref(null)
-const selectAgentId = ref(null)
+const selectAgent = ref<any>(null)
+const selectAgentId = ref<string | null>(null)
 
 const currSessionId = ref(generateUUID())
 
@@ -315,8 +319,6 @@ const handleUpgrade = () => {
   goUser() // 使用现有的跳转到dashboard的函数
 }
 
-const mobileContactListRef = ref(null)
-
 import { useRoute } from 'vue-router'
 import { fa } from 'element-plus/es/locales.mjs'
 
@@ -329,7 +331,7 @@ const isOnline = ref(false)
 
 const defAvatar = ref(agent)
 
-const options = ref<AiMessageParams>({
+const options = ref<any>({
   enableVectorStore: true,
   enableAgent: false,
   model: '',
@@ -337,58 +339,19 @@ const options = ref<AiMessageParams>({
 })
 const embeddingLoading = ref(false)
 
-const isMobile = ref(false)
-const drawerVisible = ref(false)
-const showAgentList = ref(false)
-const showSessionList = ref(false)
-const showAgentPanel = ref(false) // 控制非移动端agent面板显示/隐藏
+const showAgentPanel = ref(true) // 控制agent面板显示/隐藏
+const showSessionPanel = ref(false) // 控制session面板显示/隐藏
 const isSidebarCollapsed = ref(false) // 控制整个左边区域（侧边栏）的折叠状态
-const activeLeftPanel = ref('session') // 控制左侧面板显示：'session' 或 'agent'
 
-// 添加检测移动端的函数
-const checkMobile = () => {
-  isMobile.value = window.innerWidth <= 768
-}
-
-function handleShowAgentList() {
-  showAgentList.value = !showAgentList.value
-  if (showAgentList.value) {
-    nextTick(() => {
-      if (mobileContactListRef.value) {
-        mobileContactListRef.value.addEventListener('scroll', handleMobileScroll)
-      }
-    })
-  }
-}
-
-// 控制非移动端agent面板显示/隐藏
+// 控制agent面板显示/隐藏
 function toggleAgentPanel() {
-  activeLeftPanel.value = 'agent'
   showAgentPanel.value = true
   showContactPanel.value = true
 }
 
-const handleMobileScroll = () => {
-  if (!mobileContactListRef.value) return
-
-  const { scrollTop, scrollHeight, clientHeight } = mobileContactListRef.value
-  if (scrollHeight - scrollTop - clientHeight < 20) {
-    loadMore()
-  }
-}
-
-function handleCloseAgentList() {
-  showAgentList.value = false
-  if (mobileContactListRef.value) {
-    mobileContactListRef.value.removeEventListener('scroll', handleMobileScroll)
-  }
-}
-
 onMounted(async () => {
   getReplySearch()
-  checkMobile()
   await getDefaultWelcomeMessage()
-  window.addEventListener('resize', checkMobile)
   await getDefaultContent()
 
   if (localStorage.getItem('X-Token')) {
@@ -452,7 +415,6 @@ async function getDefaultWelcomeMessage() {
 // 组件卸载时移除监听
 onUnmounted(() => {
   contactListRef.value?.removeEventListener('scroll', handleScroll)
-  window.removeEventListener('resize', checkMobile)
 })
 
 async function getDefaultContent() {
@@ -487,7 +449,7 @@ async function handleCreateMyAgent() {
   window.open(AIPodDownload)
 }
 
-async function handleShareTwitter(sid) {
+async function handleShareTwitter(sid: any) {
   const currentUrl = window.location.origin + '?sid=' + (sid || selectAgent.value.sid)
   const shareText = `check out moss AI agent`
   const twitterShareUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(currentUrl)}`
@@ -495,6 +457,11 @@ async function handleShareTwitter(sid) {
 }
 
 async function getSessionList() {
+  if (!selectAgent.value) {
+    sessionList.value = []
+    return
+  }
+
   const { result } = await request({
     url: BASE_URL + '/mgn/aiSession/list',
     method: 'GET',
@@ -504,7 +471,7 @@ async function getSessionList() {
 
     params: {
       pageNo: 1,
-      pageSize: 10,
+      pageSize: 20,
       column: 'createdTime',
       order: 'desc',
       type: '3',
@@ -515,15 +482,16 @@ async function getSessionList() {
 
   sessionList.value = result.records
 
+  // 如果没有sessions，自动创建一个新的
   if (sessionList.value.length === 0) {
-    handleSessionCreate()
+    await handleSessionCreate()
   } else {
+    // 选择第一个session
     handleSelectSession(sessionList.value[0])
   }
 }
 
-function handleSelectSession(session) {
-  showSessionList.value = false
+function handleSelectSession(session: any) {
   activeSession.value = session
   getMessageList()
 }
@@ -828,7 +796,7 @@ const handleSendMessage = async (message: { text: string; inputText: string; ima
   })
 }
 
-async function addReasoningRecord(reasoningRecord) {
+async function addReasoningRecord(reasoningRecord: any) {
   await request({
     url: BASE_URL + '/mgn/reasoningRecord/add',
     method: 'POST',
@@ -839,7 +807,7 @@ async function addReasoningRecord(reasoningRecord) {
   })
 }
 
-async function saveMessage(message) {
+async function saveMessage(message: any) {
   await request({
     url: BASE_URL + '/mgn/aiMessage/add',
     method: 'POST',
@@ -851,20 +819,25 @@ async function saveMessage(message) {
 }
 
 const handleSessionCreate = async () => {
+  if (!selectAgent.value) {
+    ElMessage.warning('Please select an agent first')
+    return
+  }
+
   await request({
     url: BASE_URL + '/mgn/aiSession/add',
     method: 'POST',
     data: {
       agentId: selectAgent.value.sid,
       name: 'New Chat',
-      creatorId: currSessionId.value,
+      creatorId: loginUser.value?.id || currSessionId.value,
       type: '3',
     },
     headers: {
       'X-Access-Token': token.value,
     },
   })
-  getSessionList()
+  await getSessionList()
 }
 
 async function getMyAgent() {
@@ -934,7 +907,7 @@ const handleSearch = () => {
 }
 
 // 添加防抖处理
-let searchTimer = null
+let searchTimer: any = null
 const debouncedSearch = () => {
   if (searchTimer) clearTimeout(searchTimer)
   searchTimer = setTimeout(() => {
@@ -1025,14 +998,15 @@ const loadMore = () => {
   getAgentList(true)
 }
 
-const preHandleSelectAgent = (agent) => {
+const preHandleSelectAgent = (agent: any) => {
   selectMyAgentId.value = ''
 
   handleSelectAgent(agent)
+  showSessionPanel.value = true
 }
 
 // 添加选中方法
-const handleSelectAgent = (_agent) => {
+const handleSelectAgent = (_agent: any) => {
   // 终止推理逻辑
   if (isProcessing.value || sendLoading.value) {
     isProcessing.value = false
@@ -1051,7 +1025,6 @@ const handleSelectAgent = (_agent) => {
       customClass: 'dark-message',
     })
   }
-  showAgentList.value = false
   if (_agent) {
     selectAgent.value = _agent
     selectAgentId.value = _agent.id
@@ -1060,6 +1033,7 @@ const handleSelectAgent = (_agent) => {
     selectAgentId.value = agentList.value[0].id
   }
   console.info('selectAgentId.value', selectAgentId.value)
+
   getSessionList()
   handleSearchWeb(false)
 }
@@ -1210,18 +1184,20 @@ async function handleSearchWeb(message: boolean) {
 }
 
 function handleLogin() {
-  loginRef.value.show()
+  if (loginRef.value) {
+    loginRef.value.show()
+  }
 }
 
 async function isPhotoOrCelebrity(question: string) {
   // Keywords related to celebrity photos
-  const celebrityKeywords = replySearch.value['明信片']
+  const celebrityKeywords = replySearch.value?.['明信片'] || []
 
   // Keywords related to taking photos
-  const photoKeywords = replySearch.value['拍照']
+  const photoKeywords = replySearch.value?.['拍照'] || []
 
   // Check for celebrity keywords
-  const isCelebrity = celebrityKeywords.some((keyword) => {
+  const isCelebrity = celebrityKeywords.some((keyword: any) => {
     // For English words, compare in lowercase
     if (/^[a-zA-Z\s]+$/.test(keyword)) {
       return question.toLowerCase().includes(keyword.toLowerCase())
@@ -1231,7 +1207,7 @@ async function isPhotoOrCelebrity(question: string) {
   })
 
   // Check for photo keywords
-  const isPhoto = photoKeywords.some((keyword) => {
+  const isPhoto = photoKeywords.some((keyword: any) => {
     if (/^[a-zA-Z\s]+$/.test(keyword)) {
       return question.toLowerCase().includes(keyword.toLowerCase())
     }
@@ -1299,17 +1275,57 @@ async function unbindX() {
 }
 
 const toggleSessionPanel = () => {
-  activeLeftPanel.value = 'session'
-  showAgentPanel.value = false
+  showSessionPanel.value = !showSessionPanel.value
   showContactPanel.value = true
-  isSessionPanelCollapsed.value = false
 }
 
 // 切换侧边栏折叠状态
 const toggleSidebar = () => {
   isSidebarCollapsed.value = !isSidebarCollapsed.value
   showContactPanel.value = !showContactPanel.value
+
+  // 当侧边栏展开时，默认显示agent list
+  if (isSidebarCollapsed.value) {
+    console.log('toggleAgentPanel', showContactPanel.value)
+    toggleAgentPanel()
+  }
 }
+
+// 按时间分组sessions的计算属性
+const groupedSessions = computed(() => {
+  if (!sessionList.value || sessionList.value.length === 0) {
+    return []
+  }
+
+  const now = new Date()
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+  const thisWeek = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000)
+  const thisMonth = new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000)
+
+  const groups = {
+    today: { label: 'Today', sessions: [] },
+    thisWeek: { label: 'This week', sessions: [] },
+    thisMonth: { label: 'This month', sessions: [] },
+    older: { label: 'Older', sessions: [] },
+  }
+
+  sessionList.value.forEach((session) => {
+    const sessionDate = new Date(session.createdTime)
+
+    if (sessionDate >= today) {
+      groups.today.sessions.push(session)
+    } else if (sessionDate >= thisWeek) {
+      groups.thisWeek.sessions.push(session)
+    } else if (sessionDate >= thisMonth) {
+      groups.thisMonth.sessions.push(session)
+    } else {
+      groups.older.sessions.push(session)
+    }
+  })
+
+  // 只返回有sessions的组
+  return Object.values(groups).filter((group) => group.sessions.length > 0)
+})
 </script>
 <template>
   <div class="home-view light">
@@ -1317,16 +1333,6 @@ const toggleSidebar = () => {
     <div class="top-navbar">
       <div class="navbar-content">
         <div class="navbar-left">
-          <!-- 添加移动端菜单按钮 -->
-          <template v-if="isMobile">
-            <el-button class="mobile-menu-btn" @click="handleShowAgentList">
-              <el-icon><Menu /></el-icon>
-            </el-button>
-            <el-button class="mobile-menu-btn" @click="showSessionList = !showSessionList">
-              <el-icon><ChatRound /></el-icon>
-            </el-button>
-          </template>
-
           <!-- 参考截图的LOGO设计 -->
           <div class="logo-container" @click="goHome">
             <img src="/logo2.png" alt="Logo" class="logo-shape" />
@@ -1402,100 +1408,59 @@ const toggleSidebar = () => {
     <!-- Entire chat panel -->
     <div class="chat-panel" v-loading="loading">
       <!-- 在非移动端显示联系人列表 -->
-      <div class="contact-panel border-r border-gray-300 bg-white h-full flex flex-col" :class="showContactPanel ? 'w-70' : 'w-20'">
-        <!-- 菜单按钮 - 根据面板状态调整位置 -->
-        <div
-          class="menu-toggle-btn"
-          :class="{ 'menu-btn-collapsed': isSidebarCollapsed }"
-          :style="{
-            right: showContactPanel ? '16px' : 'auto',
-            left: showContactPanel ? 'auto' : '16px',
-          }"
-          @click="toggleSidebar"
-        >
-          <img src="/src/assets/image/menu.png" alt="menu" class="w-5 h-5" />
-        </div>
-        <!-- 参考截图的侧边栏设计 - 始终显示图标 -->
-        <div class="sidebar-icons" style="margin-top: 80px">
-          <div class="icon-item agent-item" @click="toggleSessionPanel">
-            <el-icon size="20"><ChatRound /></el-icon>
-            <span v-if="showContactPanel" class="agent-text">New Chat </span>
+      <div class="contact-panel border-r border-gray-300 bg-white h-full flex flex-col" :class="showContactPanel ? 'w-60' : 'w-20'">
+        <div class="contact-panel-content relative">
+          <!-- 菜单按钮 - 相对于contact-panel-content区域靠右 -->
+          <div class="menu-toggle-btn" :class="{ 'menu-btn-collapsed': isSidebarCollapsed }" @click="toggleSidebar">
+            <img src="/src/assets/image/menu.png" alt="menu" class="w-full h-full" />
           </div>
-          <div class="icon-item agent-item" @click="toggleAgentPanel">
-            <img src="@/assets/agent.png" alt="agent" style="width: 20px; height: 20px" />
-            <span v-if="showContactPanel" class="agent-text">Agent List</span>
+          <!-- 参考截图的侧边栏设计 - 始终显示图标 -->
+          <div class="sidebar-icons" style="margin-top: 80px">
+            <div class="icon-item agent-item" :class="{ selected: showAgentPanel }" @click="toggleAgentPanel">
+              <img src="@/assets/agent.png" alt="agent" style="width: 20px; height: 20px" />
+              <span v-if="showContactPanel" class="agent-text">Agent List</span>
+            </div>
           </div>
         </div>
 
-        <!-- 左侧面板内容 - 根据 activeLeftPanel 切换显示 -->
-        <div v-if="showContactPanel" class="p-4">
-          <!-- Agent List 面板 -->
-          <div v-if="activeLeftPanel === 'agent'">
-            <div class="text-black text-lg mb-4">
-              Agent List<span class="ml-10"
-                >(<span class="text-yellow-500">{{ agentCount.online }}</span
-                >/<span>{{ agentCount.total }}</span
-                >)</span
-              >
-            </div>
-
-            <div class="mb-4">
-              <el-input v-model="searchQuery" placeholder="Search agents..." class="w-full" :prefix-icon="Search"></el-input>
-            </div>
-            <div ref="contactListRef" class="h-[calc(75vh-140px)] overflow-y-auto custom-scrollbar" style="max-height: calc(90% - 180px)">
-              <div class="space-y-2">
-                <div v-for="agent in agentList" :key="agent.id" class="flex items-center space-x-3 p-2 bg-white hover:bg-gray-100 rounded-lg cursor-pointer transition-colors duration-200" :class="{ 'bg-gray-100': selectAgentId === agent.id }" @click="preHandleSelectAgent(agent)">
-                  <div class="relative">
-                    <el-avatar :size="40" :src="agent.avatar" fit="contain" />
-                    <div v-if="agent.tokenCount24h > 0" class="absolute bottom-0 right-0 w-3 h-3">
-                      <img src="@/assets/online.png" alt="online" class="w-3 h-3" />
-                    </div>
-                  </div>
-                  <div>
-                    <div class="text-black text-sm flex items-center">
-                      {{ agent.nickName }}
-                      <img v-if="agent.xname" src="../../assets/x.svg" alt="X" class="w-4 h-4 ml-6 mt-2" />
-                    </div>
-                  </div>
-                </div>
-
-                <!-- Loading status -->
-                <div v-if="loading" class="text-center py-4 text-gray-400">Loading...</div>
-
-                <!-- No more data -->
-                <div v-if="noMore && agentList.length > 0" class="text-center py-4 text-gray-400">No more data</div>
-
-                <!-- No data -->
-                <div v-if="!loading && agentList.length === 0" class="text-center py-4 text-gray-400">No data</div>
-              </div>
-            </div>
+        <!-- Agent List 面板 -->
+        <div v-if="showContactPanel && showAgentPanel" class="w-60 border-r border-gray-200 p-4 flex flex-col h-full" style="background-color: #f9fafb">
+          <div class="text-black text-lg mb-4">
+            Agent List<span class="ml-10"
+              >(<span class="text-yellow-500">{{ agentCount.online }}</span
+              >/<span>{{ agentCount.total }}</span
+              >)</span
+            >
           </div>
 
-          <!-- Session List 面板 -->
-          <div v-else-if="activeLeftPanel === 'session'">
-            <div class="text-black text-lg mb-4">Sessions</div>
-
-            <!-- 创建新会话按钮 -->
-            <div class="mb-4">
-              <div class="create-session-btn cursor-pointer flex items-center justify-center px-4 py-3 text-sm bg-white hover:bg-gray-50 rounded border border-gray-300 transition-colors duration-200" @click="handleSessionCreate">
-                <el-icon size="20" class="mr-2 text-gray-600">
-                  <Edit />
-                </el-icon>
-                <span class="text-gray-800">New Session</span>
-              </div>
-            </div>
-
-            <!-- 会话列表 -->
-            <div class="h-[calc(75vh-140px)] overflow-y-auto custom-scrollbar" style="max-height: calc(90% - 180px)">
-              <div class="space-y-2">
-                <session-item v-for="session in sessionList" :key="session.id" :active="activeSession && session.id === activeSession.id" :session="session" class="session" @click="handleSelectSession(session)" @delete="handleDeleteSession(session.id)" />
-
-                <!-- Empty state -->
-                <div v-if="sessionList.length === 0" class="text-center py-8 text-gray-400">
-                  <div class="text-lg mb-2">No sessions yet</div>
-                  <div class="text-sm">Create your first session to get started</div>
+          <div class="mb-4">
+            <el-input v-model="searchQuery" placeholder="Search agents..." class="w-full" :prefix-icon="Search"></el-input>
+          </div>
+          <div ref="contactListRef" class="h-[calc(75vh-140px)] overflow-y-auto custom-scrollbar" style="max-height: calc(90% - 180px)">
+            <div class="space-y-2">
+              <div v-for="agent in agentList" :key="agent.id" class="flex items-center space-x-3 p-2 bg-white hover:bg-gray-100 rounded-lg cursor-pointer transition-colors duration-200" :class="{ 'bg-gray-100': selectAgentId === agent.id }" @click="preHandleSelectAgent(agent)">
+                <div class="relative">
+                  <el-avatar :size="40" :src="agent.avatar" fit="contain" />
+                  <div v-if="agent.tokenCount24h > 0" class="absolute bottom-0 right-0 w-3 h-3">
+                    <img src="@/assets/online.png" alt="online" class="w-3 h-3" />
+                  </div>
+                </div>
+                <div>
+                  <div class="text-black text-sm flex items-center">
+                    {{ agent.nickName }}
+                    <img v-if="agent.xname" src="../../assets/x.svg" alt="X" class="w-4 h-4 ml-6 mt-2" />
+                  </div>
                 </div>
               </div>
+
+              <!-- Loading status -->
+              <div v-if="loading" class="text-center py-4 text-gray-400">Loading...</div>
+
+              <!-- No more data -->
+              <div v-if="noMore && agentList.length > 0" class="text-center py-4 text-gray-400">No more data</div>
+
+              <!-- No data -->
+              <div v-if="!loading && agentList.length === 0" class="text-center py-4 text-gray-400">No data</div>
             </div>
           </div>
         </div>
@@ -1524,6 +1489,38 @@ const toggleSidebar = () => {
 
             <!-- 登录按钮 -->
             <button v-if="!loginUser" class="login-btn px-3 py-1.5 text-xs text-white bg-blue-600 hover:bg-blue-700 rounded transition-colors duration-200" @click="handleLogin">登录</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Session List 面板 - 独立容器 -->
+      <div v-if="showSessionPanel" class="w-65 border-r mt-[5rem] border-gray-200 flex flex-col h-auto ml-20" style="background-color: rgb(249, 250, 251)">
+        <!-- 创建新会话按钮 -->
+        <div class="mb-4">
+          <div class="create-session-btn cursor-pointer flex items-center justify-center px-4 py-3 text-sm bg-white hover:bg-gray-50 rounded border border-gray-300 transition-colors duration-200" @click="handleSessionCreate">
+            <el-icon size="20" class="mr-2 text-gray-600">
+              <Edit />
+            </el-icon>
+            <span class="text-gray-800">New Chat</span>
+          </div>
+        </div>
+
+        <!-- 会话列表 -->
+        <div class="h-[calc(75vh-140px)] overflow-y-auto custom-scrollbar" style="max-height: calc(90% - 180px)">
+          <div class="space-y-4">
+            <!-- 按时间分组显示sessions -->
+            <div v-for="group in groupedSessions" :key="group.label" class="session-group">
+              <div class="group-label text-sm text-gray-500 mb-2 px-2">{{ group.label }}</div>
+              <div class="space-y-1">
+                <session-item v-for="session in group.sessions" :key="session?.id || Math.random()" :active="activeSession && session?.id === activeSession?.id" :session="session" class="session" @click="handleSelectSession(session)" @delete="handleDeleteSession(session?.id)" />
+              </div>
+            </div>
+
+            <!-- Empty state -->
+            <div v-if="sessionList.length === 0" class="text-center py-8 text-gray-400">
+              <div class="text-lg mb-2">No sessions yet</div>
+              <div class="text-sm">Create your first session to get started</div>
+            </div>
           </div>
         </div>
       </div>
@@ -1570,7 +1567,7 @@ const toggleSidebar = () => {
       <!-- 消息面板 -->
       <div class="message-panel" :class="{ 'full-width': isSidebarCollapsed }">
         <!-- Session name -->
-        <div class="header" :class="{ 'mt-50': isMobile }" v-if="activeSession">
+        <div class="header" v-if="activeSession">
           <!-- <div class="front">
             <div class="flex flex-col">
               <div class="flex items-center">
@@ -1637,83 +1634,6 @@ const toggleSidebar = () => {
         <UploadEmbedding ref="uploadEmbeddingRef"></UploadEmbedding>
       </div>
     </div>
-
-    <!-- 移动端抽屉 -->
-    <el-drawer v-model="showAgentList" @close="handleCloseAgentList" direction="ltr" size="80%" :with-header="false" class="mobile-drawer dark-drawer overflow-hidden">
-      <div class="drawer-content">
-        <!-- 联系人列表 -->
-        <div class="contact-panel bg-white h-full overflow-hidden">
-          <div class="p-4">
-            <div class="text-black text-lg mb-4">My Agent</div>
-            <div class="space-y-4 mb-6">
-              <el-select v-if="myAgentList.length > 0" v-model="selectMyAgentId" clearable placeholder="Select an agent" @change="(val) => handleSelectAgent(myAgentList.find((a) => a.id === val))">
-                <el-option v-for="(myAgent, index) in myAgentList" :key="index" :label="myAgent.nickName" :value="myAgent.id" class="dark-option">
-                  <div class="flex items-center space-x-3">
-                    <div class="relative">
-                      <el-avatar :size="40" :src="myAgent.avatar" fit="contain" />
-                      <div class="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-[#1e1e1e]"></div>
-                    </div>
-                    <span class="text-sm text-black">{{ myAgent.nickName }}</span>
-                  </div>
-                </el-option>
-              </el-select>
-
-              <div v-else>
-                <div class="flex items-center justify-center p-2 hover:bg-gray-700 rounded-lg cursor-pointer transition-colors duration-200">
-                  <el-button @click="handleCreateMyAgent" round type="primary" class="w-full text-xs whitespace-normal leading-tight py-2 px-3">Download AiPod to create your agent</el-button>
-                </div>
-              </div>
-            </div>
-
-            <div class="text-black text-lg mb-4">
-              Agent List<span class="ml-1"
-                >(<span class="text-yellow-500">{{ agentCount.online }}</span
-                >/<span>{{ agentCount.total }}</span
-                >)</span
-              >
-            </div>
-            <div class="mb-4">
-              <el-input v-model="searchQuery" placeholder="Search agents..." class="w-full" :prefix-icon="Search"></el-input>
-            </div>
-            <div ref="mobileContactListRef" class="h-[calc(100vh-10px)] overflow-y-auto custom-scrollbar" style="max-height: calc(90% - 120px)">
-              <div class="space-y-2">
-                <div v-for="agent in agentList" :key="agent.id" class="flex items-center space-x-3 p-2 bg-white hover:bg-gray-100 rounded-lg cursor-pointer transition-colors duration-200" :class="{ 'bg-gray-100': selectAgentId === agent.id }" @click="preHandleSelectAgent(agent)">
-                  <div class="relative">
-                    <el-avatar :size="40" :src="agent.avatar" fit="contain" />
-                    <div v-if="agent.tokenCount24h > 0" class="absolute bottom-0 right-0 w-3 h-3">
-                      <img src="@/assets/online.png" alt="online" class="w-3 h-3" />
-                    </div>
-                  </div>
-                  <div>
-                    <div class="text-black text-sm flex items-center">
-                      {{ agent.nickName }}
-                      <img v-if="agent.xname" src="../../assets/x.svg" alt="X" class="w-4 h-4 ml-6 mt-2" />
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </el-drawer>
-
-    <!-- 会话列表抽屉 -->
-    <el-drawer v-model="showSessionList" direction="ltr" size="80%" :with-header="false" class="mobile-drawer dark-drawer">
-      <div class="drawer-content">
-        <div class="session-list mt-4">
-          <div class="text-black text-lg mb-4 px-4">Sessions</div>
-
-          <div class="create-session-btn cursor-pointer flex items-center px-4 py-2 text-sm hover:bg-gray-700 rounded" @click="handleSessionCreate">
-            <img src="../../assets/create.png" alt="create" class="create-icon w-8 h-8" />
-          </div>
-
-          <div class="h-[calc(95vh-10vh)] overflow-y-auto mt-10 custom-scrollbar">
-            <session-item v-for="session in sessionList" :key="session.id" :active="session.id === activeSession?.id" :session="session" class="session" @click="handleSelectSession(session)" @delete="handleDeleteSession(session.id)" />
-          </div>
-        </div>
-      </div>
-    </el-drawer>
 
     <IntroductionBindAccount ref="introductionBindAccountRef"></IntroductionBindAccount>
   </div>
@@ -1864,37 +1784,6 @@ const toggleSidebar = () => {
       align-items: center;
       gap: 16px;
 
-      .mobile-menu-btn {
-        background-color: #f3f4f6;
-        border: 1px solid #e5e7eb;
-        color: #374151;
-        border-radius: 8px;
-        padding: 8px;
-        min-width: 36px;
-        height: 36px;
-
-        &:hover {
-          background-color: #e5e7eb;
-          border-color: #d1d5db;
-        }
-      }
-
-      .agent-toggle-btn {
-        background-color: #f3f4f6;
-        border: 1px solid #e5e7eb;
-        color: #374151;
-        border-radius: 8px;
-        padding: 8px;
-        min-width: 36px;
-        height: 36px;
-        margin-right: 12px;
-
-        &:hover {
-          background-color: #e5e7eb;
-          border-color: #d1d5db;
-        }
-      }
-
       .logo-container {
         display: flex;
         align-items: center;
@@ -1917,20 +1806,6 @@ const toggleSidebar = () => {
           font-weight: 600;
           color: #000000;
           letter-spacing: 0.5px;
-        }
-      }
-    }
-
-    @media screen and (max-width: 768px) {
-      padding: 0 16px;
-
-      .navbar-left {
-        gap: 12px;
-
-        .logo-container {
-          .logo-text {
-            font-size: 16px;
-          }
         }
       }
     }
@@ -2022,7 +1897,7 @@ const toggleSidebar = () => {
 
     /* Right message history panel */
     .message-panel {
-      width: calc(100%);
+      width: calc(100% - 480px);
       height: 100%;
       display: flex;
       flex-direction: column;
@@ -2039,23 +1914,6 @@ const toggleSidebar = () => {
       &.full-width {
         width: 100vw;
         max-width: 100vw;
-      }
-
-      @media screen and (max-width: 768px) {
-        width: 100vw;
-        max-width: 100vw;
-        height: 100%;
-        overflow: hidden;
-        touch-action: none;
-        -webkit-overflow-scrolling: none;
-        overscroll-behavior: none;
-        -webkit-overscroll-behavior: none;
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        z-index: 1;
       }
 
       .header {
@@ -2098,16 +1956,6 @@ const toggleSidebar = () => {
         overscroll-behavior: none;
         -webkit-overscroll-behavior: none;
         background-color: #ffffff;
-
-        @media screen and (max-width: 768px) {
-          width: 100%;
-          overflow-y: auto;
-          overflow-x: hidden;
-          touch-action: pan-y;
-          max-width: 100vw;
-          overscroll-behavior: none;
-          -webkit-overscroll-behavior: none;
-        }
       }
     }
 
@@ -2191,8 +2039,9 @@ const toggleSidebar = () => {
   .menu-toggle-btn {
     position: absolute !important;
     top: 20px !important;
-    width: 40px;
-    height: 40px;
+    right: 16px !important;
+    width: 30px;
+    height: 30px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -2214,8 +2063,6 @@ const toggleSidebar = () => {
     &:active {
       transform: scale(0.95);
     }
-
-    // 位置由内联样式控制，这里只保留其他样式
   }
 
   .sidebar-icons {
@@ -2468,114 +2315,6 @@ const toggleSidebar = () => {
   }
 }
 
-.mobile-drawer {
-  :deep(.el-drawer) {
-    background-color: #ffffff;
-    border: 1px solid #e5e7eb;
-    overflow-x: hidden;
-    touch-action: pan-y;
-    max-width: 100vw;
-    width: 100% !important;
-  }
-
-  :deep(.el-drawer__header) {
-    color: black;
-    border-bottom: 1px solid #e5e7eb;
-  }
-
-  :deep(.el-drawer__body) {
-    padding: 0;
-    overflow: hidden;
-    overflow-x: hidden;
-    touch-action: pan-y;
-    max-width: 100vw;
-    width: 100%;
-  }
-}
-
-.drawer-content {
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  background-color: #ffffff;
-  overflow-x: hidden;
-  width: 100%;
-  touch-action: pan-y;
-  position: relative;
-  max-width: 100vw;
-
-  .session-list {
-    min-height: 800px;
-    width: 100%;
-    overflow-x: hidden;
-    touch-action: pan-y;
-    position: relative;
-    max-width: 100vw;
-
-    .session {
-      margin-bottom: 10px;
-      width: 100%;
-      position: relative;
-      max-width: 100vw;
-    }
-  }
-}
-
-// Add these global styles to prevent horizontal scrolling on mobile
-@media screen and (max-width: 768px) {
-  html,
-  body {
-    overflow-x: hidden;
-    width: 100%;
-    position: relative;
-    max-width: 100vw;
-  }
-
-  .el-drawer__wrapper {
-    overflow-x: hidden;
-    touch-action: pan-y;
-    max-width: 100vw;
-  }
-
-  .el-drawer__container {
-    overflow-x: hidden;
-    touch-action: pan-y;
-    max-width: 100vw;
-  }
-
-  .home-view {
-    width: 100vw;
-    max-width: 100vw;
-    overflow-x: hidden;
-  }
-
-  .chat-panel {
-    width: 100vw;
-    max-width: 100vw;
-    overflow-x: hidden;
-  }
-
-  .message-panel {
-    width: 100vw;
-    max-width: 100vw;
-    overflow-x: hidden;
-  }
-
-  .message-list {
-    overflow-x: hidden;
-    touch-action: pan-y;
-    max-width: 100vw;
-    width: 100%;
-  }
-}
-
-// Add these styles to prevent horizontal scrolling on all elements
-* {
-  max-width: 100vw;
-  overflow-x: hidden;
-  box-sizing: border-box;
-}
-
 // 自定义滚动条样式
 .custom-scrollbar {
   scrollbar-width: thin;
@@ -2650,10 +2389,6 @@ const toggleSidebar = () => {
   &:hover {
     background-color: #e5e7eb;
   }
-
-  @media screen and (max-width: 768px) {
-    width: 140px;
-  }
 }
 
 .user-login-btn {
@@ -2670,11 +2405,6 @@ const toggleSidebar = () => {
 
   &:hover {
     background-color: #e5e7eb;
-  }
-
-  @media screen and (max-width: 768px) {
-    width: 140px;
-    margin-right: 0;
   }
 }
 
