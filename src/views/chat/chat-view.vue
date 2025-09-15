@@ -273,7 +273,12 @@ const getUserInitials = (user: any) => {
 }
 
 const getUserDisplayName = (user: any) => {
-  if (!user) return '未登录用户'
+  if (!user) return 'Guest'
+
+  // 如果没有钱包地址，显示邮箱
+  if (user.email) {
+    return user.email
+  }
 
   // 优先显示用户名
   if (user.username) {
@@ -286,12 +291,7 @@ const getUserDisplayName = (user: any) => {
     return `${address.slice(0, 6)}...${address.slice(-4)}`
   }
 
-  // 如果没有钱包地址，显示邮箱
-  if (user.email) {
-    return user.email
-  }
-
-  return '未知用户'
+  return 'Guest'
 }
 
 // 获取用户主要标识信息（钱包地址或邮箱）
@@ -1554,9 +1554,7 @@ const groupedSessions = computed(() => {
                 <img :src="loginUser.avatar" alt="用户头像" class="w-full h-full object-cover" />
               </div>
               <div v-else class="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center">
-                <span class="text-white font-semibold text-sm">
-                  {{ getUserInitials(loginUser) }}
-                </span>
+                <img src="@/assets/image/user.png" alt="用户头像" class="w-full h-full object-cover" />
               </div>
               <!-- 用户详情 -->
               <div class="flex flex-col">
@@ -1588,12 +1586,12 @@ const groupedSessions = computed(() => {
         <Transition name="dropdown" appear>
           <div v-if="showEmailDropdown" class="email-dropdown fixed z-50 bg-white border border-gray-200 rounded-xl shadow-2xl p-0 min-w-64 max-w-80 overflow-hidden backdrop-blur-sm" :style="{ left: emailDropdownPosition.x + 'px', top: emailDropdownPosition.y + 'px' }" @click.stop>
             <!-- 用户信息头部 -->
-            <div class="bg-gradient-to-r from-blue-50 to-indigo-50 px-6 py-5 border-b border-gray-100">
+            <div class="bg-white px-6 py-5 border-b border-gray-200">
               <div class="flex items-center">
                 <div v-if="loginUser?.avatar" class="w-12 h-12 rounded-full overflow-hidden flex items-center justify-center mr-4 ring-2 ring-white shadow-sm">
                   <img :src="loginUser.avatar" alt="用户头像" class="w-full h-full object-cover" />
                 </div>
-                <div v-else class="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center mr-4 ring-2 ring-white shadow-sm">
+                <div v-else class="w-12 h-12 bg-gray-600 rounded-full flex items-center justify-center mr-4 ring-2 ring-white shadow-sm">
                   <span class="text-white font-semibold text-base">
                     {{ getUserInitials(loginUser) }}
                   </span>
@@ -1604,8 +1602,8 @@ const groupedSessions = computed(() => {
                   <div v-if="getUserMainIdentifier(loginUser)" class="flex items-center">
                     <span class="text-sm mr-2">{{ getUserMainIdentifier(loginUser)?.icon }}</span>
                     <span class="text-gray-600 text-sm truncate">{{ getUserMainIdentifier(loginUser)?.display }}</span>
-                    <span v-if="getUserMainIdentifier(loginUser)?.type === 'wallet'" class="ml-2 text-xs text-green-600 font-semibold bg-green-100 px-2 py-0.5 rounded-full"> Wallet </span>
-                    <span v-else class="ml-2 text-xs text-blue-600 font-semibold bg-blue-100 px-2 py-0.5 rounded-full"> Email </span>
+                    <span v-if="getUserMainIdentifier(loginUser)?.type === 'wallet'" class="ml-2 text-xs text-gray-700 font-semibold bg-gray-100 px-2 py-0.5 rounded-full"> Wallet </span>
+                    <span v-else class="ml-2 text-xs text-gray-700 font-semibold bg-gray-100 px-2 py-0.5 rounded-full"> Email </span>
                   </div>
                 </div>
               </div>
@@ -1614,35 +1612,35 @@ const groupedSessions = computed(() => {
             <!-- 操作菜单 -->
             <div class="py-4">
               <!-- Dashboard -->
-              <div class="flex items-center py-4 px-6 hover:bg-blue-50 cursor-pointer transition-all duration-200 group" @click="goUser">
-                <div class="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center mr-4 group-hover:bg-blue-200 transition-colors">
-                  <el-icon size="18" class="text-blue-600">
+              <div class="flex items-center py-4 px-6 hover:bg-gray-50 cursor-pointer transition-all duration-200 group" @click="goUser">
+                <div class="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center mr-4 group-hover:bg-gray-200 transition-colors">
+                  <el-icon size="18" class="text-gray-600">
                     <User />
                   </el-icon>
                 </div>
-                <span class="text-base text-gray-700 font-medium group-hover:text-blue-700 transition-colors">Dashboard</span>
+                <span class="text-base text-gray-700 font-medium group-hover:text-gray-800 transition-colors">Dashboard</span>
               </div>
 
               <!-- 绑定邮箱 -->
-              <div class="flex items-center py-4 px-6 hover:bg-green-50 cursor-pointer transition-all duration-200 group" @click="showBindEmail">
-                <div class="w-10 h-10 rounded-lg bg-green-100 flex items-center justify-center mr-4 group-hover:bg-green-200 transition-colors">
-                  <el-icon size="18" class="text-green-600">
+              <div class="flex items-center py-4 px-6 hover:bg-gray-50 cursor-pointer transition-all duration-200 group" @click="showBindEmail">
+                <div class="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center mr-4 group-hover:bg-gray-200 transition-colors">
+                  <el-icon size="18" class="text-gray-600">
                     <Message />
                   </el-icon>
                 </div>
                 <div class="flex flex-col flex-1 min-w-0 space-y-1">
-                  <span class="text-base text-gray-700 font-medium group-hover:text-green-700 transition-colors truncate">{{ loginUser?.email || 'Bind Email' }}</span>
+                  <span class="text-base text-gray-700 font-medium group-hover:text-gray-800 transition-colors truncate">{{ loginUser?.email || 'Bind Email' }}</span>
                   <span v-if="loginUser?.email" class="text-sm text-gray-500 truncate">Manage email settings</span>
                 </div>
               </div>
 
               <!-- 绑定钱包 -->
-              <div v-if="!loginUser?.walletAddress" class="flex items-center py-4 px-6 hover:bg-orange-50 cursor-pointer transition-all duration-200 group" @click="showBindAccount">
-                <div class="w-10 h-10 rounded-lg bg-orange-100 flex items-center justify-center mr-4 group-hover:bg-orange-200 transition-colors">
-                  <SvgIcon width="18" height="18" name="metamask" class="text-orange-600" />
+              <div v-if="!loginUser?.walletAddress" class="flex items-center py-4 px-6 hover:bg-gray-50 cursor-pointer transition-all duration-200 group" @click="showBindAccount">
+                <div class="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center mr-4 group-hover:bg-gray-200 transition-colors">
+                  <SvgIcon width="18" height="18" name="metamask" class="text-gray-600" />
                 </div>
                 <div class="flex flex-col flex-1 min-w-0 space-y-1">
-                  <span class="text-base text-gray-700 font-medium group-hover:text-orange-700 transition-colors">Bind Wallet</span>
+                  <span class="text-base text-gray-700 font-medium group-hover:text-gray-800 transition-colors">Bind Wallet</span>
                   <span class="text-sm text-gray-500">Connect MetaMask</span>
                 </div>
               </div>
@@ -1651,11 +1649,11 @@ const groupedSessions = computed(() => {
               <div class="mx-6 my-4 border-t border-gray-100"></div>
 
               <!-- 断开连接 -->
-              <div class="flex items-center py-4 px-6 hover:bg-red-50 cursor-pointer transition-all duration-200 group" @click="disconnect">
-                <div class="w-10 h-10 rounded-lg bg-red-100 flex items-center justify-center mr-4 group-hover:bg-red-200 transition-colors">
+              <div class="flex items-center py-4 px-6 hover:bg-gray-50 cursor-pointer transition-all duration-200 group" @click="disconnect">
+                <div class="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center mr-4 group-hover:bg-gray-200 transition-colors">
                   <el-image :src="logoutPng" class="w-5 h-5"></el-image>
                 </div>
-                <span class="text-base text-gray-700 font-medium group-hover:text-red-700 transition-colors">Disconnect</span>
+                <span class="text-base text-gray-700 font-medium group-hover:text-gray-800 transition-colors">Disconnect</span>
               </div>
             </div>
           </div>
