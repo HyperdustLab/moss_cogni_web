@@ -246,6 +246,75 @@ const inputReplyMediaFileUrls = ref([])
 
 const loginUser = ref(null)
 
+// 用户信息显示相关函数
+const getUserInitials = (user: any) => {
+  if (!user) return '?'
+
+  // 优先使用用户名
+  if (user.username) {
+    return user.username.charAt(0).toUpperCase()
+  }
+
+  // 如果没有用户名，使用邮箱
+  if (user.email) {
+    return user.email.charAt(0).toUpperCase()
+  }
+
+  // 如果都没有，返回默认字符
+  return 'U'
+}
+
+const getUserDisplayName = (user: any) => {
+  if (!user) return '未登录用户'
+
+  // 如果没有用户名，显示邮箱
+  if (user.email) {
+    return user.email
+  }
+
+  // 优先显示用户名
+  if (user.username) {
+    return user.username
+  }
+
+  // 如果都没有，显示钱包地址的简化版本
+  if (user.walletAddress) {
+    const address = user.walletAddress
+    return `${address.slice(0, 6)}...${address.slice(-4)}`
+  }
+
+  return '未知用户'
+}
+
+const getUserLevel = (user: any) => {
+  if (!user) return '访客'
+
+  // 根据用户信息判断会员等级
+  // 这里可以根据实际的业务逻辑来判断
+  if (user.isPremium || user.vipLevel || user.membership) {
+    return user.membership || user.vipLevel || '高级版'
+  }
+
+  // 如果有钱包地址，可能是付费用户
+  if (user.walletAddress && user.email) {
+    return '标准版'
+  }
+
+  return '免费版'
+}
+
+const isPremiumUser = (user: any) => {
+  if (!user) return false
+
+  // 判断是否为高级用户的逻辑
+  return user.isPremium || user.vipLevel || user.membership || false
+}
+
+const handleUpgrade = () => {
+  // 跳转到升级页面或显示升级弹窗
+  goUser() // 使用现有的跳转到dashboard的函数
+}
+
 const mobileContactListRef = ref(null)
 
 import { useRoute } from 'vue-router'
@@ -1333,7 +1402,7 @@ const toggleSidebar = () => {
     <!-- Entire chat panel -->
     <div class="chat-panel" v-loading="loading">
       <!-- 在非移动端显示联系人列表 -->
-      <div class="contact-panel border-r border-gray-300 bg-white h-full" :class="showContactPanel ? 'w-70' : 'w-20'">
+      <div class="contact-panel border-r border-gray-300 bg-white h-full flex flex-col" :class="showContactPanel ? 'w-70' : 'w-20'">
         <!-- 菜单按钮 - 根据面板状态调整位置 -->
         <div
           class="menu-toggle-btn"
@@ -1373,7 +1442,7 @@ const toggleSidebar = () => {
             <div class="mb-4">
               <el-input v-model="searchQuery" placeholder="Search agents..." class="w-full" :prefix-icon="Search"></el-input>
             </div>
-            <div ref="contactListRef" class="h-[calc(75vh-80px)] overflow-y-auto custom-scrollbar" style="max-height: calc(90% - 120px)">
+            <div ref="contactListRef" class="h-[calc(75vh-140px)] overflow-y-auto custom-scrollbar" style="max-height: calc(90% - 180px)">
               <div class="space-y-2">
                 <div v-for="agent in agentList" :key="agent.id" class="flex items-center space-x-3 p-2 bg-white hover:bg-gray-100 rounded-lg cursor-pointer transition-colors duration-200" :class="{ 'bg-gray-100': selectAgentId === agent.id }" @click="preHandleSelectAgent(agent)">
                   <div class="relative">
@@ -1417,7 +1486,7 @@ const toggleSidebar = () => {
             </div>
 
             <!-- 会话列表 -->
-            <div class="h-[calc(75vh-80px)] overflow-y-auto custom-scrollbar" style="max-height: calc(90% - 120px)">
+            <div class="h-[calc(75vh-140px)] overflow-y-auto custom-scrollbar" style="max-height: calc(90% - 180px)">
               <div class="space-y-2">
                 <session-item v-for="session in sessionList" :key="session.id" :active="activeSession && session.id === activeSession.id" :session="session" class="session" @click="handleSelectSession(session)" @delete="handleDeleteSession(session.id)" />
 
@@ -1428,6 +1497,33 @@ const toggleSidebar = () => {
                 </div>
               </div>
             </div>
+          </div>
+        </div>
+
+        <!-- 用户信息区域 - 底部固定 -->
+        <div v-if="showContactPanel" class="user-info-section mt-auto p-4 border-t border-gray-200 bg-gray-50">
+          <div class="flex items-center justify-between">
+            <!-- 用户信息 -->
+            <div class="flex items-center space-x-3">
+              <!-- 用户头像 -->
+              <div v-if="loginUser?.avatar" class="w-10 h-10 rounded-full overflow-hidden flex items-center justify-center">
+                <img :src="loginUser.avatar" alt="用户头像" class="w-full h-full object-cover" />
+              </div>
+              <div v-else class="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center">
+                <span class="text-white font-semibold text-sm">
+                  {{ getUserInitials(loginUser) }}
+                </span>
+              </div>
+              <!-- 用户详情 -->
+              <div class="flex flex-col">
+                <span class="text-gray-800 font-medium text-sm">
+                  {{ getUserDisplayName(loginUser) }}
+                </span>
+              </div>
+            </div>
+
+            <!-- 登录按钮 -->
+            <button v-if="!loginUser" class="login-btn px-3 py-1.5 text-xs text-white bg-blue-600 hover:bg-blue-700 rounded transition-colors duration-200" @click="handleLogin">登录</button>
           </div>
         </div>
       </div>
@@ -1475,8 +1571,7 @@ const toggleSidebar = () => {
       <div class="message-panel" :class="{ 'full-width': isSidebarCollapsed }">
         <!-- Session name -->
         <div class="header" :class="{ 'mt-50': isMobile }" v-if="activeSession">
-          <div class="front">
-            <!-- 显示当前选中agent的信息 -->
+          <!-- <div class="front">
             <div class="flex flex-col">
               <div class="flex items-center">
                 <el-avatar :size="30" :src="selectAgent.avatar" class="mr-3" fit="contain" />
@@ -1505,9 +1600,9 @@ const toggleSidebar = () => {
                 </div>
               </div>
             </div>
-          </div>
+          </div> -->
           <!-- Edit buttons at end -->
-          <div class="flex items-center">
+          <!-- <div class="flex items-center">
             <div class="rear">
               <el-icon :size="20" style="margin-right: 10px; color: black">
                 <Delete @click="handleDeleteSession(activeSession.id)" />
@@ -1519,14 +1614,13 @@ const toggleSidebar = () => {
               </el-icon>
             </div>
             <div class="front">
-              <!-- 编辑模式下显示输入框 -->
               <div v-if="showSessionEdit" class="title flex-grow">
                 <el-input v-model="activeSession.name" @keydown.enter="handleUpdateSession" @blur="handleUpdateSession"></el-input>
               </div>
-              <!-- 非编辑模式下显示文本 -->
+
               <div v-else class="title flex-grow">{{ activeSession.name }}</div>
             </div>
-          </div>
+          </div> -->
         </div>
         <!-- <el-divider :border-style="'solid'" border-color="#666666" /> -->
         <div ref="messageListRef" class="message-list">
@@ -1536,7 +1630,7 @@ const toggleSidebar = () => {
           </transition-group>
         </div>
         <!-- Listen for send event -->
-        <message-input @send="preHandleSendMessage" :loading="sendLoading" @search="handleSearchWeb" :functionStatus="selectAgent.functionStatus" v-if="activeSession && selectAgent"></message-input>
+        <message-input style="width: 70%" @send="preHandleSendMessage" :loading="sendLoading" @search="handleSearchWeb" :functionStatus="selectAgent.functionStatus" v-if="activeSession && selectAgent"></message-input>
 
         <Login ref="loginRef" />
 
@@ -1938,6 +2032,7 @@ const toggleSidebar = () => {
       -webkit-overflow-scrolling: none;
       overscroll-behavior: none;
       -webkit-overscroll-behavior: none;
+      align-items: center;
       background-color: #ffffff;
       transition: width 0.3s ease;
 
@@ -1992,19 +2087,20 @@ const toggleSidebar = () => {
       .message-list {
         padding: 20px;
         padding-bottom: 120px;
-        width: 100%;
+        width: 70%;
         flex: 1;
         box-sizing: border-box;
         overflow-y: auto;
         overflow-x: hidden;
         touch-action: pan-y;
-        max-width: 100vw;
+        max-width: 70vw;
         scroll-behavior: smooth;
         overscroll-behavior: none;
         -webkit-overscroll-behavior: none;
         background-color: #ffffff;
 
         @media screen and (max-width: 768px) {
+          width: 100%;
           overflow-y: auto;
           overflow-x: hidden;
           touch-action: pan-y;
@@ -2604,6 +2700,25 @@ const toggleSidebar = () => {
   &:active {
     background-color: #f3f4f6;
     transform: scale(0.98);
+  }
+}
+
+// 用户信息区域样式
+.user-info-section {
+  background-color: #f9fafb;
+  border-top: 1px solid #e5e7eb;
+
+  .upgrade-btn {
+    transition: all 0.2s ease;
+
+    &:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    &:active {
+      transform: translateY(0);
+    }
   }
 }
 

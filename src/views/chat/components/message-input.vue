@@ -106,10 +106,11 @@ const uploadToggleButton = () => {
 .message-input {
   padding: 20px;
   background-color: #ffffff;
-  border-top: 1px solid #e5e7eb;
+  display: flex;
+  justify-content: center;
 
   .input-wrapper {
-    width: 100%;
+    width: 70%;
   }
 
   .input-container {
@@ -308,6 +309,11 @@ const uploadToggleButton = () => {
     height: auto;
     -webkit-overflow-scrolling: touch;
     overflow-y: auto;
+    display: block;
+
+    .input-wrapper {
+      width: 100%;
+    }
 
     .input-container {
       position: relative;
