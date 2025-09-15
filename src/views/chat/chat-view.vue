@@ -1500,11 +1500,11 @@ const groupedSessions = computed(() => {
       <div v-if="showSessionPanel" class="w-65 border-r mt-[5rem] border-gray-200 flex flex-col h-auto ml-20" style="background-color: rgb(249, 250, 251)">
         <!-- 创建新会话按钮 -->
         <div class="mb-4 px-4">
-          <div class="create-session-btn cursor-pointer flex items-center justify-center px-4 py-3 text-sm bg-white hover:bg-gray-50 rounded border border-gray-300 transition-colors duration-200" @click="handleSessionCreate">
-            <el-icon size="20" class="mr-2 text-gray-600">
+          <div class="create-session-btn cursor-pointer flex items-center justify-start px-4 py-3 text-sm bg-blue-500 hover:bg-blue-600 rounded-lg border border-blue-500 transition-colors duration-200" @click="handleSessionCreate">
+            <el-icon size="20" class="mr-2 text-black">
               <Edit />
             </el-icon>
-            <span class="text-gray-800">New Chat</span>
+            <span class="text-black">New Chat</span>
           </div>
         </div>
 
