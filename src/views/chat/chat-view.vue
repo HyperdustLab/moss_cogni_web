@@ -1336,7 +1336,6 @@ const groupedSessions = computed(() => {
           <!-- 参考截图的LOGO设计 -->
           <div class="logo-container" @click="goHome">
             <img src="/logo2.png" alt="Logo" class="logo-shape" />
-            <span class="logo-text">HYPERAGI</span>
           </div>
         </div>
 
@@ -1620,14 +1619,14 @@ const groupedSessions = computed(() => {
           </div> -->
         </div>
         <!-- <el-divider :border-style="'solid'" border-color="#666666" /> -->
-        <div ref="messageListRef" class="message-list">
+        <div ref="messageListRef" class="message-list" style="background-color: rgb(249, 250, 251)">
           <!-- Transition effect -->
           <transition-group name="list" v-if="activeSession && selectAgent">
             <message-row v-for="message in messageList" :defAgentAvatar="selectAgent.avatar" :avatar="message.avatar" :key="message.id" :message="message"></message-row>
           </transition-group>
         </div>
         <!-- Listen for send event -->
-        <message-input style="width: 70%" @send="preHandleSendMessage" :loading="sendLoading" @search="handleSearchWeb" :functionStatus="selectAgent.functionStatus" v-if="activeSession && selectAgent"></message-input>
+        <message-input style="width: 70%; margin: 0 auto" @send="preHandleSendMessage" :loading="sendLoading" @search="handleSearchWeb" :functionStatus="selectAgent.functionStatus" v-if="activeSession && selectAgent"></message-input>
 
         <Login ref="loginRef" />
 
@@ -1796,8 +1795,8 @@ const groupedSessions = computed(() => {
         }
 
         .logo-shape {
-          width: 24px;
-          height: 24px;
+          width: 10rem;
+          height: 5rem;
           object-fit: contain;
         }
 
@@ -1898,6 +1897,7 @@ const groupedSessions = computed(() => {
     /* Right message history panel */
     .message-panel {
       width: calc(100% - 480px);
+      max-width: 1200px;
       height: 100%;
       display: flex;
       flex-direction: column;
@@ -1910,6 +1910,7 @@ const groupedSessions = computed(() => {
       align-items: center;
       background-color: #ffffff;
       transition: width 0.3s ease;
+      margin: 0 auto;
 
       &.full-width {
         width: 100vw;
@@ -1948,6 +1949,7 @@ const groupedSessions = computed(() => {
         width: 70%;
         flex: 1;
         box-sizing: border-box;
+        margin: 0 auto;
         overflow-y: auto;
         overflow-x: hidden;
         touch-action: pan-y;
