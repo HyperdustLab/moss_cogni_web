@@ -1570,7 +1570,7 @@ const groupedSessions = computed(() => {
                     <span class="text-gray-600 text-xs font-medium group-hover:text-blue-600 transition-colors duration-200">
                       {{ getUserMainIdentifier(loginUser)?.display }}
                     </span>
-                    <span v-if="getUserMainIdentifier(loginUser)?.type === 'wallet'" class="ml-1.5 text-xs text-green-600 font-semibold bg-green-100 px-1.5 py-0.5 rounded-full"> Wallet </span>
+                    <span v-if="getUserMainIdentifier(loginUser)?.type === 'wallet'" class="ml-1.5 text-xs font-semibold px-1.5 py-0.5 rounded-full text-gray-700 font-semibold bg-gray-100"> Wallet </span>
                     <span v-else class="ml-1.5 text-xs text-blue-600 font-semibold bg-blue-100 px-1.5 py-0.5 rounded-full"> Email </span>
                   </div>
                 </div>
@@ -1797,7 +1797,13 @@ const groupedSessions = computed(() => {
         <!-- 输入区域 - 有聊天记录时在底部，没有时居中 -->
         <div class="input-section" :class="{ 'input-section-bottom': showChatList }" v-if="activeSession && selectAgent">
           <!-- 添加 >.dancer 标题 - 只在没有聊天记录时显示 -->
-          <div v-if="!showChatList" class="dancer-title">>.dancer</div>
+          <template v-if="!showChatList">
+            <div class="mb-50">
+              <div class="dancer-title">Embod·i</div>
+              <div class="dancer-title-sub">embodied, use anything</div>
+            </div>
+          </template>
+
           <message-input @send="preHandleSendMessage" :loading="sendLoading" @search="handleSearchWeb" :functionStatus="selectAgent.functionStatus"></message-input>
         </div>
 
@@ -1813,6 +1819,14 @@ const groupedSessions = computed(() => {
   </div>
 </template>
 <style lang="scss" scoped>
+/* Montserrat-Bold 字体定义 */
+@font-face {
+  font-family: 'Montserrat-Bold';
+  src: url('@/assets/font/Montserrat-Bold.ttf') format('truetype');
+  font-weight: bold;
+  font-style: normal;
+}
+
 /* 弹窗动画效果 */
 .dropdown-enter-active {
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -2177,7 +2191,7 @@ const groupedSessions = computed(() => {
         overflow-y: auto;
         overflow-x: hidden;
         touch-action: pan-y;
-        max-width: 57%;
+        max-width: 71.25%;
         scroll-behavior: smooth;
         overscroll-behavior: none;
         -webkit-overscroll-behavior: none;
@@ -2727,20 +2741,26 @@ const groupedSessions = computed(() => {
 
 // >.dancer 标题样式
 .dancer-title {
-  font-size: 24px;
+  font-family: 'Montserrat-Bold', sans-serif;
+  font-size: 48px;
   font-weight: 700;
   color: #1f2937;
-  margin-bottom: 24px;
+  margin-bottom: 8px;
   text-align: center;
-  font-family:
-    'Inter',
-    -apple-system,
-    BlinkMacSystemFont,
-    'Segoe UI',
-    'Roboto',
-    sans-serif;
   letter-spacing: -0.025em;
   line-height: 1.2;
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.dancer-title-sub {
+  font-size: 28px;
+  font-weight: 200;
+  color: black;
+  margin-bottom: 24px;
+  text-align: center;
+  letter-spacing: 0.05em;
+  line-height: 1.4;
+  text-transform: lowercase;
+  opacity: 0.9;
 }
 </style>

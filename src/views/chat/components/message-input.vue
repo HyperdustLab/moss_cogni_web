@@ -81,10 +81,7 @@ const uploadToggleButton = () => {
                   <span>Browser Use</span>
                 </button>
                 <button class="control-btn ai-world-btn ml-20">
-                  <div class="ai-world-icon">
-                    <div class="dot"></div>
-                    <div class="dot"></div>
-                  </div>
+                  <img src="@/assets/image/world1.png" alt="browser" class="w-4 h-4" />
                   <span>AI World</span>
                 </button>
               </div>
@@ -108,7 +105,7 @@ const uploadToggleButton = () => {
   display: flex;
   justify-content: center;
   width: 100%;
-  max-width: 59%;
+  max-width: 73.75%;
 
   .input-wrapper {
     width: 100%;
