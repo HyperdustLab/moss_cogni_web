@@ -2133,7 +2133,7 @@ const groupedSessions = computed(() => {
 
     /* Right message history panel */
     .message-panel {
-      width: calc(100% - 480px);
+      width: 1200px;
       max-width: 1200px;
       height: calc(100vh - 60px); /* 设置高度为视口高度减去顶部导航栏高度 */
       display: flex;
@@ -2151,8 +2151,8 @@ const groupedSessions = computed(() => {
       margin: 0 auto;
 
       &.full-width {
-        width: 100vw;
-        max-width: 100vw;
+        width: 1200px;
+        max-width: 1200px;
       }
 
       .header {
@@ -2191,7 +2191,7 @@ const groupedSessions = computed(() => {
         overflow-y: auto;
         overflow-x: hidden;
         touch-action: pan-y;
-        max-width: 71.25%;
+        max-width: 96%;
         scroll-behavior: smooth;
         overscroll-behavior: none;
         -webkit-overscroll-behavior: none;
