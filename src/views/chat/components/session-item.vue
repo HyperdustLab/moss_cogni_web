@@ -76,7 +76,6 @@ const handleDeleteSession = () => {
   /* 选中状态 */
   &.active {
     background-color: #f3f4f6;
-    border-left: 3px solid #3b82f6;
 
     .name {
       color: #1f2937;

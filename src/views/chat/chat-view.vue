@@ -1497,23 +1497,23 @@ const groupedSessions = computed(() => {
           <div class="sidebar-icons" style="margin-top: 80px">
             <div class="icon-item agent-item" :class="{ selected: showAgentPanel }" @click="toggleAgentPanel">
               <img src="@/assets/agent.png" alt="agent" style="width: 20px; height: 20px" />
-              <span v-if="showContactPanel" class="agent-text">Agent List</span>
+              <span v-if="showContactPanel" class="agent-text"
+                >Agent List
+
+                <span class="ml-10"
+                  >(<span class="text-yellow-500">{{ agentCount.online }}</span
+                  >/<span>{{ agentCount.total }}</span
+                  >)</span
+                >
+              </span>
             </div>
           </div>
         </div>
 
         <!-- Agent List 面板 -->
         <div v-if="showContactPanel && showAgentPanel" class="w-60 border-r border-gray-200 p-4 flex flex-col h-full" style="background-color: #f9fafb">
-          <div class="text-black text-lg mb-4">
-            Agent List<span class="ml-10"
-              >(<span class="text-yellow-500">{{ agentCount.online }}</span
-              >/<span>{{ agentCount.total }}</span
-              >)</span
-            >
-          </div>
-
           <div class="mb-4">
-            <el-input v-model="searchQuery" placeholder="Search agents..." class="w-full" :prefix-icon="Search"></el-input>
+            <el-input v-model="searchQuery" placeholder="Search agents..." class="w-full search-input-no-border" :prefix-icon="Search"></el-input>
           </div>
           <div ref="contactListRef" class="h-[calc(75vh-140px)] overflow-y-auto custom-scrollbar" style="max-height: calc(90% - 180px)">
             <div class="space-y-2">
@@ -1558,7 +1558,7 @@ const groupedSessions = computed(() => {
               </div>
               <!-- 用户详情 -->
               <div class="flex flex-col">
-                <span class="text-gray-800 font-medium text-sm">
+                <span class="text-gray-800 font-medium text-sm hover:text-black transition-colors duration-200">
                   {{ getUserDisplayName(loginUser) }}
                 </span>
                 <!-- 主要标识信息（钱包地址或邮箱）- 美化展示 -->
@@ -1571,7 +1571,7 @@ const groupedSessions = computed(() => {
                       {{ getUserMainIdentifier(loginUser)?.display }}
                     </span>
                     <span v-if="getUserMainIdentifier(loginUser)?.type === 'wallet'" class="ml-1.5 text-xs font-semibold px-1.5 py-0.5 rounded-full text-gray-700 font-semibold bg-gray-100"> Wallet </span>
-                    <span v-else class="ml-1.5 text-xs text-blue-600 font-semibold bg-blue-100 px-1.5 py-0.5 rounded-full"> Email </span>
+                    <span v-else class="ml-1.5 text-xs font-semibold bg-blue-100 px-1.5 py-0.5 rounded-full"> Email </span>
                   </div>
                 </div>
               </div>
@@ -1661,7 +1661,7 @@ const groupedSessions = computed(() => {
       </div>
 
       <!-- Session List 面板 - 独立容器 -->
-      <div v-if="showSessionPanel" class="w-65 border-r mt-[5rem] border-gray-200 flex flex-col h-auto ml-20" style="background-color: rgb(249, 250, 251)">
+      <div v-if="showSessionPanel && showContactPanel" class="w-65 border-r mt-[5rem] border-gray-200 flex flex-col h-auto ml-20" style="background-color: rgb(249, 250, 251)">
         <!-- 创建新会话按钮 -->
         <div class="mb-4 px-4">
           <div class="create-session-btn cursor-pointer flex items-center justify-start px-4 py-3 text-sm bg-blue-500 hover:bg-blue-600 rounded-lg border border-blue-500 transition-colors duration-200" @click="handleSessionCreate">
@@ -2434,6 +2434,25 @@ const groupedSessions = computed(() => {
 
     &::placeholder {
       color: #9ca3af;
+    }
+  }
+}
+
+// 取消搜索输入框的边框
+:deep(.search-input-no-border) {
+  .el-input__wrapper {
+    background-color: transparent !important;
+    box-shadow: none !important;
+    border: none !important;
+
+    &.is-focus {
+      box-shadow: none !important;
+      border: none !important;
+    }
+
+    &:hover {
+      box-shadow: none !important;
+      border: none !important;
     }
   }
 }

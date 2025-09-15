@@ -73,7 +73,7 @@ const uploadToggleButton = () => {
         <div class="input-field">
           <div class="input-content">
             <!-- 可输入的文本框 -->
-            <el-input v-model="message.text" class="message-input-field" @keydown.enter.prevent="sendMessage" @focus="handleFocus" @blur="handleBlur" placeholder="Message Dancer"></el-input>
+            <el-input v-model="message.text" class="message-input-field" @keydown.enter.prevent="sendMessage" @focus="handleFocus" @blur="handleBlur" placeholder="Message Embod·i"></el-input>
             <div class="input-controls">
               <div class="control-buttons">
                 <button class="control-btn browser-btn">
@@ -81,7 +81,7 @@ const uploadToggleButton = () => {
                   <span>Browser Use</span>
                 </button>
                 <button class="control-btn ai-world-btn ml-20">
-                  <img src="@/assets/image/world1.png" alt="browser" class="w-4 h-4" />
+                  <img src="@/assets/image/aipod.png" alt="browser" class="w-4 h-4" />
                   <span>AI World</span>
                 </button>
               </div>
@@ -105,7 +105,7 @@ const uploadToggleButton = () => {
   display: flex;
   justify-content: center;
   width: 100%;
-  max-width: 73.75%;
+  max-width: 100%;
 
   .input-wrapper {
     width: 100%;
