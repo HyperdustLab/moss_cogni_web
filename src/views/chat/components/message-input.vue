@@ -77,11 +77,11 @@ const uploadToggleButton = () => {
             <div class="input-controls">
               <div class="control-buttons">
                 <button class="control-btn browser-btn">
-                  <img :src="worldPng" alt="browser" class="w-4 h-4" />
+                  <img :src="worldPng" alt="browser" class="control-btn-icon" />
                   <span>Browser Use</span>
                 </button>
-                <button class="control-btn ai-world-btn ml-20">
-                  <img src="@/assets/image/aipod.png" alt="browser" class="w-4 h-4" />
+                <button class="control-btn ai-world-btn">
+                  <img src="@/assets/image/aipod.png" alt="aipod" class="control-btn-icon" />
                   <span>AI World</span>
                 </button>
               </div>
@@ -131,8 +131,8 @@ const uploadToggleButton = () => {
     }
 
     &:focus-within {
-      border-color: #3b82f6;
-      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+      border-color: #e5e7eb;
+      box-shadow: none;
     }
   }
 
@@ -233,6 +233,7 @@ const uploadToggleButton = () => {
   .control-btn {
     display: flex;
     align-items: center;
+    justify-content: center;
     gap: 4px;
     padding: 6px 10px;
     background-color: #f3f4f6;
@@ -243,6 +244,10 @@ const uploadToggleButton = () => {
     font-weight: 500;
     cursor: pointer;
     transition: all 0.2s ease;
+    width: 110px;
+    height: 32px;
+    box-sizing: border-box;
+    flex-shrink: 0;
 
     &:hover {
       background-color: #e5e7eb;
@@ -250,6 +255,31 @@ const uploadToggleButton = () => {
 
     .el-icon {
       font-size: 14px;
+    }
+
+    .control-btn-icon {
+      width: 16px;
+      height: 16px;
+      object-fit: contain;
+      flex-shrink: 0;
+      display: block;
+    }
+
+    span {
+      white-space: nowrap;
+      font-size: 13px;
+      font-weight: 500;
+      flex-shrink: 0;
+    }
+  }
+
+  // 确保两个按钮样式完全一致
+  .browser-btn,
+  .ai-world-btn {
+    background-color: #f3f4f6;
+
+    &:hover {
+      background-color: #e5e7eb;
     }
   }
 

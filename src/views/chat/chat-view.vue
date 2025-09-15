@@ -350,6 +350,32 @@ const handleUpgrade = () => {
   goUser() // 使用现有的跳转到dashboard的函数
 }
 
+// 复制到剪贴板
+const copyToClipboard = async (text: string) => {
+  try {
+    await navigator.clipboard.writeText(text)
+    // 可以添加一个简单的提示，比如改变按钮状态
+    return true
+  } catch (err) {
+    console.error('复制失败:', err)
+    return false
+  }
+}
+
+// 处理复制按钮点击
+const handleCopyClick = async (event: MouseEvent, user: any) => {
+  event.stopPropagation()
+  const identifier = getUserMainIdentifier(user)
+  if (identifier?.value) {
+    const success = await copyToClipboard(identifier.value)
+    if (success) {
+      ElMessage.success('Copied successfully!')
+    } else {
+      ElMessage.error('Copy failed, please try again')
+    }
+  }
+}
+
 // 显示邮箱弹窗
 const handleEmailClick = (event: MouseEvent) => {
   event.stopPropagation()
@@ -1570,15 +1596,16 @@ const groupedSessions = computed(() => {
                     <span class="text-gray-600 text-xs font-medium transition-colors duration-200">
                       {{ getUserMainIdentifier(loginUser)?.display }}
                     </span>
-                    <span v-if="getUserMainIdentifier(loginUser)?.type === 'wallet'" class="ml-1.5 text-xs font-semibold px-1.5 py-0.5 rounded-full text-gray-700 font-semibold bg-gray-100"> Wallet </span>
-                    <span v-else class="ml-1.5 text-xs font-semibold px-1.5 py-0.5 rounded-full"> Email </span>
+                    <button @click="handleCopyClick($event, loginUser)" class="ml-1.5 text-xs font-semibold px-1.5 py-0.5 rounded-full text-gray-700 bg-gray-100 hover:bg-gray-200 transition-colors duration-200 cursor-pointer">
+                      <img src="@/assets/image/copy.png" alt="copy" class="w-4 h-4" />
+                    </button>
                   </div>
                 </div>
               </div>
             </div>
 
             <!-- 登录按钮 -->
-            <button v-if="!loginUser" class="login-btn px-3 py-1.5 text-xs text-white bg-blue-600 hover:bg-blue-700 rounded transition-colors duration-200" @click="handleLogin">Login</button>
+            <button v-if="!loginUser" class="login-btn px-3 py-1.5 text-xs text-black" @click="handleLogin">Login</button>
           </div>
         </div>
 
@@ -1602,8 +1629,7 @@ const groupedSessions = computed(() => {
                   <div v-if="getUserMainIdentifier(loginUser)" class="flex items-center">
                     <span class="text-sm mr-2">{{ getUserMainIdentifier(loginUser)?.icon }}</span>
                     <span class="text-gray-600 text-sm truncate">{{ getUserMainIdentifier(loginUser)?.display }}</span>
-                    <span v-if="getUserMainIdentifier(loginUser)?.type === 'wallet'" class="ml-2 text-xs text-gray-700 font-semibold bg-gray-100 px-2 py-0.5 rounded-full"> Wallet </span>
-                    <span v-else class="ml-2 text-xs text-gray-700 font-semibold bg-gray-100 px-2 py-0.5 rounded-full"> Email </span>
+                    <button @click="handleCopyClick($event, loginUser)" class="ml-2 text-xs text-gray-700 font-semibold bg-gray-100 px-2 py-0.5 rounded-full hover:bg-gray-200 transition-colors duration-200 cursor-pointer" title="复制到剪贴板"></button>
                   </div>
                 </div>
               </div>
@@ -2290,24 +2316,28 @@ const groupedSessions = computed(() => {
     cursor: pointer;
     transition: all 0.2s ease;
     color: #6b7280;
-
-    &:hover {
-      background-color: #e5e7eb;
-      color: #374151;
-    }
     z-index: 1001;
-
-    &.menu-btn-collapsed {
-      top: 40px !important;
-      right: -12px !important;
-      justify-content: center;
-    }
 
     &:hover {
       background-color: #f3f4f6;
       border-color: #d1d5db;
       transform: scale(1.05);
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    }
+
+    &.menu-btn-collapsed {
+      top: 40px !important;
+      right: -12px !important;
+      justify-content: center;
+
+      &:hover {
+        background: transparent !important;
+        background-color: transparent !important;
+        border: none !important;
+        border-color: transparent !important;
+        transform: scale(1.05);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+      }
     }
 
     &:active {
@@ -2321,19 +2351,43 @@ const groupedSessions = computed(() => {
     align-items: flex-start;
     padding: 20px 16px;
     gap: 16px;
-    border-bottom: 1px solid #e5e7eb;
-    background-color: #f9fafb;
+
     // margin-top 由 Tailwind/UnoCSS 类控制
 
-    .icon-item {
-      width: 40px;
-      height: 40px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+    // 当侧边栏收起时，移除背景色
+    .contact-panel:not(.w-60) & {
+      background-color: transparent !important;
+    }
+  }
+
+  // 使用 :deep() 穿透 scoped CSS 来覆盖收起状态的背景色
+  :deep(.contact-panel:not(.w-60) .sidebar-icons) {
+    background-color: transparent !important;
+  }
+
+  .icon-item {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    color: #6b7280;
+
+    &:hover {
+      background-color: #e5e7eb;
+      color: #374151;
     }
 
-    .icon-item.agent-item {
+    &.active {
+      background-color: #3b82f6;
+      color: #ffffff;
+      box-shadow: 0 2px 4px rgba(59, 130, 246, 0.2);
+    }
+
+    &.agent-item {
       width: auto;
       padding: 0 12px;
       gap: 8px;
@@ -2343,24 +2397,6 @@ const groupedSessions = computed(() => {
       font-size: 14px;
       color: #374151;
       white-space: nowrap;
-    }
-
-    .icon-item {
-      border-radius: 8px;
-      cursor: pointer;
-      transition: all 0.2s ease;
-      color: #6b7280;
-
-      &:hover {
-        background-color: #e5e7eb;
-        color: #374151;
-      }
-
-      &.active {
-        background-color: #3b82f6;
-        color: #ffffff;
-        box-shadow: 0 2px 4px rgba(59, 130, 246, 0.2);
-      }
     }
   }
 }

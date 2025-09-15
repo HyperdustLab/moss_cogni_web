@@ -8,32 +8,30 @@
             <div class="p-6 sm:p-16 h-full">
               <div class="space-y-4">
                 <div class="flex justify-center">
-                  <img src="../../assets/logo2.png" loading="lazy" class="w-40" alt="tailus logo" />
+                  <img src="/logo2.png" loading="lazy" class="w-40" alt="tailus logo" />
                 </div>
-                <h2 v-if="bindStatus === 'metamask'" class="mb-8 text-2xl font-bold" style="color: #4ceb75">To use the Hyperagi network, you need to use a crypto wallet. Please bind a wallet first.</h2>
-                <h2 v-else class="mb-8 text-2xl font-bold" style="color: #4ceb75">To facilitate logging into the mobile app, please bind an email address first. We recommend using your Google account or other third-party accounts to enhance convenience.</h2>
               </div>
 
               <div class="mt-16 grid space-y-4">
-                <button v-if="bindStatus === 'email'" @click="loginWithGoogle" class="group h-12 px-6 border-2 border-gray-600 rounded-full transition duration-300 hover:border-blue-400 focus:bg-blue-900 active:bg-blue-800">
+                <button v-if="bindStatus === 'email'" @click="loginWithGoogle" class="group h-12 px-6 border-2 border-gray-300 rounded-full transition duration-300 hover:border-blue-500 focus:bg-blue-50 active:bg-blue-100 bg-white shadow-sm hover:shadow-md">
                   <div class="relative flex items-center justify-center">
                     <img :src="googleIcon" class="w-5 mr-2" alt="google logo" />
-                    <span class="block w-max font-semibold tracking-wide text-gray-600 text-sm transition duration-300 group-hover:text-blue-400 sm:text-base">Continue with Google</span>
+                    <span class="block w-max font-semibold tracking-wide text-gray-700 text-sm transition duration-300 group-hover:text-blue-600 sm:text-base">Continue with Google</span>
                   </div>
                 </button>
-                <button v-if="bindStatus === 'metamask'" @click="handleMetamaskLogin" class="group h-12 px-6 border-2 border-gray-600 rounded-full transition duration-300 hover:border-blue-400 focus:bg-blue-900 active:bg-blue-800">
+                <button v-if="bindStatus === 'metamask'" @click="handleMetamaskLogin" class="group h-12 px-6 border-2 border-gray-300 rounded-full transition duration-300 hover:border-blue-500 focus:bg-blue-50 active:bg-blue-100 bg-white shadow-sm hover:shadow-md">
                   <div class="relative flex items-center space-x-4 justify-center">
                     <img :src="metamaskIcon" class="w-5 mr-2" alt="google logo" />
-                    <span class="block w-max font-semibold tracking-wide text-gray-600 text-sm transition duration-300 group-hover:text-blue-400 sm:text-base">Continue with MetaMask</span>
+                    <span class="block w-max font-semibold tracking-wide text-gray-700 text-sm transition duration-300 group-hover:text-blue-600 sm:text-base">Continue with MetaMask</span>
                   </div>
                 </button>
               </div>
 
               <template v-if="bindStatus === 'email'">
                 <div class="flex items-center mb-3">
-                  <hr class="h-0 border-b border-solid border-grey-500 grow" />
-                  <p class="mx-4 text-grey-600">or</p>
-                  <hr class="h-0 border-b border-solid border-grey-500 grow" />
+                  <hr class="h-0 border-b border-solid border-gray-300 grow" />
+                  <p class="mx-4 text-gray-500">or</p>
+                  <hr class="h-0 border-b border-solid border-gray-300 grow" />
                 </div>
 
                 <div class="mt-16 grid space-y-4">
@@ -52,9 +50,9 @@
 
                   <div>
                     <div class="flex justify-center">
-                      <el-button type="primary" @click="updateEmail" class="group h-12 w-50/100 px-12 border-2 border-gray-600 rounded-full transition duration-300 hover:border-blue-400 focus:bg-blue-900 active:bg-blue-800">
+                      <el-button type="primary" @click="updateEmail" class="group h-12 w-50/100 px-12 border-2 rounded-full transition duration-300 shadow-sm hover:shadow-md">
                         <div class="relative flex items-center space-x-4 justify-center">
-                          <span class="block w-max font-semibold tracking-wide text-gray-600 text-sm transition duration-300 group-hover:text-blue-400 sm:text-base">Bind with Email</span>
+                          <span class="block w-max font-semibold tracking-wide text-white text-sm transition duration-300 group-hover:text-white sm:text-base">Bind with Email</span>
                         </div>
                       </el-button>
                     </div>
@@ -64,7 +62,7 @@
 
               <template v-else>
                 <div class="mt-16 grid space-y-4">
-                  <p class="text-gray-600 text-sm">Don't have a MetaMask wallet? <a href="https://chromewebstore.google.com/detail/metamask/nkbihfbeogaeaoehlefnkodbefgpgknn" target="_blank" class="text-blue-400 hover:underline">Get Wallet</a></p>
+                  <p class="text-gray-600 text-sm">Don't have a MetaMask wallet? <a href="https://chromewebstore.google.com/detail/metamask/nkbihfbeogaeaoehlefnkodbefgpgknn" target="_blank" class="text-blue-600 hover:text-blue-700 hover:underline transition duration-300">Get Wallet</a></p>
                 </div>
               </template>
             </div>
