@@ -2177,7 +2177,7 @@ const groupedSessions = computed(() => {
         overflow-y: auto;
         overflow-x: hidden;
         touch-action: pan-y;
-        max-width: 85%;
+        max-width: 57%;
         scroll-behavior: smooth;
         overscroll-behavior: none;
         -webkit-overscroll-behavior: none;

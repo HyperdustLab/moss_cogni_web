@@ -108,7 +108,7 @@ const uploadToggleButton = () => {
   display: flex;
   justify-content: center;
   width: 100%;
-  max-width: 88%;
+  max-width: 59%;
 
   .input-wrapper {
     width: 100%;

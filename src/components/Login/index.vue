@@ -16,13 +16,13 @@
                 </div>
 
                 <div class="mt-11 grid space-y-3">
-                  <button @click="loginWithGoogle" class="group h-10 px-4 border-2 border-gray-600 rounded-full transition duration-300 hover:border-blue-400 focus:bg-blue-900 active:bg-blue-800">
+                  <button @click="loginWithGoogle" class="group h-10 px-4 border-2 border-gray-600 rounded-full transition duration-300 hover:border-blue-400 focus:bg-white active:bg-white">
                     <div class="relative flex items-center justify-center">
                       <img :src="googleIcon" class="w-5 mr-2" alt="google logo" />
                       <span class="block w-max font-semibold tracking-wide text-gray-600 text-sm transition duration-300 group-hover:text-blue-400 sm:text-base">Google</span>
                     </div>
                   </button>
-                  <button @click="handleMetamaskLogin" class="group h-10 px-4 border-2 border-gray-600 rounded-full transition duration-300 hover:border-blue-400 focus:bg-blue-900 active:bg-blue-800">
+                  <button @click="handleMetamaskLogin" class="group h-10 px-4 border-2 border-gray-600 rounded-full transition duration-300 hover:border-blue-400 focus:bg-white active:bg-white">
                     <div class="relative flex items-center justify-center">
                       <img :src="metamaskIcon" class="w-5 mr-2" alt="google logo" />
                       <span class="block w-max font-semibold tracking-wide text-gray-600 text-sm transition duration-300 group-hover:text-blue-400 sm:text-base">MetaMask</span>
@@ -52,7 +52,7 @@
 
                   <div>
                     <div class="flex justify-center">
-                      <el-button type="primary" @click="emailLogin" class="group h-10 w-80/100 px-8 border-2 border-gray-600 rounded-full transition duration-300 hover:border-blue-400 focus:bg-blue-900 active:bg-blue-800" style="background-color: #00ff01; border-color: #00ff01">
+                      <el-button type="primary" @click="emailLogin" class="group h-10 w-80/100 px-8 border-2 border-gray-600 rounded-full transition duration-300 hover:border-blue-400 focus:bg-white active:bg-white" style="background-color: #00ff01; border-color: #00ff01">
                         <div class="relative flex items-center space-x-3 justify-center">
                           <span class="block w-max font-semibold tracking-wide text-black text-sm transition duration-300 group-hover:text-blue-400 sm:text-base">Login with Email</span>
                         </div>
