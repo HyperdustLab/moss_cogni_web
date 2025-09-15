@@ -342,6 +342,7 @@ const embeddingLoading = ref(false)
 const showAgentPanel = ref(true) // 控制agent面板显示/隐藏
 const showSessionPanel = ref(false) // 控制session面板显示/隐藏
 const isSidebarCollapsed = ref(false) // 控制整个左边区域（侧边栏）的折叠状态
+const showChatList = ref(false) // 控制聊天列表显示/隐藏
 
 // 控制agent面板显示/隐藏
 function toggleAgentPanel() {
@@ -517,6 +518,9 @@ const preHandleSendMessage = async (message: { text: string; image: string }) =>
   inputText.value = message.text
 
   inputTextReplyStatus.value = false
+
+  // 发送消息时显示聊天列表
+  showChatList.value = true
 
   isOnline.value = await getCurrAgentOnlineStatus()
 
@@ -1411,7 +1415,7 @@ const groupedSessions = computed(() => {
         <div class="contact-panel-content relative">
           <!-- 菜单按钮 - 相对于contact-panel-content区域靠右 -->
           <div class="menu-toggle-btn" :class="{ 'menu-btn-collapsed': isSidebarCollapsed }" @click="toggleSidebar">
-            <img src="/src/assets/image/menu.png" alt="menu" class="w-full h-full" />
+            <img src="@/assets/image/menu.png" alt="agent" style="width: 20px; height: 20px" />
           </div>
           <!-- 参考截图的侧边栏设计 - 始终显示图标 -->
           <div class="sidebar-icons" style="margin-top: 80px">
@@ -1619,14 +1623,21 @@ const groupedSessions = computed(() => {
           </div> -->
         </div>
         <!-- <el-divider :border-style="'solid'" border-color="#666666" /> -->
-        <div ref="messageListRef" class="message-list" style="background-color: rgb(249, 250, 251)">
+        <div ref="messageListRef" class="message-list" style="background-color: rgb(249, 250, 251)" v-show="showChatList">
           <!-- Transition effect -->
           <transition-group name="list" v-if="activeSession && selectAgent">
             <message-row v-for="message in messageList" :defAgentAvatar="selectAgent.avatar" :avatar="message.avatar" :key="message.id" :message="message"></message-row>
           </transition-group>
         </div>
-        <!-- Listen for send event -->
-        <message-input style="width: 70%; margin: 0 auto" @send="preHandleSendMessage" :loading="sendLoading" @search="handleSearchWeb" :functionStatus="selectAgent.functionStatus" v-if="activeSession && selectAgent"></message-input>
+
+        <!-- 输入区域 - 有聊天记录时在底部，没有时居中 -->
+        <div class="input-section" :class="{ 'input-section-bottom': showChatList }" v-if="activeSession && selectAgent">
+          <!-- 添加 >.dancer 标题 - 只在没有聊天记录时显示 -->
+          <div v-if="!showChatList" class="dancer-title">>.dancer</div>
+          <message-input @send="preHandleSendMessage" :loading="sendLoading" @search="handleSearchWeb" :functionStatus="selectAgent.functionStatus"></message-input>
+        </div>
+
+        <div class="disclaimer-text">Dancer can make mistakes. &nbsp;Please monitor its work.</div>
 
         <Login ref="loginRef" />
 
@@ -1683,6 +1694,19 @@ const groupedSessions = computed(() => {
 
 .table-wrapper {
   margin-bottom: 20px;
+}
+
+.disclaimer-text {
+  text-align: center;
+  margin-top: 12px;
+  color: #6b7280;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1.4;
+  opacity: 0.8;
+  white-space: normal;
+  word-break: break-word;
+  display: block;
 }
 
 .pager-wrapper {
@@ -1898,7 +1922,7 @@ const groupedSessions = computed(() => {
     .message-panel {
       width: calc(100% - 480px);
       max-width: 1200px;
-      height: 100%;
+      height: calc(100vh - 60px); /* 设置高度为视口高度减去顶部导航栏高度 */
       display: flex;
       flex-direction: column;
       overflow: hidden;
@@ -1908,6 +1932,7 @@ const groupedSessions = computed(() => {
       overscroll-behavior: none;
       -webkit-overscroll-behavior: none;
       align-items: center;
+      justify-content: center; /* 添加垂直居中 */
       background-color: #ffffff;
       transition: width 0.3s ease;
       margin: 0 auto;
@@ -1946,18 +1971,19 @@ const groupedSessions = computed(() => {
       .message-list {
         padding: 20px;
         padding-bottom: 120px;
-        width: 70%;
+        width: 100%;
         flex: 1;
         box-sizing: border-box;
         margin: 0 auto;
         overflow-y: auto;
         overflow-x: hidden;
         touch-action: pan-y;
-        max-width: 70vw;
+        max-width: 85%;
         scroll-behavior: smooth;
         overscroll-behavior: none;
         -webkit-overscroll-behavior: none;
         background-color: #ffffff;
+        position: relative;
       }
     }
 
@@ -2041,19 +2067,26 @@ const groupedSessions = computed(() => {
   .menu-toggle-btn {
     position: absolute !important;
     top: 20px !important;
-    right: 16px !important;
-    width: 30px;
-    height: 30px;
+    right: 0px !important;
+    width: 40px;
+    height: 40px;
     display: flex;
     align-items: center;
-    justify-content: center;
+    justify-content: flex-end;
     border-radius: 8px;
     cursor: pointer;
-    transition: all 0.3s ease;
-    background-color: #ffffff;
-    border: 1px solid #e5e7eb;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    transition: all 0.2s ease;
+    color: #6b7280;
+
+    &:hover {
+      background-color: #e5e7eb;
+      color: #374151;
+    }
     z-index: 1001;
+
+    &.menu-btn-collapsed {
+      justify-content: center;
+    }
 
     &:hover {
       background-color: #f3f4f6;
@@ -2462,5 +2495,51 @@ const groupedSessions = computed(() => {
   background-color: #ffffff;
   padding: 15px;
   z-index: 10;
+}
+
+// 输入区域样式
+.input-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 20px;
+  background-color: #ffffff;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 10;
+
+  // 当有聊天记录时，输入框显示在底部
+  &.input-section-bottom {
+    position: relative;
+    top: auto;
+    left: auto;
+    transform: none;
+    margin-top: auto;
+    padding-top: 20px;
+    padding-bottom: 20px;
+  }
+}
+
+// >.dancer 标题样式
+.dancer-title {
+  font-size: 24px;
+  font-weight: 700;
+  color: #1f2937;
+  margin-bottom: 24px;
+  text-align: center;
+  font-family:
+    'Inter',
+    -apple-system,
+    BlinkMacSystemFont,
+    'Segoe UI',
+    'Roboto',
+    sans-serif;
+  letter-spacing: -0.025em;
+  line-height: 1.2;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 </style>

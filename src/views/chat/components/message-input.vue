@@ -3,6 +3,9 @@ import { ref, reactive } from 'vue'
 import { Position, ArrowDown } from '@element-plus/icons-vue'
 import ImageUpload from '@/components/image/image-upload.vue'
 import { ElMessage } from 'element-plus'
+
+import worldPng from '@/assets/image/world.png'
+
 type Message = {
   text: string
   image: string
@@ -72,28 +75,24 @@ const uploadToggleButton = () => {
             <!-- 可输入的文本框 -->
             <el-input v-model="message.text" class="message-input-field" @keydown.enter.prevent="sendMessage" @focus="handleFocus" @blur="handleBlur" placeholder="Message Dancer"></el-input>
             <div class="input-controls">
-              <div class="agent-dropdown">
-                <span class="dropdown-label">Agent</span>
-                <el-icon class="dropdown-icon"><ArrowDown /></el-icon>
-              </div>
               <div class="control-buttons">
                 <button class="control-btn browser-btn">
-                  <el-icon><Position /></el-icon>
+                  <img :src="worldPng" alt="browser" class="w-4 h-4" />
                   <span>Browser Use</span>
                 </button>
-                <button class="control-btn ai-world-btn">
+                <button class="control-btn ai-world-btn ml-20">
                   <div class="ai-world-icon">
                     <div class="dot"></div>
                     <div class="dot"></div>
                   </div>
                   <span>AI World</span>
                 </button>
-                <button class="send-btn" @click="sendMessage" :disabled="props.loading">
-                  <el-icon v-if="!props.loading"><Position /></el-icon>
-                  <span v-if="props.loading">Sending...</span>
-                  <span v-else>Send</span>
-                </button>
               </div>
+              <button class="send-btn" @click="sendMessage" :disabled="props.loading">
+                <el-icon v-if="!props.loading" class="send-icon">↑</el-icon>
+                <span v-if="props.loading">Sending...</span>
+                <span v-else>Send</span>
+              </button>
             </div>
           </div>
         </div>
@@ -104,13 +103,15 @@ const uploadToggleButton = () => {
 
 <style lang="scss" scoped>
 .message-input {
-  padding: 20px;
-  background-color: #ffffff;
+  padding: 0;
+  background-color: transparent;
   display: flex;
   justify-content: center;
+  width: 100%;
+  max-width: 88%;
 
   .input-wrapper {
-    width: 70%;
+    width: 100%;
   }
 
   .input-container {
@@ -237,8 +238,8 @@ const uploadToggleButton = () => {
     align-items: center;
     gap: 4px;
     padding: 6px 10px;
-    background-color: #ffffff;
-    border: 1px solid #d1d5db;
+    background-color: #f3f4f6;
+    border: none;
     border-radius: 6px;
     color: #374151;
     font-size: 13px;
@@ -247,8 +248,7 @@ const uploadToggleButton = () => {
     transition: all 0.2s ease;
 
     &:hover {
-      background-color: #f9fafb;
-      border-color: #9ca3af;
+      background-color: #e5e7eb;
     }
 
     .el-icon {
@@ -273,18 +273,17 @@ const uploadToggleButton = () => {
     align-items: center;
     gap: 4px;
     padding: 6px 12px;
-    background-color: #3b82f6;
-    border: 1px solid #3b82f6;
+    background-color: transparent;
+    border: none;
     border-radius: 6px;
-    color: #ffffff;
+    color: #374151;
     font-size: 13px;
     font-weight: 500;
     cursor: pointer;
     transition: all 0.2s ease;
 
     &:hover:not(:disabled) {
-      background-color: #2563eb;
-      border-color: #2563eb;
+      background-color: #f3f4f6;
     }
 
     &:disabled {
@@ -292,8 +291,9 @@ const uploadToggleButton = () => {
       cursor: not-allowed;
     }
 
-    .el-icon {
+    .send-icon {
       font-size: 14px;
+      font-weight: bold;
     }
   }
 
@@ -334,6 +334,19 @@ const uploadToggleButton = () => {
       padding: 6px 12px;
       font-size: 13px;
     }
+  }
+
+  .disclaimer-text {
+    text-align: center;
+    margin-top: 12px;
+    color: #6b7280;
+    font-size: 12px;
+    font-weight: 400;
+    line-height: 1.4;
+    opacity: 0.8;
+    white-space: normal;
+    word-break: break-word;
+    display: block;
   }
 }
 
