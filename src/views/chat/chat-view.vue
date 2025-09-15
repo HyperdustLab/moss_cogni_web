@@ -1567,11 +1567,11 @@ const groupedSessions = computed(() => {
                     <span class="text-xs mr-1.5 group-hover:scale-110 transition-transform duration-200">
                       {{ getUserMainIdentifier(loginUser)?.icon }}
                     </span>
-                    <span class="text-gray-600 text-xs font-medium group-hover:text-blue-600 transition-colors duration-200">
+                    <span class="text-gray-600 text-xs font-medium transition-colors duration-200">
                       {{ getUserMainIdentifier(loginUser)?.display }}
                     </span>
                     <span v-if="getUserMainIdentifier(loginUser)?.type === 'wallet'" class="ml-1.5 text-xs font-semibold px-1.5 py-0.5 rounded-full text-gray-700 font-semibold bg-gray-100"> Wallet </span>
-                    <span v-else class="ml-1.5 text-xs font-semibold bg-blue-100 px-1.5 py-0.5 rounded-full"> Email </span>
+                    <span v-else class="ml-1.5 text-xs font-semibold px-1.5 py-0.5 rounded-full"> Email </span>
                   </div>
                 </div>
               </div>
