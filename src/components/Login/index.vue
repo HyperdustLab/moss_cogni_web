@@ -44,13 +44,13 @@
                     <el-form-item label="Verification Code" prop="code">
                       <el-input v-model="form.code" size="large">
                         <template #append>
-                          <el-button :disabled="sendCodeDisabled" :loading="loading" @click="sendCode" class="bg-black text-white border-black hover:bg-gray-800">{{ sendCodeTxt }}</el-button>
+                          <el-button :disabled="sendCodeDisabled" :loading="loading" @click="sendCode" class="bg-black text-white border-black hover:bg-black focus:bg-black active:bg-black disabled:bg-black disabled:text-white">{{ sendCodeTxt }}</el-button>
                         </template>
                       </el-input>
                     </el-form-item>
                   </el-form>
 
-                  <el-button type="primary" @click="emailLogin" class="group h-12 w-1/2 mx-auto px-12 border-2 border-black rounded-full transition duration-300 shadow-sm hover:shadow-md bg-black hover:bg-black">
+                  <el-button type="primary" @click="emailLogin" class="group h-12 w-1/2 mx-auto px-12 border-2 border-black rounded-full transition duration-300 shadow-sm hover:shadow-md bg-black hover:bg-black focus:bg-black active:bg-black">
                     <div class="relative flex items-center justify-center">
                       <span class="block font-semibold tracking-wide text-white text-sm transition duration-300 group-hover:text-white sm:text-base">Login with Email</span>
                     </div>
@@ -330,5 +330,33 @@ function handleMessage(event: any) {
 /* 取消所有Element Plus按钮的默认样式 */
 ::v-deep .el-button {
   border-color: black !important;
+  background-color: black !important;
+  color: white !important;
+}
+
+::v-deep .el-button:hover {
+  background-color: black !important;
+  color: white !important;
+}
+
+::v-deep .el-button:focus {
+  background-color: black !important;
+  color: white !important;
+}
+
+::v-deep .el-button:active {
+  background-color: black !important;
+  color: white !important;
+}
+
+::v-deep .el-button.is-focus {
+  background-color: black !important;
+  color: white !important;
+}
+
+::v-deep .el-button.is-disabled {
+  background-color: black !important;
+  color: white !important;
+  opacity: 0.6;
 }
 </style>

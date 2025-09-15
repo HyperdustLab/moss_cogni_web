@@ -13,13 +13,13 @@
               </div>
 
               <div class="mt-16 grid space-y-4">
-                <button v-if="bindStatus === 'email'" @click="loginWithGoogle" class="group h-12 w-1/2 mx-auto px-6 border-2 border-black rounded-full transition duration-300 hover:border-black focus:bg-black active:bg-black bg-black shadow-sm hover:shadow-md">
+                <button v-if="bindStatus === 'email'" @click="loginWithGoogle" class="group h-12 w-1/2 mx-auto px-6 border-2 border-black rounded-full transition duration-300 hover:border-black hover:bg-black focus:bg-black active:bg-black bg-black shadow-sm hover:shadow-md">
                   <div class="relative flex items-center justify-center">
                     <img :src="googleIcon" class="w-5 mr-2" alt="google logo" />
                     <span class="block w-max font-semibold tracking-wide text-white text-sm transition duration-300 group-hover:text-white sm:text-base">Continue with Google</span>
                   </div>
                 </button>
-                <button v-if="bindStatus === 'metamask'" @click="handleMetamaskLogin" class="group h-12 w-1/2 mx-auto px-6 border-2 border-black rounded-full transition duration-300 hover:border-black focus:bg-black active:bg-black bg-black shadow-sm hover:shadow-md">
+                <button v-if="bindStatus === 'metamask'" @click="handleMetamaskLogin" class="group h-12 w-1/2 mx-auto px-6 border-2 border-black rounded-full transition duration-300 hover:border-black hover:bg-black focus:bg-black active:bg-black bg-black shadow-sm hover:shadow-md">
                   <div class="relative flex items-center space-x-4 justify-center">
                     <img :src="metamaskIcon" class="w-5 mr-2" alt="google logo" />
                     <span class="block w-max font-semibold tracking-wide text-white text-sm transition duration-300 group-hover:text-white sm:text-base">Continue with MetaMask</span>
@@ -42,13 +42,13 @@
                     <el-form-item label="Verification Code" prop="code">
                       <el-input v-model="form.code">
                         <template #append>
-                          <el-button :disabled="sendCodeDisabled" :loading="loading" @click="sendCode" class="bg-black text-white border-black hover:bg-gray-800">{{ sendCodeTxt }}</el-button>
+                          <el-button :disabled="sendCodeDisabled" :loading="loading" @click="sendCode" class="bg-black text-white border-black hover:bg-black focus:bg-black active:bg-black disabled:bg-black disabled:text-white">{{ sendCodeTxt }}</el-button>
                         </template>
                       </el-input>
                     </el-form-item>
                   </el-form>
 
-                  <el-button type="primary" @click="updateEmail" class="group h-12 w-1/2 mx-auto px-12 border-2 border-black rounded-full transition duration-300 shadow-sm hover:shadow-md bg-black hover:bg-black">
+                  <el-button type="primary" @click="updateEmail" class="group h-12 w-1/2 mx-auto px-12 border-2 border-black rounded-full transition duration-300 shadow-sm hover:shadow-md bg-black hover:bg-black focus:bg-black active:bg-black">
                     <div class="relative flex items-center space-x-4 justify-center">
                       <span class="block w-max font-semibold tracking-wide text-white text-sm transition duration-300 group-hover:text-white sm:text-base">Bind with Email</span>
                     </div>
@@ -322,5 +322,33 @@ function handleMessage(event: any) {
 /* 取消所有Element Plus按钮的默认样式 */
 ::v-deep .el-button {
   border-color: black !important;
+  background-color: black !important;
+  color: white !important;
+}
+
+::v-deep .el-button:hover {
+  background-color: black !important;
+  color: white !important;
+}
+
+::v-deep .el-button:focus {
+  background-color: black !important;
+  color: white !important;
+}
+
+::v-deep .el-button:active {
+  background-color: black !important;
+  color: white !important;
+}
+
+::v-deep .el-button.is-focus {
+  background-color: black !important;
+  color: white !important;
+}
+
+::v-deep .el-button.is-disabled {
+  background-color: black !important;
+  color: white !important;
+  opacity: 0.6;
 }
 </style>
