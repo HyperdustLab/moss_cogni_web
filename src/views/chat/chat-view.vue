@@ -275,23 +275,50 @@ const getUserInitials = (user: any) => {
 const getUserDisplayName = (user: any) => {
   if (!user) return '未登录用户'
 
-  // 如果没有用户名，显示邮箱
-  if (user.email) {
-    return user.email
-  }
-
   // 优先显示用户名
   if (user.username) {
     return user.username
   }
 
-  // 如果都没有，显示钱包地址的简化版本
+  // 优先显示钱包地址的简化版本
   if (user.walletAddress) {
     const address = user.walletAddress
     return `${address.slice(0, 6)}...${address.slice(-4)}`
   }
 
+  // 如果没有钱包地址，显示邮箱
+  if (user.email) {
+    return user.email
+  }
+
   return '未知用户'
+}
+
+// 获取用户主要标识信息（钱包地址或邮箱）
+const getUserMainIdentifier = (user: any) => {
+  if (!user) return null
+
+  // 优先返回钱包地址
+  if (user.walletAddress) {
+    return {
+      type: 'wallet',
+      value: user.walletAddress,
+      display: `${user.walletAddress.slice(0, 6)}...${user.walletAddress.slice(-4)}`,
+      icon: '🔗',
+    }
+  }
+
+  // 如果没有钱包地址，返回邮箱
+  if (user.email) {
+    return {
+      type: 'email',
+      value: user.email,
+      display: user.email,
+      icon: '📧',
+    }
+  }
+
+  return null
 }
 
 const getUserLevel = (user: any) => {
@@ -1536,10 +1563,19 @@ const groupedSessions = computed(() => {
                 <span class="text-gray-800 font-medium text-sm">
                   {{ getUserDisplayName(loginUser) }}
                 </span>
-                <!-- 邮箱信息 - 可点击 -->
-                <span v-if="loginUser?.email" class="email-clickable text-gray-500 text-xs cursor-pointer hover:text-blue-600 transition-colors" @click="handleEmailClick">
-                  {{ loginUser.email }}
-                </span>
+                <!-- 主要标识信息（钱包地址或邮箱）- 美化展示 -->
+                <div v-if="getUserMainIdentifier(loginUser)" class="flex items-center mt-1">
+                  <div class="flex items-center px-2 py-1 bg-gray-100 rounded-lg hover:bg-gray-200 transition-all duration-200 cursor-pointer group" @click="handleEmailClick">
+                    <span class="text-xs mr-1.5 group-hover:scale-110 transition-transform duration-200">
+                      {{ getUserMainIdentifier(loginUser)?.icon }}
+                    </span>
+                    <span class="text-gray-600 text-xs font-medium group-hover:text-blue-600 transition-colors duration-200">
+                      {{ getUserMainIdentifier(loginUser)?.display }}
+                    </span>
+                    <span v-if="getUserMainIdentifier(loginUser)?.type === 'wallet'" class="ml-1.5 text-xs text-green-600 font-semibold bg-green-100 px-1.5 py-0.5 rounded-full"> Wallet </span>
+                    <span v-else class="ml-1.5 text-xs text-blue-600 font-semibold bg-blue-100 px-1.5 py-0.5 rounded-full"> Email </span>
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -1564,7 +1600,13 @@ const groupedSessions = computed(() => {
                 </div>
                 <div class="flex flex-col flex-1 min-w-0 space-y-1">
                   <span class="text-gray-800 font-semibold text-base truncate">{{ getUserDisplayName(loginUser) }}</span>
-                  <span class="text-gray-600 text-sm truncate">{{ loginUser?.email }}</span>
+                  <!-- 美化后的主要标识信息展示 -->
+                  <div v-if="getUserMainIdentifier(loginUser)" class="flex items-center">
+                    <span class="text-sm mr-2">{{ getUserMainIdentifier(loginUser)?.icon }}</span>
+                    <span class="text-gray-600 text-sm truncate">{{ getUserMainIdentifier(loginUser)?.display }}</span>
+                    <span v-if="getUserMainIdentifier(loginUser)?.type === 'wallet'" class="ml-2 text-xs text-green-600 font-semibold bg-green-100 px-2 py-0.5 rounded-full"> Wallet </span>
+                    <span v-else class="ml-2 text-xs text-blue-600 font-semibold bg-blue-100 px-2 py-0.5 rounded-full"> Email </span>
+                  </div>
                 </div>
               </div>
             </div>
