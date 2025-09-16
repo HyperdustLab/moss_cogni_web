@@ -85,7 +85,7 @@ const uploadToggleButton = () => {
                   <span>AI World</span>
                 </button>
               </div>
-              <button class="send-btn" @click="sendMessage" :disabled="props.loading">
+              <button class="send-btn" @click="sendMessage" :disabled="props.loading || !message.text.trim()">
                 <el-icon v-if="!props.loading" class="send-icon">↑</el-icon>
                 <span v-if="props.loading">Sending...</span>
                 <span v-else>Send</span>
@@ -300,22 +300,24 @@ const uploadToggleButton = () => {
     align-items: center;
     gap: 4px;
     padding: 6px 12px;
-    background-color: transparent;
+    background-color: #000000;
     border: none;
     border-radius: 6px;
-    color: #374151;
+    color: #ffffff;
     font-size: 13px;
     font-weight: 500;
     cursor: pointer;
     transition: all 0.2s ease;
 
     &:hover:not(:disabled) {
-      background-color: #f3f4f6;
+      background-color: #333333;
     }
 
     &:disabled {
-      opacity: 0.6;
+      opacity: 0.4;
       cursor: not-allowed;
+      background-color: #9ca3af;
+      color: #ffffff;
     }
 
     .send-icon {

@@ -1833,7 +1833,7 @@ const groupedSessions = computed(() => {
           <message-input @send="preHandleSendMessage" :loading="sendLoading" @search="handleSearchWeb" :functionStatus="selectAgent.functionStatus"></message-input>
         </div>
 
-        <div class="disclaimer-text">Dancer can make mistakes. &nbsp;Please monitor its work.</div>
+        <div class="disclaimer-text">Embod·i can make mistakes. Please monitor its work.</div>
 
         <Login ref="loginRef" />
 
@@ -1946,6 +1946,7 @@ const groupedSessions = computed(() => {
   white-space: normal;
   word-break: break-word;
   display: block;
+  margin-bottom: 100px;
 }
 
 .pager-wrapper {
