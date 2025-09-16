@@ -1199,10 +1199,7 @@ async function handleDeleteSession(sessionId: string) {
       confirmButtonText: 'Confirm',
       cancelButtonText: 'Cancel',
       type: 'warning',
-      customClass: 'dark-message-box',
       buttonSize: 'default',
-      confirmButtonClass: 'dark-confirm-button',
-      cancelButtonClass: 'dark-cancel-button',
       draggable: true,
       center: true,
       roundButton: true,
@@ -1223,7 +1220,6 @@ async function handleDeleteSession(sessionId: string) {
       ElMessage({
         type: 'success',
         message: 'Deleted successfully',
-        customClass: 'dark-message',
       })
 
       getSessionList()
@@ -1348,10 +1344,7 @@ async function unbindX() {
       confirmButtonText: 'Confirm',
       cancelButtonText: 'Cancel',
       type: 'warning',
-      customClass: 'dark-message-box',
       buttonSize: 'default',
-      confirmButtonClass: 'dark-confirm-button',
-      cancelButtonClass: 'dark-cancel-button',
       draggable: true,
       center: true,
       roundButton: true,
@@ -1689,8 +1682,8 @@ const groupedSessions = computed(() => {
       <!-- Session List 面板 - 独立容器 -->
       <div v-if="showSessionPanel && showContactPanel" class="w-65 border-r mt-[5rem] border-gray-200 flex flex-col h-auto ml-20" style="background-color: rgb(249, 250, 251)">
         <!-- 创建新会话按钮 -->
-        <div class="mb-4 px-4">
-          <div class="create-session-btn cursor-pointer flex items-center justify-start px-4 py-3 text-sm bg-blue-500 hover:bg-blue-600 rounded-lg border border-blue-500 transition-colors duration-200" @click="handleSessionCreate">
+        <div class="mb-4 px-4 mt-10">
+          <div class="create-session-btn cursor-pointer flex items-center justify-start px-4 py-3 text-sm bg-blue-500 hover:bg-blue-600 rounded-lg transition-colors duration-200" @click="handleSessionCreate" style="background-color: rgb(249, 250, 251)">
             <el-icon size="20" class="mr-2 text-black">
               <Edit />
             </el-icon>
@@ -1699,7 +1692,7 @@ const groupedSessions = computed(() => {
         </div>
 
         <!-- 会话列表 -->
-        <div class="h-[calc(75vh-140px)] overflow-y-auto custom-scrollbar px-4" style="max-height: calc(90% - 180px)">
+        <div class="h-[calc(75vh-140px)] overflow-y-auto custom-scrollbar px-4 mt-10" style="max-height: calc(90% - 180px)">
           <div class="space-y-4">
             <!-- 按时间分组显示sessions -->
             <div v-for="group in groupedSessions" :key="group.label" class="session-group">
@@ -2717,7 +2710,6 @@ const groupedSessions = computed(() => {
 .create-session-btn {
   margin: 0;
   transition: all 0.2s ease;
-  border: 1px solid #d1d5db;
   background-color: #ffffff;
 
   img {

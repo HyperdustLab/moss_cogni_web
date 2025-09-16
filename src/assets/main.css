@@ -39,75 +39,23 @@ a,
 }
 
 .el-button--primary {
-  --el-button-bg-color: #39b357c4;
-  --el-button-border-color: #39b357c4;
-  --el-button-outline-color: #39b357c4;
-  --el-button-active-color: #39b357c4;
-  --el-button-hover-bg-color: #39b357c4;
-  --el-button-hover-border-color: #39b357c4;
-  --el-button-active-bg-color: #39b357c4;
-  --el-button-active-border-color: #39b357c4;
-  --el-button-disabled-bg-color: #39b357c4;
-  --el-button-disabled-border-color: #39b357c4;
+  --el-button-bg-color: #000000;
+  --el-button-border-color: #000000;
+  --el-button-outline-color: #000000;
+  --el-button-active-color: #000000;
+  --el-button-hover-bg-color: #000000;
+  --el-button-hover-border-color: #000000;
+  --el-button-active-bg-color: #000000;
+  --el-button-active-border-color: #000000;
+  --el-button-disabled-bg-color: #000000;
+  --el-button-disabled-border-color: #000000;
+  color: #ffffff;
 }
 
 .el-link.el-link--primary {
-  --el-link-text-color: #11ee49;
+  --el-link-text-color: vba;
   --el-link-hover-text-color: #39b357c4;
   --el-link-disabled-text-color: #147a2cc4;
-}
-
-html.dark {
-  color-scheme: dark;
-  --el-color-primary: #4ceb75;
-  --el-color-primary-light-3: #4ceb75s;
-  --el-color-primary-light-5: #2a598a;
-  --el-color-primary-light-7: #4ceb75;
-  --el-color-primary-light-8: #1d3043;
-  --el-color-primary-light-9: #18222c;
-  --el-color-primary-dark-2: #4ceb75;
-  --el-color-success: #67c23a;
-  --el-color-success-light-3: #4e8e2f;
-  --el-color-success-light-5: #3e6b27;
-  --el-color-success-light-7: #2d481f;
-  --el-color-success-light-8: #25371c;
-  --el-color-success-light-9: #1c2518;
-  --el-color-success-dark-2: #85ce61;
-  --el-color-warning: #e6a23c;
-  --el-color-warning-light-3: #a77730;
-  --el-color-warning-light-5: #7d5b28;
-  --el-color-warning-light-7: #533f20;
-  --el-color-warning-light-8: #3e301c;
-  --el-color-warning-light-9: #292218;
-  --el-color-warning-dark-2: #ebb563;
-  --el-color-danger: #f56c6c;
-  --el-color-danger-light-3: #b25252;
-  --el-color-danger-light-5: #854040;
-  --el-color-danger-light-7: #582e2e;
-  --el-color-danger-light-8: #412626;
-  --el-color-danger-light-9: #2b1d1d;
-  --el-color-danger-dark-2: #f78989;
-  --el-color-error: #f56c6c;
-  --el-color-error-light-3: #b25252;
-  --el-color-error-light-5: #854040;
-  --el-color-error-light-7: #582e2e;
-  --el-color-error-light-8: #412626;
-  --el-color-error-light-9: #2b1d1d;
-  --el-color-error-dark-2: #f78989;
-  --el-color-info: #909399;
-  --el-color-info-light-3: #6b6d71;
-  --el-color-info-light-5: #525457;
-  --el-color-info-light-7: #393a3c;
-  --el-color-info-light-8: #2d2d2f;
-  --el-color-info-light-9: #202121;
-  --el-color-info-dark-2: #a6a9ad;
-  --el-box-shadow: 0px 12px 32px 4px rgba(0, 0, 0, 0.36), 0px 8px 20px rgba(0, 0, 0, 0.72);
-  --el-box-shadow-light: 0px 0px 12px rgba(0, 0, 0, 0.72);
-  --el-box-shadow-lighter: 0px 0px 6px rgba(0, 0, 0, 0.72);
-  --el-box-shadow-dark: 0px 16px 48px 16px rgba(0, 0, 0, 0.72), 0px 12px 32px #000000, 0px 8px 16px -8px #000000;
-  --el-bg-color-page: #f5f5f5;
-  --el-bg-color: #ffffff;
-  --el-bg-color-overlay: #ffffff;
 }
 
 .el-drawer {

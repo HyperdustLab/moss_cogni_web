@@ -87,7 +87,7 @@ const uploadToggleButton = () => {
               </div>
               <button class="send-btn" @click="sendMessage" :disabled="props.loading || !message.text.trim()">
                 <el-icon v-if="!props.loading" class="send-icon">↑</el-icon>
-                <span v-if="props.loading">Sending...</span>
+                <span v-if="props.loading">Stop</span>
                 <span v-else>Send</span>
               </button>
             </div>
