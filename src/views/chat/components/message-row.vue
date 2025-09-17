@@ -19,6 +19,7 @@ const userAvatar = 'https://s3.hyperdust.io/upload/20250411/67f8cbcbe4b0bc355fbb
 const agentAvatar = 'https://s3.hyperdust.io/upload/20250416/67ff421d5bce8066f1e25655.jpg'
 
 const isUser = computed(() => props.message.type === 'USER')
+const isError = computed(() => props.message.type === 'ERROR' || props.message.isError)
 
 const avatar = computed(() => {
   return isUser.value ? userAvatar : props.defAgentAvatar || agentAvatar
@@ -63,14 +64,14 @@ const handleDownload = async (imageUrl: string) => {
 </script>
 
 <template>
-  <div class="message-row" :class="{ 'message-row-user': isUser }">
+  <div class="message-row" :class="{ 'message-row-user': isUser, 'message-row-error': isError }">
     <div class="avatar">
       <el-avatar :size="40" :src="message.avatar || avatar" />
     </div>
-    <div class="message-content">
+    <div class="message-content" :class="{ 'error-content': isError }">
       <ThoughtChain v-if="message.thinkingList && message.thinkingList.length > 0" :items="message.thinkingList" />
 
-      <div class="message-text mt-5" v-html="message.textContent"></div>
+      <div class="message-text mt-5" :class="{ 'error-text': isError }" v-html="isError ? `<span style='color: #dc2626; font-weight: 500; white-space: pre-line;'>${message.textContent}</span>` : message.textContent"></div>
 
       <div class="image-container" v-if="images && images.length > 0">
         <div v-for="(image, index) in images" :key="index" class="image-wrapper">
@@ -121,6 +122,24 @@ const handleDownload = async (imageUrl: string) => {
     border-radius: 8px;
     color: black;
     word-break: break-word;
+
+    &.error-content {
+      background-color: #fef2f2;
+      border: 1px solid #fecaca;
+      color: #dc2626;
+    }
+  }
+
+  .message-text {
+    &.error-text {
+      color: #dc2626 !important;
+      font-weight: 500 !important;
+
+      // 确保所有子元素也使用红色
+      * {
+        color: #dc2626 !important;
+      }
+    }
   }
 }
 

@@ -93,6 +93,7 @@ const responseMessage = ref<AiMessage>({
   medias: [],
   textContent: '',
   sessionId: '',
+  thinkingList: [],
 })
 
 const chatMessage = ref<AiMessage>({
@@ -203,8 +204,41 @@ const { status, data, send, open, close } = useWebSocket(wsUrl, {
           break
       }
     } catch (error) {
-      console.error('error', error)
+      console.error('WebSocket错误:', error)
       isProcessing.value = false
+
+      if (activeSession.value && selectAgent.value) {
+        let errorText = ''
+        if ((error && error.toString().includes('gas')) || (error && error.toString().includes('wallet'))) {
+          errorText = `Out of gas, your agent's asleep`
+        }
+
+        const errorMessage = {
+          id: new Date().getTime().toString(),
+          type: 'ERROR',
+          textContent: errorText,
+          aiSessionId: activeSession.value.id,
+          sessionId: activeSession.value.id,
+          avatar: selectAgent.value.avatar,
+          name: selectAgent.value.nickName,
+          creatorId: selectAgent.value.sid,
+          editorId: selectAgent.value.sid,
+          thinkingList: [],
+          isError: true,
+        }
+
+        messageList.value.push(errorMessage)
+
+        // 滚动到底部显示错误消息
+        nextTick(() => {
+          if (messageListRef.value) {
+            messageListRef.value.scrollTo({
+              top: messageListRef.value.scrollHeight,
+              behavior: 'smooth',
+            })
+          }
+        })
+      }
     }
   },
 })
@@ -763,6 +797,55 @@ const handleSendMessage = async (message: { text: string; inputText: string; ima
     const eventData = event.data
     const data = JSON.parse(eventData)
 
+    if (data.code === 400) {
+      let errorText =
+        "Out of gas, your agent's asleep. Top up the agent's wallet, then\nclick the avatar to wake them.\
+click the avatar to wake them."
+
+      const errorMessage = {
+        id: new Date().getTime().toString(),
+        type: 'ERROR',
+        textContent: errorText,
+        aiSessionId: activeSession.value.id,
+        sessionId: activeSession.value.id,
+        avatar: selectAgent.value.avatar,
+        name: selectAgent.value.nickName,
+        creatorId: selectAgent.value.sid,
+        editorId: selectAgent.value.sid,
+        thinkingList: [],
+        isError: true,
+      }
+
+      messageList.value.push(errorMessage)
+
+      sendLoading.value = false
+
+      isProcessing.value = false
+
+      await nextTick(() => {
+        if (messageListRef.value) {
+          messageListRef.value.scrollTo({
+            top: messageListRef.value.scrollHeight,
+            behavior: 'smooth',
+          })
+        }
+      })
+
+      // 更新最后一个thinking项的状态为失败
+      if (responseMessage.value.thinkingList && responseMessage.value.thinkingList.length > 0) {
+        const lastThinkingIndex = responseMessage.value.thinkingList.length - 1
+        // @ts-ignore
+        responseMessage.value.thinkingList[lastThinkingIndex].status = 'error'
+      }
+
+      // 重置加载状态
+      sendLoading.value = false
+      isProcessing.value = false
+      isThinking = false
+
+      return
+    }
+
     if (isThinking) {
       // Accumulate content in buffer
       buffer += data.content || ''
@@ -1310,6 +1393,37 @@ const handleStopReasoning = () => {
       type: 'warning',
       message: 'Reasoning has been stopped',
       customClass: 'dark-message',
+    })
+  }
+}
+
+// 测试函数：模拟代理没油了的错误
+const testAgentOutOfGasError = () => {
+  if (activeSession.value && selectAgent.value) {
+    const errorMessage = {
+      id: new Date().getTime().toString(),
+      type: 'ERROR',
+      textContent: `Out of gas, your agent's asleep. Top up the agent's wallet, then\nclick the avatar to wake them.`,
+      aiSessionId: activeSession.value.id,
+      sessionId: activeSession.value.id,
+      avatar: selectAgent.value.avatar,
+      name: selectAgent.value.nickName,
+      creatorId: selectAgent.value.sid,
+      editorId: selectAgent.value.sid,
+      thinkingList: [],
+      isError: true,
+    }
+
+    messageList.value.push(errorMessage)
+
+    // 滚动到底部显示错误消息
+    nextTick(() => {
+      if (messageListRef.value) {
+        messageListRef.value.scrollTo({
+          top: messageListRef.value.scrollHeight,
+          behavior: 'smooth',
+        })
+      }
     })
   }
 }

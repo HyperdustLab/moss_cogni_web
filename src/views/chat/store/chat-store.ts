@@ -31,6 +31,11 @@ export type AiSession = Pick<AiSessionDto['AiSessionRepository/FETCHER'], 'id' |
 
 export type AiMessage = Pick<AiMessageInput, 'textContent' | 'medias' | 'type' | 'sessionId'> & {
   id: string
+  isError?: boolean
+  thinkingList?: Array<{
+    title: string
+    status: 'pending' | 'success' | 'error'
+  }>
 }
 export const useChatStore = defineStore('ai-chat', () => {
   const isEdit = ref(false)
