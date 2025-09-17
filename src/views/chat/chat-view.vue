@@ -1115,21 +1115,7 @@ const preHandleSelectAgent = (agent: any) => {
 const handleSelectAgent = (_agent: any) => {
   // 终止推理逻辑
   if (isProcessing.value || sendLoading.value) {
-    isProcessing.value = false
-    sendLoading.value = false
-    if (evtSourceRef.value) {
-      evtSourceRef.value.close()
-      evtSourceRef.value = null
-    }
-
-    loading.value = false
-    sendLoading.value = false
-
-    ElMessage({
-      type: 'warning',
-      message: 'Reasoning interrupted',
-      customClass: 'dark-message',
-    })
+    handleStopReasoning()
   }
   if (_agent) {
     selectAgent.value = _agent
@@ -1283,6 +1269,49 @@ const handleUpdateSession = async () => {
 
 async function handleSearchWeb(message: boolean) {
   options.value.enableAgent = message
+}
+
+// 停止推理任务
+const handleStopReasoning = () => {
+  // 终止推理逻辑
+  if (isProcessing.value || sendLoading.value) {
+    isProcessing.value = false
+    sendLoading.value = false
+
+    // 关闭 SSE 连接
+    if (evtSourceRef.value) {
+      evtSourceRef.value.close()
+      evtSourceRef.value = null
+    }
+
+    // 清除超时定时器
+    if (setTimeoutId) {
+      clearTimeout(setTimeoutId)
+      setTimeoutId = null
+    }
+
+    // 移除当前产生的聊天记录（最后两条消息：用户消息和AI响应）
+    if (messageList.value.length >= 2) {
+      // 检查最后两条消息是否是当前会话产生的
+      const lastMessage = messageList.value[messageList.value.length - 1]
+      const secondLastMessage = messageList.value[messageList.value.length - 2]
+
+      // 确认最后一条是AI响应且第二条是用户消息
+      if (lastMessage.type === 'ASSISTANT' && secondLastMessage.type === 'USER') {
+        messageList.value.splice(-2, 2) // 移除最后两条消息
+      }
+    }
+
+    // 重置状态
+    loading.value = false
+    inputTextReplyStatus.value = false
+
+    ElMessage({
+      type: 'warning',
+      message: 'Reasoning has been stopped',
+      customClass: 'dark-message',
+    })
+  }
 }
 
 function handleLogin() {
@@ -1823,7 +1852,7 @@ const groupedSessions = computed(() => {
             </div>
           </template>
 
-          <message-input @send="preHandleSendMessage" :loading="sendLoading" @search="handleSearchWeb" :functionStatus="selectAgent.functionStatus"></message-input>
+          <message-input @send="preHandleSendMessage" :loading="sendLoading" @search="handleSearchWeb" @stop="handleStopReasoning" :functionStatus="selectAgent.functionStatus"></message-input>
         </div>
 
         <div class="disclaimer-text">Embod·i can make mistakes. Please monitor its work.</div>

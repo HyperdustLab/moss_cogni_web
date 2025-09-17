@@ -19,6 +19,7 @@ const props = defineProps<{
 const emit = defineEmits<{
   send: [message: Message]
   search: [message: boolean]
+  stop: []
 }>()
 // Message in input box
 const message = ref<Message>({ text: '', image: '' })
@@ -39,6 +40,12 @@ const handleBlur = () => {
 }
 
 const sendMessage = () => {
+  // 如果当前处于加载状态，执行停止操作
+  if (props.loading) {
+    emit('stop')
+    return
+  }
+
   // 去除首尾空格并检查实际内容
   const trimmedText = message.value.text?.trim()
   if (!trimmedText) {
@@ -85,7 +92,7 @@ const uploadToggleButton = () => {
                   <span>AI World</span>
                 </button>
               </div>
-              <button class="send-btn" @click="sendMessage" :disabled="props.loading || !message.text.trim()">
+              <button class="send-btn" @click="sendMessage" :disabled="!props.loading && !message.text.trim()">
                 <el-icon v-if="!props.loading" class="send-icon">↑</el-icon>
                 <span v-if="props.loading">Stop</span>
                 <span v-else>Send</span>
