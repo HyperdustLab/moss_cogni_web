@@ -57,6 +57,7 @@ const showEmailDropdown = ref(false)
 const emailDropdownPosition = ref({ x: 0, y: 0 })
 
 import logoutPng from '@/assets/image/logout.png?url'
+import walletsPng from '@/assets/image/wallets.png?url'
 
 import Substring from '@/components/Substring.vue'
 
@@ -338,7 +339,7 @@ const getUserMainIdentifier = (user: any) => {
       type: 'wallet',
       value: user.walletAddress,
       display: `${user.walletAddress.slice(0, 6)}...${user.walletAddress.slice(-4)}`,
-      icon: '🔗',
+      icon: walletsPng,
     }
   }
 
@@ -1697,7 +1698,16 @@ const groupedSessions = computed(() => {
           </div>
           <div ref="contactListRef" class="h-[calc(75vh-140px)] overflow-y-auto custom-scrollbar" style="max-height: calc(90% - 180px)">
             <div class="space-y-2">
-              <div v-for="agent in agentList" :key="agent.id" class="flex items-center space-x-3 p-2 bg-white hover:bg-gray-100 rounded-lg cursor-pointer transition-colors duration-200" :class="{ 'bg-gray-100': selectAgentId === agent.id }" @click="preHandleSelectAgent(agent)">
+              <div
+                v-for="agent in agentList"
+                :key="agent.id"
+                class="flex items-center space-x-3 p-2 bg-white hover:bg-gray-100 rounded-lg cursor-pointer transition-colors duration-200"
+                :class="{
+                  'bg-gray-100 !border-2 !border-yellow-400': selectAgentId === agent.id,
+                  'selected-agent': selectAgentId === agent.id,
+                }"
+                @click="preHandleSelectAgent(agent)"
+              >
                 <div class="relative">
                   <el-avatar :size="40" :src="agent.avatar" fit="contain" />
                   <div v-if="agent.tokenCount24h > 0" class="absolute bottom-0 right-0 w-3 h-3">
@@ -1753,9 +1763,7 @@ const groupedSessions = computed(() => {
                 <!-- Main identifier info (wallet address or email) - beautified display -->
                 <div v-if="getUserMainIdentifier(loginUser)" class="flex items-center mt-1">
                   <div class="flex items-center px-2 py-1 bg-gray-100 rounded-lg hover:bg-gray-200 transition-all duration-200 cursor-pointer group" @click="handleEmailClick">
-                    <span class="text-xs mr-1.5 group-hover:scale-110 transition-transform duration-200">
-                      {{ getUserMainIdentifier(loginUser)?.icon }}
-                    </span>
+                    <img :src="getUserMainIdentifier(loginUser)?.icon" alt="wallet" class="w-4 h-4 mr-1.5 group-hover:scale-110 transition-transform duration-200" />
                     <span class="text-gray-600 text-xs font-medium transition-colors duration-200">
                       {{ getUserMainIdentifier(loginUser)?.display }}
                     </span>
@@ -1786,8 +1794,12 @@ const groupedSessions = computed(() => {
                     {{ getUserInitials(loginUser) }}
                   </span>
                 </div>
-                <div class="flex-1 min-w-0">
+                <div class="flex-1 min-w-0 flex items-center">
                   <div class="text-sm text-gray-700 font-medium truncate">{{ getUserMainIdentifier(loginUser)?.display || 'User' }}</div>
+                  <!-- Copy button -->
+                  <button @click="handleCopyClick($event, loginUser)" class="ml-1.5 text-xs font-semibold px-1.5 py-0.5 rounded-full text-gray-700 bg-gray-100 hover:bg-gray-200 transition-colors duration-200 cursor-pointer flex-shrink-0" title="复制用户标识符">
+                    <img src="@/assets/image/copy.png" alt="copy" class="w-4 h-4" />
+                  </button>
                 </div>
               </div>
             </div>
@@ -2008,6 +2020,12 @@ const groupedSessions = computed(() => {
   src: url('@/assets/font/Montserrat-Bold.ttf') format('truetype');
   font-weight: bold;
   font-style: normal;
+}
+
+/* Selected agent styles */
+.selected-agent {
+  border: 2px solid #facc15 !important; /* yellow-400 */
+  box-shadow: 0 0 0 1px #facc15;
 }
 
 /* Dropdown animation effects */
