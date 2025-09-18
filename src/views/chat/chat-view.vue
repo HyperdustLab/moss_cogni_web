@@ -1725,7 +1725,7 @@ const groupedSessions = computed(() => {
                       {{ `${agent.walletAddress.slice(0, 6)}...${agent.walletAddress.slice(-4)}` }}
                     </span>
                     <button @click="handleCopyAgentWallet($event, agent.walletAddress)" class="ml-1.5 text-xs font-semibold px-1.5 py-0.5 rounded-full text-gray-700 bg-gray-100 hover:bg-gray-200 transition-colors duration-200 cursor-pointer" title="Copy wallet address">
-                      <img src="@/assets/image/copy.png" alt="copy" class="w-3 h-3" />
+                      <img src="@/assets/image/wallets.png" alt="copy" class="w-3 h-3" />
                     </button>
                   </div>
                 </div>
@@ -1763,12 +1763,11 @@ const groupedSessions = computed(() => {
                 <!-- Main identifier info (wallet address or email) - beautified display -->
                 <div v-if="getUserMainIdentifier(loginUser)" class="flex items-center mt-1">
                   <div class="flex items-center px-2 py-1 bg-gray-100 rounded-lg hover:bg-gray-200 transition-all duration-200 cursor-pointer group" @click="handleEmailClick">
-                    <img :src="getUserMainIdentifier(loginUser)?.icon" alt="wallet" class="w-4 h-4 mr-1.5 group-hover:scale-110 transition-transform duration-200" />
                     <span class="text-gray-600 text-xs font-medium transition-colors duration-200">
                       {{ getUserMainIdentifier(loginUser)?.display }}
                     </span>
                     <button @click="handleCopyClick($event, loginUser)" class="ml-1.5 text-xs font-semibold px-1.5 py-0.5 rounded-full text-gray-700 bg-gray-100 hover:bg-gray-200 transition-colors duration-200 cursor-pointer">
-                      <img src="@/assets/image/copy.png" alt="copy" class="w-4 h-4" />
+                      <img src="@/assets/image/wallets.png" alt="copy" class="w-4 h-4" />
                     </button>
                   </div>
                 </div>
@@ -1798,7 +1797,7 @@ const groupedSessions = computed(() => {
                   <div class="text-sm text-gray-700 font-medium truncate">{{ getUserMainIdentifier(loginUser)?.display || 'User' }}</div>
                   <!-- Copy button -->
                   <button @click="handleCopyClick($event, loginUser)" class="ml-1.5 text-xs font-semibold px-1.5 py-0.5 rounded-full text-gray-700 bg-gray-100 hover:bg-gray-200 transition-colors duration-200 cursor-pointer flex-shrink-0" title="复制用户标识符">
-                    <img src="@/assets/image/copy.png" alt="copy" class="w-4 h-4" />
+                    <img src="@/assets/image/wallets.png" alt="copy" class="w-4 h-4" />
                   </button>
                 </div>
               </div>
@@ -1995,7 +1994,7 @@ const groupedSessions = computed(() => {
           <template v-if="!showChatList">
             <div class="mb-50">
               <div class="dancer-title">Embod·i</div>
-              <div class="dancer-title-sub">embodied, use anything</div>
+              <div class="dancer-title-sub">Chat & build with open models on Web3</div>
             </div>
           </template>
 
