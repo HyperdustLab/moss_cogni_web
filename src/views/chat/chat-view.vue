@@ -52,7 +52,7 @@ const messageListRef = ref<InstanceType<typeof HTMLDivElement>>()
 const activeSession = ref<any>(null)
 const sessionList = ref<any[]>([])
 
-// 邮箱弹窗状态
+// Email dropdown state
 const showEmailDropdown = ref(false)
 const emailDropdownPosition = ref({ x: 0, y: 0 })
 
@@ -204,7 +204,7 @@ const { status, data, send, open, close } = useWebSocket(wsUrl, {
           break
       }
     } catch (error) {
-      console.error('WebSocket错误:', error)
+      console.error('WebSocket error:', error)
       isProcessing.value = false
 
       if (activeSession.value && selectAgent.value) {
@@ -229,7 +229,7 @@ const { status, data, send, open, close } = useWebSocket(wsUrl, {
 
         messageList.value.push(errorMessage)
 
-        // 滚动到底部显示错误消息
+        // Scroll to bottom to show error message
         nextTick(() => {
           if (messageListRef.value) {
             messageListRef.value.scrollTo({
@@ -260,7 +260,7 @@ const uploadEmbeddingRef = ref<InstanceType<typeof UploadEmbedding>>()
 
 const agentList = ref<any[]>([])
 
-// 添加分页相关参数
+// Add pagination related parameters
 const pageNum = ref(1)
 const pageSize = ref(15)
 const total = ref(0)
@@ -271,13 +271,13 @@ const agentCount = ref({
   online: 0,
 })
 
-// 添加选中的agent id
+// Add selected agent id
 const selectAgent = ref<any>(null)
 const selectAgentId = ref<string | null>(null)
 
 const currSessionId = ref(generateUUID())
 
-// 添加搜索相关的响应式变量
+// Add search related reactive variables
 const searchQuery = ref('')
 
 const inputText = ref('')
@@ -288,38 +288,38 @@ const inputReplyMediaFileUrls = ref([])
 
 const loginUser = ref(null)
 
-// 用户信息显示相关函数
+// User information display related functions
 const getUserInitials = (user: any) => {
   if (!user) return '?'
 
-  // 优先使用用户名
+  // Prioritize using username
   if (user.username) {
     return user.username.charAt(0).toUpperCase()
   }
 
-  // 如果没有用户名，使用邮箱
+  // If no username, use email
   if (user.email) {
     return user.email.charAt(0).toUpperCase()
   }
 
-  // 如果都没有，返回默认字符
+  // If neither exists, return default character
   return 'U'
 }
 
 const getUserDisplayName = (user: any) => {
   if (!user) return 'Guest'
 
-  // 如果没有钱包地址，显示邮箱
+  // If no wallet address, display email
   if (user.email) {
     return user.email
   }
 
-  // 优先显示用户名
+  // Prioritize displaying username
   if (user.username) {
     return user.username
   }
 
-  // 优先显示钱包地址的简化版本
+  // Prioritize displaying simplified version of wallet address
   if (user.walletAddress) {
     const address = user.walletAddress
     return `${address.slice(0, 6)}...${address.slice(-4)}`
@@ -328,11 +328,11 @@ const getUserDisplayName = (user: any) => {
   return 'Guest'
 }
 
-// 获取用户主要标识信息（钱包地址或邮箱）
+// Get user's main identifier information (wallet address or email)
 const getUserMainIdentifier = (user: any) => {
   if (!user) return null
 
-  // 优先返回钱包地址
+  // Prioritize returning wallet address
   if (user.walletAddress) {
     return {
       type: 'wallet',
@@ -342,7 +342,7 @@ const getUserMainIdentifier = (user: any) => {
     }
   }
 
-  // 如果没有钱包地址，返回邮箱
+  // If no wallet address, return email
   if (user.email) {
     return {
       type: 'email',
@@ -356,47 +356,47 @@ const getUserMainIdentifier = (user: any) => {
 }
 
 const getUserLevel = (user: any) => {
-  if (!user) return '访客'
+  if (!user) return 'Guest'
 
-  // 根据用户信息判断会员等级
-  // 这里可以根据实际的业务逻辑来判断
+  // Determine membership level based on user information
+  // Here you can determine based on actual business logic
   if (user.isPremium || user.vipLevel || user.membership) {
-    return user.membership || user.vipLevel || '高级版'
+    return user.membership || user.vipLevel || 'Premium'
   }
 
-  // 如果有钱包地址，可能是付费用户
+  // If has wallet address, might be a paying user
   if (user.walletAddress && user.email) {
-    return '标准版'
+    return 'Standard'
   }
 
-  return '免费版'
+  return 'Free'
 }
 
 const isPremiumUser = (user: any) => {
   if (!user) return false
 
-  // 判断是否为高级用户的逻辑
+  // Logic to determine if user is premium
   return user.isPremium || user.vipLevel || user.membership || false
 }
 
 const handleUpgrade = () => {
-  // 跳转到升级页面或显示升级弹窗
-  goUser() // 使用现有的跳转到dashboard的函数
+  // Navigate to upgrade page or show upgrade popup
+  goUser() // Use existing function to navigate to dashboard
 }
 
-// 复制到剪贴板
+// Copy to clipboard
 const copyToClipboard = async (text: string) => {
   try {
     await navigator.clipboard.writeText(text)
-    // 可以添加一个简单的提示，比如改变按钮状态
+    // Can add a simple prompt, such as changing button state
     return true
   } catch (err) {
-    console.error('复制失败:', err)
+    console.error('Copy failed:', err)
     return false
   }
 }
 
-// 处理复制按钮点击
+// Handle copy button click
 const handleCopyClick = async (event: MouseEvent, user: any) => {
   event.stopPropagation()
   const identifier = getUserMainIdentifier(user)
@@ -410,38 +410,56 @@ const handleCopyClick = async (event: MouseEvent, user: any) => {
   }
 }
 
-// 显示邮箱弹窗
+// Handle copy agent wallet address
+const handleCopyAgentWallet = async (event: MouseEvent, walletAddress: string) => {
+  event.stopPropagation()
+  if (walletAddress) {
+    const success = await copyToClipboard(walletAddress)
+    if (success) {
+      ElMessage.success('Copied successfully!')
+    } else {
+      ElMessage.error('Copy failed, please try again')
+    }
+  }
+}
+
+// Show email dropdown
 const handleEmailClick = (event: MouseEvent) => {
   event.stopPropagation()
   const rect = (event.target as HTMLElement).getBoundingClientRect()
   const windowWidth = window.innerWidth
   const windowHeight = window.innerHeight
-  const dropdownWidth = 320 // 弹窗宽度 (min-w-64 = 16rem = 256px, 但实际会更宽)
-  const dropdownHeight = 280 // 弹窗高度 (增加了间距后更高)
+  const dropdownWidth = 280 // Dropdown width
+  const dropdownHeight = 200 // Reduced height for closer positioning
 
   let x = rect.left
-  let y = rect.top - dropdownHeight - 10 // 在邮箱上方显示
+  let y = rect.top - dropdownHeight - 5 // Display closer above email (reduced gap from 10 to 5)
 
-  // 确保弹窗不会超出屏幕右边界
-  if (x + dropdownWidth > windowWidth) {
+  // Ensure dropdown doesn't exceed right screen boundary
+  if (x + dropdownWidth > windowWidth - 10) {
     x = windowWidth - dropdownWidth - 10
   }
 
-  // 确保弹窗不会超出屏幕上边界
+  // Ensure dropdown doesn't exceed left screen boundary
+  if (x < 10) {
+    x = 10
+  }
+
+  // Ensure dropdown doesn't exceed top screen boundary
   if (y < 10) {
-    y = rect.bottom + 10 // 如果上方空间不够，显示在下方
+    y = rect.bottom + 5 // If insufficient space above, display below with smaller gap
   }
 
   emailDropdownPosition.value = { x, y }
   showEmailDropdown.value = true
 }
 
-// 隐藏邮箱弹窗
+// Hide email dropdown
 const hideEmailDropdown = () => {
   showEmailDropdown.value = false
 }
 
-// 点击外部关闭弹窗
+// Click outside to close dropdown
 const handleClickOutside = (event: MouseEvent) => {
   if (showEmailDropdown.value) {
     const target = event.target as HTMLElement
@@ -471,12 +489,12 @@ const options = ref<any>({
 })
 const embeddingLoading = ref(false)
 
-const showAgentPanel = ref(true) // 控制agent面板显示/隐藏
-const showSessionPanel = ref(false) // 控制session面板显示/隐藏
-const isSidebarCollapsed = ref(false) // 控制整个左边区域（侧边栏）的折叠状态
-const showChatList = ref(false) // 控制聊天列表显示/隐藏
+const showAgentPanel = ref(true) // Control agent panel show/hide
+const showSessionPanel = ref(false) // Control session panel show/hide
+const isSidebarCollapsed = ref(false) // Control entire left area (sidebar) collapse state
+const showChatList = ref(false) // Control chat list show/hide
 
-// 控制agent面板显示/隐藏
+// Control agent panel show/hide
 function toggleAgentPanel() {
   showAgentPanel.value = true
   showContactPanel.value = true
@@ -496,7 +514,7 @@ onMounted(async () => {
   agentCount.value.online = await getAgentCount(true)
   agentCount.value.total = await getAgentCount(false)
 
-  // 添加全局点击事件监听器
+  // Add global click event listener
   document.addEventListener('click', handleClickOutside)
 
   if (sid) {
@@ -520,7 +538,7 @@ onMounted(async () => {
     }
   }
 
-  // 添加滚动监听
+  // Add scroll listener
   contactListRef.value?.addEventListener('scroll', handleScroll)
 })
 
@@ -548,7 +566,7 @@ async function getDefaultWelcomeMessage() {
   defaultWelcomeMessage.value = result
 }
 
-// 组件卸载时移除监听
+// Remove listeners on component unmount
 onUnmounted(() => {
   contactListRef.value?.removeEventListener('scroll', handleScroll)
   document.removeEventListener('click', handleClickOutside)
@@ -619,11 +637,11 @@ async function getSessionList() {
 
   sessionList.value = result.records
 
-  // 如果没有sessions，自动创建一个新的
+  // If no sessions, automatically create a new one
   if (sessionList.value.length === 0) {
     await handleSessionCreate()
   } else {
-    // 选择第一个session
+    // Select the first session
     handleSelectSession(sessionList.value[0])
   }
 }
@@ -655,7 +673,7 @@ const preHandleSendMessage = async (message: { text: string; image: string }) =>
 
   inputTextReplyStatus.value = false
 
-  // 发送消息时显示聊天列表
+  // Show chat list when sending message
   showChatList.value = true
 
   isOnline.value = await getCurrAgentOnlineStatus()
@@ -697,7 +715,7 @@ const preHandleSendMessage = async (message: { text: string; image: string }) =>
   messageList.value.push(chatMessage.value)
   messageList.value.push(responseMessage.value)
 
-  // 确保在下一个 tick 时滚动到底部
+  // Ensure scrolling to bottom on next tick
   await nextTick(() => {
     if (messageListRef.value) {
       messageListRef.value.scrollTo({
@@ -744,7 +762,7 @@ const preHandleSendMessage = async (message: { text: string; image: string }) =>
   }
 }
 
-// 1. 新增 evtSourceRef 用于管理推理流
+// 1. Add evtSourceRef for managing inference stream
 const evtSourceRef = ref<any>(null)
 
 const handleSendMessage = async (message: { text: string; inputText: string; image: string }) => {
@@ -783,7 +801,7 @@ const handleSendMessage = async (message: { text: string; inputText: string; ima
     method: 'POST',
   })
 
-  // 记录当前推理流
+  // Record current inference stream
   evtSourceRef.value = evtSource
 
   let isThinking = false
@@ -831,14 +849,14 @@ click the avatar to wake them."
         }
       })
 
-      // 更新最后一个thinking项的状态为失败
+      // Update the last thinking item status to failed
       if (responseMessage.value.thinkingList && responseMessage.value.thinkingList.length > 0) {
         const lastThinkingIndex = responseMessage.value.thinkingList.length - 1
         // @ts-ignore
         responseMessage.value.thinkingList[lastThinkingIndex].status = 'error'
       }
 
-      // 重置加载状态
+      // Reset loading state
       sendLoading.value = false
       isProcessing.value = false
       isThinking = false
@@ -1044,7 +1062,7 @@ async function getMyAgent() {
   myAgentList.value = result.records
 }
 
-// 修改获取agent列表的方法，添加搜索参数
+// Modify the method to get agent list, add search parameters
 async function getAgentList(isLoadMore = false) {
   if (loading.value || noMore.value) return
 
@@ -1057,7 +1075,7 @@ async function getAgentList(isLoadMore = false) {
       noWalletAddress: loginUser.value ? loginUser.value.walletAddress : '',
     }
 
-    // 只有在搜索关键词不为空时才添加 nickName 参数
+    // Only add nickName parameter when search keyword is not empty
     if (searchQuery.value.trim()) {
       params.nickName = `*${searchQuery.value.trim()}*`
     }
@@ -1087,15 +1105,15 @@ async function getAgentList(isLoadMore = false) {
   }
 }
 
-// 添加搜索处理函数
+// Add search handling function
 const handleSearch = () => {
-  pageNum.value = 1 // 重置页码
-  noMore.value = false // 重置 noMore 状态
-  agentList.value = [] // 清空现有列表
-  getAgentList() // 重新获取数据
+  pageNum.value = 1 // Reset page number
+  noMore.value = false // Reset noMore status
+  agentList.value = [] // Clear existing list
+  getAgentList() // Re-fetch data
 }
 
-// 添加防抖处理
+// Add debounce handling
 let searchTimer: any = null
 const debouncedSearch = () => {
   if (searchTimer) clearTimeout(searchTimer)
@@ -1104,10 +1122,10 @@ const debouncedSearch = () => {
   }, 300)
 }
 
-// 修改 watch 处理
+// Modify watch handling
 watch(searchQuery, () => {
   if (!searchQuery.value.trim()) {
-    // 当搜索框清空时，重置所有状态并重新加载
+    // When search box is cleared, reset all states and reload
     pageNum.value = 1
     noMore.value = false
     agentList.value = []
@@ -1168,19 +1186,19 @@ const handleBindTwitter = () => {
 
 const fileList = ref<UploadUserFile[]>([])
 
-// 添加滚动加载方法
+// Add scroll loading method
 const contactListRef = ref<HTMLElement>()
 const handleScroll = () => {
   if (!contactListRef.value) return
 
   const { scrollTop, scrollHeight, clientHeight } = contactListRef.value
-  // 当滚动到距离底部20px时触发加载
+  // Trigger loading when scrolled to 20px from bottom
   if (scrollHeight - scrollTop - clientHeight < 20) {
     loadMore()
   }
 }
 
-// 加载更多
+// Load more
 const loadMore = () => {
   if (loading.value || noMore.value) return
   pageNum.value++
@@ -1194,9 +1212,9 @@ const preHandleSelectAgent = (agent: any) => {
   showSessionPanel.value = true
 }
 
-// 添加选中方法
+// Add selection method
 const handleSelectAgent = (_agent: any) => {
-  // 终止推理逻辑
+  // Terminate inference logic
   if (isProcessing.value || sendLoading.value) {
     handleStopReasoning()
   }
@@ -1299,16 +1317,16 @@ async function handleDeleteSession(sessionId: string) {
 }
 
 function handleMessage(event: any) {
-  // 你可以根据 event.origin 判断消息的来源是否是你信任的源
-  // 例如: if (event.origin !== "https://your-trusted-domain.com") return;
+  // You can determine if the message source is trusted based on event.origin
+  // For example: if (event.origin !== "https://your-trusted-domain.com") return;
 
-  // 接收父窗口传递的数据
+  // Receive data passed from parent window
   var receivedData = event.data
 
   console.info(BASE_URL)
   console.info(event.origin)
   console.info('receivedData:', receivedData)
-  // 判断receivedData是否为JSON字符串
+  // Determine if receivedData is a JSON string
   let isJsonString = false
   try {
     const json = JSON.parse(receivedData)
@@ -1326,7 +1344,7 @@ function handleMessage(event: any) {
   }
 }
 
-// 添加更新会话名称的方法
+// Add method to update session name
 const handleUpdateSession = async () => {
   try {
     await request({
@@ -1341,9 +1359,9 @@ const handleUpdateSession = async () => {
       },
     })
 
-    // 更新成功后关闭编辑模式
+    // Close edit mode after successful update
     showSessionEdit.value = false
-    // 可选：刷新会话列表
+    // Optional: refresh session list
     getSessionList()
   } catch (error) {
     console.error('Update session failed:', error)
@@ -1354,38 +1372,38 @@ async function handleSearchWeb(message: boolean) {
   options.value.enableAgent = message
 }
 
-// 停止推理任务
+// Stop inference task
 const handleStopReasoning = () => {
-  // 终止推理逻辑
+  // Terminate inference logic
   if (isProcessing.value || sendLoading.value) {
     isProcessing.value = false
     sendLoading.value = false
 
-    // 关闭 SSE 连接
+    // Close SSE connection
     if (evtSourceRef.value) {
       evtSourceRef.value.close()
       evtSourceRef.value = null
     }
 
-    // 清除超时定时器
+    // Clear timeout timer
     if (setTimeoutId) {
       clearTimeout(setTimeoutId)
       setTimeoutId = null
     }
 
-    // 移除当前产生的聊天记录（最后两条消息：用户消息和AI响应）
+    // Remove currently generated chat records (last two messages: user message and AI response)
     if (messageList.value.length >= 2) {
-      // 检查最后两条消息是否是当前会话产生的
+      // Check if the last two messages were generated by current session
       const lastMessage = messageList.value[messageList.value.length - 1]
       const secondLastMessage = messageList.value[messageList.value.length - 2]
 
-      // 确认最后一条是AI响应且第二条是用户消息
+      // Confirm last message is AI response and second is user message
       if (lastMessage.type === 'ASSISTANT' && secondLastMessage.type === 'USER') {
-        messageList.value.splice(-2, 2) // 移除最后两条消息
+        messageList.value.splice(-2, 2) // Remove last two messages
       }
     }
 
-    // 重置状态
+    // Reset state
     loading.value = false
     inputTextReplyStatus.value = false
 
@@ -1397,7 +1415,7 @@ const handleStopReasoning = () => {
   }
 }
 
-// 测试函数：模拟代理没油了的错误
+// Test function: simulate agent out of gas error
 const testAgentOutOfGasError = () => {
   if (activeSession.value && selectAgent.value) {
     const errorMessage = {
@@ -1416,7 +1434,7 @@ const testAgentOutOfGasError = () => {
 
     messageList.value.push(errorMessage)
 
-    // 滚动到底部显示错误消息
+    // Scroll to bottom to display error message
     nextTick(() => {
       if (messageListRef.value) {
         messageListRef.value.scrollTo({
@@ -1436,10 +1454,10 @@ function handleLogin() {
 
 async function isPhotoOrCelebrity(question: string) {
   // Keywords related to celebrity photos
-  const celebrityKeywords = replySearch.value?.['明信片'] || []
+  const celebrityKeywords = replySearch.value?.['postcard'] || []
 
   // Keywords related to taking photos
-  const photoKeywords = replySearch.value?.['拍照'] || []
+  const photoKeywords = replySearch.value?.['photo'] || []
 
   // Check for celebrity keywords
   const isCelebrity = celebrityKeywords.some((keyword: any) => {
@@ -1521,19 +1539,19 @@ const toggleSessionPanel = () => {
   showContactPanel.value = true
 }
 
-// 切换侧边栏折叠状态
+// Toggle sidebar collapse state
 const toggleSidebar = () => {
   isSidebarCollapsed.value = !isSidebarCollapsed.value
   showContactPanel.value = !showContactPanel.value
 
-  // 当侧边栏展开时，默认显示agent list
+  // When sidebar is expanded, show agent list by default
   if (isSidebarCollapsed.value) {
     console.log('toggleAgentPanel', showContactPanel.value)
     toggleAgentPanel()
   }
 }
 
-// 按时间分组sessions的计算属性
+// Computed property to group sessions by time
 const groupedSessions = computed(() => {
   if (!sessionList.value || sessionList.value.length === 0) {
     return []
@@ -1565,23 +1583,23 @@ const groupedSessions = computed(() => {
     }
   })
 
-  // 只返回有sessions的组
+  // Only return groups with sessions
   return Object.values(groups).filter((group) => group.sessions.length > 0)
 })
 </script>
 <template>
   <div class="home-view light">
-    <!-- 参考截图的顶部导航栏设计 -->
+    <!-- Top navigation bar design based on screenshot reference -->
     <div class="top-navbar">
       <div class="navbar-content">
         <div class="navbar-left">
-          <!-- 参考截图的LOGO设计 -->
+          <!-- LOGO design based on screenshot reference -->
           <div class="logo-container" @click="goHome">
             <img src="/logo2.png" alt="Logo" class="logo-shape" />
           </div>
         </div>
 
-        <!-- 将登录按钮移到logo旁边 -->
+        <!-- Move login button next to logo -->
         <!-- <div v-if="!loginUser" class="user-login-btn" @click="handleLogin">
           <el-avatar :size="16" :src="user" style="border: none" fit="contain" />
           <span class="ml-1.25 text-black mobile:ml-0.5">Login In</span>
@@ -1648,14 +1666,14 @@ const groupedSessions = computed(() => {
 
     <!-- Entire chat panel -->
     <div class="chat-panel" v-loading="loading">
-      <!-- 在非移动端显示联系人列表 -->
+      <!-- Display contact list on non-mobile devices -->
       <div class="contact-panel border-r border-gray-300 bg-white h-full flex flex-col" :class="showContactPanel ? 'w-60' : 'w-20'">
         <div class="contact-panel-content relative">
-          <!-- 菜单按钮 - 相对于contact-panel-content区域靠右 -->
+          <!-- Menu button - positioned right relative to contact-panel-content area -->
           <div class="menu-toggle-btn" :class="{ 'menu-btn-collapsed': isSidebarCollapsed }" @click="toggleSidebar">
             <img src="@/assets/image/menu.png" alt="agent" style="width: 20px; height: 20px" />
           </div>
-          <!-- 参考截图的侧边栏设计 - 始终显示图标 -->
+          <!-- Sidebar design based on screenshot reference - always show icons -->
           <div class="sidebar-icons" style="margin-top: 80px">
             <div class="icon-item agent-item" :class="{ selected: showAgentPanel }" @click="toggleAgentPanel">
               <img src="@/assets/agent.png" alt="agent" style="width: 20px; height: 20px" />
@@ -1672,7 +1690,7 @@ const groupedSessions = computed(() => {
           </div>
         </div>
 
-        <!-- Agent List 面板 -->
+        <!-- Agent List Panel -->
         <div v-if="showContactPanel && showAgentPanel" class="w-60 border-r border-gray-200 p-4 flex flex-col h-full" style="background-color: #f9fafb">
           <div class="mb-4">
             <el-input v-model="searchQuery" placeholder="Search agents..." class="w-full search-input-no-border" :prefix-icon="Search"></el-input>
@@ -1691,6 +1709,15 @@ const groupedSessions = computed(() => {
                     {{ agent.nickName }}
                     <img v-if="agent.xname" src="../../assets/x.svg" alt="X" class="w-4 h-4 ml-6 mt-2" />
                   </div>
+                  <!-- Wallet address display -->
+                  <div v-if="agent.walletAddress" class="flex items-center mt-1">
+                    <span class="text-gray-400 text-xs font-mono tracking-wide">
+                      {{ `${agent.walletAddress.slice(0, 6)}...${agent.walletAddress.slice(-4)}` }}
+                    </span>
+                    <button @click="handleCopyAgentWallet($event, agent.walletAddress)" class="ml-1.5 text-xs font-semibold px-1.5 py-0.5 rounded-full text-gray-700 bg-gray-100 hover:bg-gray-200 transition-colors duration-200 cursor-pointer" title="Copy wallet address">
+                      <img src="@/assets/image/copy.png" alt="copy" class="w-3 h-3" />
+                    </button>
+                  </div>
                 </div>
               </div>
 
@@ -1706,24 +1733,24 @@ const groupedSessions = computed(() => {
           </div>
         </div>
 
-        <!-- 用户信息区域 - 底部固定 -->
+        <!-- User info section - fixed at bottom -->
         <div v-if="showContactPanel" class="user-info-section mt-auto p-4 border-t border-gray-200 bg-gray-50">
           <div class="flex items-center justify-between">
-            <!-- 用户信息 -->
+            <!-- User info -->
             <div class="flex items-center space-x-3">
-              <!-- 用户头像 -->
+              <!-- User avatar -->
               <div v-if="loginUser?.avatar" class="w-10 h-10 rounded-full overflow-hidden flex items-center justify-center">
-                <img :src="loginUser.avatar" alt="用户头像" class="w-full h-full object-cover" />
+                <img :src="loginUser.avatar" alt="User avatar" class="w-full h-full object-cover" />
               </div>
               <div v-else class="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center">
-                <img src="@/assets/image/user.png" alt="用户头像" class="w-full h-full object-cover" />
+                <img src="@/assets/image/user.png" alt="User avatar" class="w-full h-full object-cover" />
               </div>
-              <!-- 用户详情 -->
+              <!-- User details -->
               <div class="flex flex-col">
                 <span class="text-gray-800 font-medium text-sm hover:text-black transition-colors duration-200">
                   {{ getUserDisplayName(loginUser) }}
                 </span>
-                <!-- 主要标识信息（钱包地址或邮箱）- 美化展示 -->
+                <!-- Main identifier info (wallet address or email) - beautified display -->
                 <div v-if="getUserMainIdentifier(loginUser)" class="flex items-center mt-1">
                   <div class="flex items-center px-2 py-1 bg-gray-100 rounded-lg hover:bg-gray-200 transition-all duration-200 cursor-pointer group" @click="handleEmailClick">
                     <span class="text-xs mr-1.5 group-hover:scale-110 transition-transform duration-200">
@@ -1740,91 +1767,85 @@ const groupedSessions = computed(() => {
               </div>
             </div>
 
-            <!-- 登录按钮 -->
+            <!-- Login button -->
             <button v-if="!loginUser" class="login-btn px-3 py-1.5 text-xs text-black" @click="handleLogin">Login</button>
           </div>
         </div>
 
-        <!-- 邮箱弹窗 -->
+        <!-- Email popup -->
         <Transition name="dropdown" appear>
-          <div v-if="showEmailDropdown" class="email-dropdown fixed z-50 bg-white border border-gray-200 rounded-xl shadow-2xl p-0 min-w-64 max-w-80 overflow-hidden backdrop-blur-sm" :style="{ left: emailDropdownPosition.x + 'px', top: emailDropdownPosition.y + 'px' }" @click.stop>
-            <!-- 用户信息头部 -->
-            <div class="bg-white px-6 py-5 border-b border-gray-200">
+          <div v-if="showEmailDropdown" class="email-dropdown fixed z-50 bg-white border border-gray-200 rounded-lg shadow-2xl p-0 min-w-64 max-w-80 overflow-hidden" :style="{ left: emailDropdownPosition.x + 'px', top: emailDropdownPosition.y + 'px' }" @click.stop>
+            <!-- User info header -->
+            <div class="px-4 py-3 border-b border-gray-200">
               <div class="flex items-center">
-                <div v-if="loginUser?.avatar" class="w-12 h-12 rounded-full overflow-hidden flex items-center justify-center mr-4 ring-2 ring-white shadow-sm">
-                  <img :src="loginUser.avatar" alt="用户头像" class="w-full h-full object-cover" />
+                <div v-if="loginUser?.avatar" class="w-8 h-8 rounded-full overflow-hidden flex items-center justify-center mr-3">
+                  <img :src="loginUser.avatar" alt="User avatar" class="w-full h-full object-cover" />
                 </div>
-                <div v-else class="w-12 h-12 bg-gray-600 rounded-full flex items-center justify-center mr-4 ring-2 ring-white shadow-sm">
-                  <span class="text-white font-semibold text-base">
+                <div v-else class="w-8 h-8 bg-gray-600 rounded-full flex items-center justify-center mr-3">
+                  <span class="text-white font-semibold text-sm">
                     {{ getUserInitials(loginUser) }}
                   </span>
                 </div>
-                <div class="flex flex-col flex-1 min-w-0 space-y-1">
-                  <span class="text-gray-800 font-semibold text-base truncate">{{ getUserDisplayName(loginUser) }}</span>
-                  <!-- 美化后的主要标识信息展示 -->
-                  <div v-if="getUserMainIdentifier(loginUser)" class="flex items-center">
-                    <span class="text-sm mr-2">{{ getUserMainIdentifier(loginUser)?.icon }}</span>
-                    <span class="text-gray-600 text-sm truncate">{{ getUserMainIdentifier(loginUser)?.display }}</span>
-                    <button @click="handleCopyClick($event, loginUser)" class="ml-2 text-xs text-gray-700 font-semibold bg-gray-100 px-2 py-0.5 rounded-full hover:bg-gray-200 transition-colors duration-200 cursor-pointer" title="复制到剪贴板"></button>
-                  </div>
+                <div class="flex-1 min-w-0">
+                  <div class="text-sm text-gray-700 font-medium truncate">{{ getUserMainIdentifier(loginUser)?.display || 'User' }}</div>
                 </div>
               </div>
             </div>
 
-            <!-- 操作菜单 -->
-            <div class="py-4">
+            <!-- Operation menu -->
+            <div class="py-2">
               <!-- Dashboard -->
-              <div class="flex items-center py-4 px-6 hover:bg-gray-50 cursor-pointer transition-all duration-200 group" @click="goUser">
-                <div class="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center mr-4 group-hover:bg-gray-200 transition-colors">
-                  <el-icon size="18" class="text-gray-600">
+              <div class="flex items-center px-4 py-2 hover:bg-gray-50 cursor-pointer transition-colors duration-150" @click="goUser">
+                <div class="w-6 h-6 flex items-center justify-center mr-3">
+                  <el-icon size="16" class="text-gray-600">
                     <User />
                   </el-icon>
                 </div>
-                <span class="text-base text-gray-700 font-medium group-hover:text-gray-800 transition-colors">Dashboard</span>
+                <span class="text-sm text-gray-700 font-medium">Dashboard</span>
               </div>
 
-              <!-- 绑定邮箱 -->
-              <div class="flex items-center py-4 px-6 hover:bg-gray-50 cursor-pointer transition-all duration-200 group" @click="showBindEmail">
-                <div class="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center mr-4 group-hover:bg-gray-200 transition-colors">
-                  <el-icon size="18" class="text-gray-600">
+              <!-- Bind email -->
+              <div class="flex items-center px-4 py-2 hover:bg-gray-50 cursor-pointer transition-colors duration-150" @click="showBindEmail">
+                <div class="w-6 h-6 flex items-center justify-center mr-3">
+                  <el-icon size="16" class="text-gray-600">
                     <Message />
                   </el-icon>
                 </div>
-                <div class="flex flex-col flex-1 min-w-0 space-y-1">
-                  <span class="text-base text-gray-700 font-medium group-hover:text-gray-800 transition-colors truncate">{{ loginUser?.email || 'Bind Email' }}</span>
-                  <span v-if="loginUser?.email" class="text-sm text-gray-500 truncate">Manage email settings</span>
+                <div class="flex flex-col flex-1 min-w-0">
+                  <span class="text-sm text-gray-700 font-medium truncate">{{ loginUser?.email || 'Bind Email' }}</span>
+                  <span v-if="loginUser?.email" class="text-xs text-gray-500 truncate">Manage email settings</span>
                 </div>
               </div>
 
-              <!-- 绑定钱包 -->
-              <div v-if="!loginUser?.walletAddress" class="flex items-center py-4 px-6 hover:bg-gray-50 cursor-pointer transition-all duration-200 group" @click="showBindAccount">
-                <div class="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center mr-4 group-hover:bg-gray-200 transition-colors">
-                  <SvgIcon width="18" height="18" name="metamask" class="text-gray-600" />
+              <!-- Bind wallet -->
+              <div v-if="!loginUser?.walletAddress" class="flex items-center px-4 py-2 hover:bg-gray-50 cursor-pointer transition-colors duration-150" @click="showBindAccount">
+                <div class="w-6 h-6 flex items-center justify-center mr-3">
+                  <SvgIcon width="16" height="16" name="metamask" class="text-gray-600" />
                 </div>
-                <div class="flex flex-col flex-1 min-w-0 space-y-1">
-                  <span class="text-base text-gray-700 font-medium group-hover:text-gray-800 transition-colors">Bind Wallet</span>
-                  <span class="text-sm text-gray-500">Connect MetaMask</span>
+                <div class="flex flex-col flex-1 min-w-0">
+                  <span class="text-sm text-gray-700 font-medium">Bind Wallet</span>
+                  <span class="text-xs text-gray-500">Connect MetaMask</span>
                 </div>
               </div>
 
-              <!-- 分隔线 -->
-              <div class="mx-6 my-4 border-t border-gray-100"></div>
+              <!-- Divider -->
+              <div class="mx-4 my-2 border-t border-gray-200"></div>
 
-              <!-- 断开连接 -->
-              <div class="flex items-center py-4 px-6 hover:bg-gray-50 cursor-pointer transition-all duration-200 group" @click="disconnect">
-                <div class="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center mr-4 group-hover:bg-gray-200 transition-colors">
-                  <el-image :src="logoutPng" class="w-5 h-5"></el-image>
+              <!-- Disconnect -->
+              <div class="flex items-center px-4 py-2 hover:bg-gray-50 cursor-pointer transition-colors duration-150" @click="disconnect">
+                <div class="w-6 h-6 flex items-center justify-center mr-3">
+                  <el-image :src="logoutPng" class="w-4 h-4"></el-image>
                 </div>
-                <span class="text-base text-gray-700 font-medium group-hover:text-gray-800 transition-colors">Disconnect</span>
+                <span class="text-sm text-gray-700 font-medium">Disconnect</span>
               </div>
             </div>
           </div>
         </Transition>
       </div>
 
-      <!-- Session List 面板 - 独立容器 -->
+      <!-- Session List Panel - independent container -->
       <div v-if="showSessionPanel && showContactPanel" class="w-65 border-r mt-[5rem] border-gray-200 flex flex-col h-auto ml-20" style="background-color: rgb(249, 250, 251)">
-        <!-- 创建新会话按钮 -->
+        <!-- Create new session button -->
         <div class="mb-4 px-4 mt-10">
           <div class="create-session-btn cursor-pointer flex items-center justify-start px-4 py-3 text-sm bg-blue-500 hover:bg-blue-600 rounded-lg transition-colors duration-200" @click="handleSessionCreate" style="background-color: rgb(249, 250, 251)">
             <el-icon size="20" class="mr-2 text-black">
@@ -1834,10 +1855,10 @@ const groupedSessions = computed(() => {
           </div>
         </div>
 
-        <!-- 会话列表 -->
+        <!-- Session list -->
         <div class="h-[calc(75vh-140px)] overflow-y-auto custom-scrollbar px-4 mt-10" style="max-height: calc(90% - 180px)">
           <div class="space-y-4">
-            <!-- 按时间分组显示sessions -->
+            <!-- Display sessions grouped by time -->
             <div v-for="group in groupedSessions" :key="group.label" class="session-group">
               <div class="group-label text-sm text-gray-500 mb-2 px-1">{{ group.label }}</div>
               <div class="space-y-1">
@@ -1854,7 +1875,7 @@ const groupedSessions = computed(() => {
         </div>
       </div>
 
-      <!-- 会话列表面板 - 已集成到左侧面板中，这里隐藏 -->
+      <!-- Session list panel - integrated into left panel, hidden here -->
       <div v-if="false" class="session-panel" :class="{ collapsed: isSessionPanelCollapsed }">
         <div class="button-wrapper mt-20">
           <div class="flex items-center justify-between w-full">
@@ -1893,7 +1914,7 @@ const groupedSessions = computed(() => {
         </div>
       </div>
 
-      <!-- 消息面板 -->
+      <!-- Message panel -->
       <div class="message-panel" :class="{ 'full-width': isSidebarCollapsed }">
         <!-- Session name -->
         <div class="header" v-if="activeSession">
@@ -1956,9 +1977,9 @@ const groupedSessions = computed(() => {
           </transition-group>
         </div>
 
-        <!-- 输入区域 - 有聊天记录时在底部，没有时居中 -->
+        <!-- Input area - at bottom when there are chat records, centered when none -->
         <div class="input-section" :class="{ 'input-section-bottom': showChatList }" v-if="activeSession && selectAgent">
-          <!-- 添加 >.dancer 标题 - 只在没有聊天记录时显示 -->
+          <!-- Add >.dancer title - only show when no chat records -->
           <template v-if="!showChatList">
             <div class="mb-50">
               <div class="dancer-title">Embod·i</div>
@@ -1981,7 +2002,7 @@ const groupedSessions = computed(() => {
   </div>
 </template>
 <style lang="scss" scoped>
-/* Montserrat-Bold 字体定义 */
+/* Montserrat-Bold font definition */
 @font-face {
   font-family: 'Montserrat-Bold';
   src: url('@/assets/font/Montserrat-Bold.ttf') format('truetype');
@@ -1989,7 +2010,7 @@ const groupedSessions = computed(() => {
   font-style: normal;
 }
 
-/* 弹窗动画效果 */
+/* Dropdown animation effects */
 .dropdown-enter-active {
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
@@ -2014,7 +2035,7 @@ const groupedSessions = computed(() => {
   transform: translateY(0) scale(1);
 }
 
-/* 弹窗样式优化 */
+/* Dropdown style optimization */
 .email-dropdown {
   backdrop-filter: blur(8px);
   border: 1px solid rgba(255, 255, 255, 0.2);
@@ -2298,7 +2319,7 @@ const groupedSessions = computed(() => {
     .message-panel {
       width: 1200px;
       max-width: 1200px;
-      height: calc(100vh - 60px); /* 设置高度为视口高度减去顶部导航栏高度 */
+      height: calc(100vh - 60px); /* Set height to viewport height minus top navbar height */
       display: flex;
       flex-direction: column;
       overflow: hidden;
@@ -2308,7 +2329,7 @@ const groupedSessions = computed(() => {
       overscroll-behavior: none;
       -webkit-overscroll-behavior: none;
       align-items: center;
-      justify-content: center; /* 添加垂直居中 */
+      justify-content: center; /* Add vertical centering */
       background-color: #ffffff;
       transition: width 0.3s ease;
       margin: 0 auto;
@@ -2489,15 +2510,15 @@ const groupedSessions = computed(() => {
     padding: 20px 16px;
     gap: 16px;
 
-    // margin-top 由 Tailwind/UnoCSS 类控制
+    // margin-top controlled by Tailwind/UnoCSS classes
 
-    // 当侧边栏收起时，移除背景色
+    // Remove background color when sidebar is collapsed
     .contact-panel:not(.w-60) & {
       background-color: transparent !important;
     }
   }
 
-  // 使用 :deep() 穿透 scoped CSS 来覆盖收起状态的背景色
+  // Use :deep() to penetrate scoped CSS to override background color in collapsed state
   :deep(.contact-panel:not(.w-60) .sidebar-icons) {
     background-color: transparent !important;
   }
@@ -2560,7 +2581,7 @@ const groupedSessions = computed(() => {
   -ms-overflow-style: none !important;
 }
 
-// 可以添加选中状态的过渡效果
+// Can add transition effects for selected state
 .transition-colors {
   transition: background-color 0.2s ease;
 }
@@ -2611,7 +2632,7 @@ const groupedSessions = computed(() => {
   }
 }
 
-// 取消搜索输入框的边框
+// Remove border from search input box
 :deep(.search-input-no-border) {
   .el-input__wrapper {
     background-color: transparent !important;
@@ -2729,7 +2750,7 @@ const groupedSessions = computed(() => {
   }
 }
 
-// 添加全局浅色模式样式
+// Add global light mode styles
 .light {
   .el-drawer {
     :deep {
@@ -2757,7 +2778,7 @@ const groupedSessions = computed(() => {
   }
 }
 
-// 自定义滚动条样式
+// Custom scrollbar styles
 .custom-scrollbar {
   scrollbar-width: thin;
   scrollbar-color: #d1d5db #f3f4f6;
@@ -2776,7 +2797,7 @@ const groupedSessions = computed(() => {
   }
 }
 
-// 消息列表过渡动画
+// Message list transition animation
 .list-enter-active,
 .list-leave-active {
   transition: all 0.3s ease;
@@ -2874,7 +2895,7 @@ const groupedSessions = computed(() => {
   }
 }
 
-// 用户信息区域样式
+// User info section styles
 .user-info-section {
   background-color: #f9fafb;
   border-top: 1px solid #e5e7eb;
@@ -2903,7 +2924,7 @@ const groupedSessions = computed(() => {
   z-index: 10;
 }
 
-// 输入区域样式
+// Input section styles
 .input-section {
   display: flex;
   flex-direction: column;
@@ -2918,7 +2939,7 @@ const groupedSessions = computed(() => {
   transform: translate(-50%, -50%);
   z-index: 10;
 
-  // 当有聊天记录时，输入框显示在底部
+  // When there are chat records, input box displays at bottom
   &.input-section-bottom {
     position: relative;
     top: auto;
@@ -2930,7 +2951,7 @@ const groupedSessions = computed(() => {
   }
 }
 
-// >.dancer 标题样式
+// >.dancer title styles
 .dancer-title {
   font-family: 'Montserrat-Bold', sans-serif;
   font-size: 48px;
