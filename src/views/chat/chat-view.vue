@@ -58,6 +58,7 @@ const emailDropdownPosition = ref({ x: 0, y: 0 })
 
 import logoutPng from '@/assets/image/logout.png?url'
 import walletsPng from '@/assets/image/wallets.png?url'
+import logo5Png from '@/assets/image/logo5.png?url'
 
 import Substring from '@/components/Substring.vue'
 
@@ -1373,6 +1374,28 @@ async function handleSearchWeb(message: boolean) {
   options.value.enableAgent = message
 }
 
+// 处理agent切换事件
+const handleAgentChange = async (agentId: string) => {
+  try {
+    // 根据agentId从agentList中找到对应的agent
+    const agent = agentList.value.find((a) => a.id === agentId)
+    if (agent) {
+      selectAgent.value = agent
+      selectAgentId.value = agent.id
+      console.info('Agent changed to:', agent.nickName, 'ID:', agent.id)
+
+      // 重新获取会话列表
+      await getSessionList()
+
+      // 重置搜索状态
+      handleSearchWeb(false)
+    }
+  } catch (error) {
+    console.error('Handle agent change failed:', error)
+    ElMessage.error('切换Agent失败')
+  }
+}
+
 // Stop inference task
 const handleStopReasoning = () => {
   // Terminate inference logic
@@ -1677,7 +1700,7 @@ const groupedSessions = computed(() => {
           <!-- Sidebar design based on screenshot reference - always show icons -->
           <div class="sidebar-icons" style="margin-top: 80px">
             <div class="icon-item agent-item" :class="{ selected: showAgentPanel }" @click="toggleAgentPanel">
-              <img src="@/assets/agent.png" alt="agent" style="width: 20px; height: 20px" />
+              <img v-if="showContactPanel" src="@/assets/agent.png" alt="agent" style="width: 20px; height: 20px" />
               <span v-if="showContactPanel" class="agent-text"
                 >Agent List
 
@@ -1993,15 +2016,18 @@ const groupedSessions = computed(() => {
           <!-- Add >.dancer title - only show when no chat records -->
           <template v-if="!showChatList">
             <div class="mb-50">
-              <div class="dancer-title">Embod·i</div>
-              <div class="dancer-title-sub">Chat & build with open models on Web3</div>
+              <div class="dancer-title">
+                <span style="font-family: 'Montserrat', sans-serif; font-weight: 400">MOSS AI</span>
+                <span style="font-family: 'Montserrat-Bold', sans-serif; margin-left: 10px">Office</span>
+              </div>
+              <div class="dancer-title-sub">Hire AI Agents and launch your startups</div>
             </div>
           </template>
 
-          <message-input @send="preHandleSendMessage" :loading="sendLoading" @search="handleSearchWeb" @stop="handleStopReasoning" :functionStatus="selectAgent.functionStatus"></message-input>
+          <message-input @send="preHandleSendMessage" :loading="sendLoading" @search="handleSearchWeb" @stop="handleStopReasoning" @agent-change="handleAgentChange" :functionStatus="selectAgent.functionStatus" :agentList="agentList"></message-input>
         </div>
 
-        <div class="disclaimer-text">Embod·i can make mistakes. Please monitor its work.</div>
+        <div class="disclaimer-text">slogen can make mistakes. Please monitor its work.</div>
 
         <Login ref="loginRef" />
 
@@ -2970,7 +2996,6 @@ const groupedSessions = computed(() => {
 
 // >.dancer title styles
 .dancer-title {
-  font-family: 'Montserrat-Bold', sans-serif;
   font-size: 48px;
   font-weight: 700;
   color: #1f2937;

@@ -1,15 +1,34 @@
 <script lang="ts" setup>
-import { ref, reactive } from 'vue'
+import { ref, reactive, onMounted, computed } from 'vue'
 import { Position, ArrowDown } from '@element-plus/icons-vue'
 import ImageUpload from '@/components/image/image-upload.vue'
 import { ElMessage } from 'element-plus'
+import { request } from '@/utils/request'
 
 import worldPng from '@/assets/image/world.png'
+import send_1 from '@/assets/send_1.png'
+import send_2 from '@/assets/send_2.png'
+import browuserPng from '@/assets/image/browuser.png'
+import ai_worldPng from '@/assets/image/ai_world.png'
 
 type Message = {
   text: string
   image: string
 }
+
+const agentList = ref<any[]>([])
+
+const sids = ref<string[]>([
+  '0x3efe0ce7b0741282e4e5b1da44b46991fb1c429060fa0eb245920812cd663766',
+  '0xf88c19433a2e058e7801f8b3e509db0aa57f6a66a75b407c1bf843e2be2ac9b0',
+  '0x6c7977490c492fb35fd388b0cb006d3b9b8fb9cb6a2657d3f41aa6a4d54562a9',
+  '0x045990e6c6dedd212ba480d50e98997e2d8443143e460e1a282837f75dc34893',
+  '0x0042968e7ea4ca8b3630ad50c905a0559c058bef0e1213ff70cc2b102b6add59',
+  '0x98d9867b15a5bbac3217c7c738ce3c5a1ee433acb21fd87c680119195ae38d51',
+  '0x4f61db87f7a7bd15586f9afc64d9b13a85c11af332786f3580ac77083a515054',
+])
+
+const selectedAgent = ref('')
 const props = defineProps<{
   functionStatus: string
   loading: boolean
@@ -20,6 +39,7 @@ const emit = defineEmits<{
   send: [message: Message]
   search: [message: boolean]
   stop: []
+  agentChange: [agentId: string]
 }>()
 // Message in input box
 const message = ref<Message>({ text: '', image: '' })
@@ -38,6 +58,34 @@ const handleBlur = () => {
   document.body.style.overflow = ''
   document.body.style.position = ''
 }
+
+async function getAgentList() {
+  const { result } = await request({
+    url: '/mgn/agent/list',
+    method: 'GET',
+    params: {
+      pageNo: 1,
+      pageSize: 5,
+      sid: sids.value.join(','),
+    },
+    headers: {
+      'X-Access-Token': localStorage.getItem('X-Token') || '',
+    },
+  })
+  agentList.value = result.records
+}
+
+const selectAgentObject = computed(() => {
+  // 如果是固定的agent，返回对应的信息
+  if (selectedAgent.value === 'ai_world') {
+    return { nickName: 'AI World' }
+  }
+  if (selectedAgent.value === 'browuser') {
+    return { nickName: 'Browser Use' }
+  }
+  // 否则从agentList中查找
+  return agentList.value.find((agent) => agent.id === selectedAgent.value)
+})
 
 const sendMessage = () => {
   // 如果当前处于加载状态，执行停止操作
@@ -70,6 +118,16 @@ const searchToggleButton = () => {
 const uploadToggleButton = () => {
   buttonActive.upload = !buttonActive.upload
 }
+
+// 选择agent
+const selectAgent = (agentId: string) => {
+  selectedAgent.value = agentId
+  emit('agentChange', agentId)
+}
+
+onMounted(async () => {
+  await getAgentList()
+})
 </script>
 
 <template>
@@ -80,22 +138,46 @@ const uploadToggleButton = () => {
         <div class="input-field">
           <div class="input-content">
             <!-- 可输入的文本框 -->
-            <el-input v-model="message.text" class="message-input-field" @keydown.enter.prevent="sendMessage" @focus="handleFocus" @blur="handleBlur" placeholder="Message Embod·i"></el-input>
-            <div class="input-controls">
-              <div class="control-buttons">
-                <button class="control-btn browser-btn">
-                  <img :src="worldPng" alt="browser" class="control-btn-icon" />
-                  <span>Browser Use</span>
-                </button>
-                <button class="control-btn ai-world-btn">
-                  <img src="@/assets/image/aipod.png" alt="aipod" class="control-btn-icon" />
-                  <span>AI World</span>
-                </button>
+            <el-input v-model="message.text" class="message-input-field" @keydown.enter.prevent="sendMessage" @focus="handleFocus" @blur="handleBlur" :placeholder="'Message ' + (selectAgentObject?.nickName || '')"></el-input>
+            <!-- Agent头像列表和Send按钮 -->
+            <div class="input-bottom-row">
+              <div class="agent-avatars">
+                <div class="avatar-list">
+                  <button class="avatar-btn" :class="{ active: selectedAgent === 'ai_world' }" title="AI world" @click="selectAgent('ai_world')">
+                    <div class="avatar-icon" :style="{ backgroundColor: ai_worldPng }">
+                      <span class="icon-text">
+                        <el-avatar :size="48" :src="ai_worldPng" fit="contain" />
+                      </span>
+                    </div>
+                  </button>
+
+                  <button class="avatar-btn" :class="{ active: selectedAgent === 'browuser' }" title="Browser use" @click="selectAgent('browuser')">
+                    <div class="avatar-icon" :style="{ backgroundColor: browuserPng }">
+                      <span class="icon-text">
+                        <el-avatar :size="48" :src="browuserPng" fit="contain" />
+                      </span>
+                    </div>
+                  </button>
+
+                  <button v-for="agent in agentList" :key="agent.id" class="avatar-btn" :class="{ active: selectedAgent === agent.id }" @click="selectAgent(agent.id)" :title="agent.name">
+                    <div class="avatar-icon" :style="{ backgroundColor: agent.color }">
+                      <span class="icon-text">
+                        <el-avatar :size="48" :src="agent.avatar" fit="contain" />
+                      </span>
+                    </div>
+                  </button>
+                </div>
+                <div class="separator"></div>
               </div>
-              <button class="send-btn" @click="sendMessage" :disabled="!props.loading && !message.text.trim()">
-                <el-icon v-if="!props.loading" class="send-icon">↑</el-icon>
-                <span v-if="props.loading">Stop</span>
-                <span v-else>Send</span>
+              <button @click="sendMessage" :disabled="!props.loading && !message.text.trim()">
+                <img v-if="!props.loading && !message.text.trim()" class="send-icon" style="width: 30px; height: auto" :src="send_2" alt="Send" />
+                <span v-else-if="!props.loading && message.text.trim()">
+                  <img class="send-icon" style="width: 30px; height: auto" :src="send_1" alt="Send" />
+                </span>
+              </button>
+
+              <button v-if="props.loading" @click="sendMessage" class="stop-btn">
+                <span> Stop </span>
               </button>
             </div>
           </div>
@@ -111,25 +193,33 @@ const uploadToggleButton = () => {
   background-color: transparent;
   display: flex;
   justify-content: center;
-  width: 100%;
+  align-items: center;
+  width: 60%;
   max-width: 100%;
+  height: 100%;
+  min-height: fit-content;
 
   .input-wrapper {
     width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 
   .input-container {
     position: relative;
     width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 
   .input-field {
     position: relative;
     width: 100%;
     background-color: #f9fafb;
-    border: 1px solid #e5e7eb;
-    border-radius: 12px;
-    padding: 16px;
+    border-radius: 50px;
+    padding: 24px;
     box-shadow: none;
     transition: all 0.2s ease;
 
@@ -146,7 +236,13 @@ const uploadToggleButton = () => {
   .input-content {
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 16px;
+  }
+
+  .input-bottom-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
   }
 
   .message-input-field {
@@ -159,6 +255,7 @@ const uploadToggleButton = () => {
       font-size: 16px;
       font-weight: 400;
       line-height: 1.5;
+      min-height: 40px;
     }
 
     :deep(.el-input__inner) {
@@ -196,11 +293,69 @@ const uploadToggleButton = () => {
     }
   }
 
-  .input-controls {
+  .agent-avatars {
     display: flex;
     align-items: center;
-    justify-content: space-between;
     gap: 12px;
+  }
+
+  .avatar-list {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .avatar-btn {
+    position: relative;
+    width: 56px;
+    height: 56px;
+    border: none;
+    border-radius: 50%;
+    background-color: transparent;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    &:hover {
+      transform: scale(1.05);
+    }
+
+    &.active {
+      box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+    }
+
+    .avatar-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      color: #000000;
+      font-weight: bold;
+      line-height: 1;
+      overflow: hidden;
+
+      .icon-text {
+        display: block;
+        font-size: 12px;
+        line-height: 1;
+        color: #000000;
+        font-weight: bold;
+        text-align: center;
+      }
+    }
+  }
+
+  .separator {
+    width: 2px;
+    height: 40px;
+    background-color: #000000;
+    margin: 0 0 0 100px;
   }
 
   .agent-dropdown {
@@ -305,16 +460,18 @@ const uploadToggleButton = () => {
   .send-btn {
     display: flex;
     align-items: center;
-    gap: 4px;
-    padding: 6px 12px;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
     background-color: #000000;
     border: none;
-    border-radius: 6px;
+    border-radius: 50%;
     color: #ffffff;
     font-size: 13px;
     font-weight: 500;
     cursor: pointer;
     transition: all 0.2s ease;
+    padding: 0;
 
     &:hover:not(:disabled) {
       background-color: #333333;
@@ -328,8 +485,32 @@ const uploadToggleButton = () => {
     }
 
     .send-icon {
-      font-size: 14px;
-      font-weight: bold;
+      width: 10px;
+      height: 10px;
+      object-fit: contain;
+    }
+  }
+
+  .stop-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px 16px;
+    background-color: #000000;
+    border: none;
+    border-radius: 20px;
+    color: #ffffff;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+
+    &:hover {
+      background-color: #333333;
+    }
+
+    span {
+      color: #ffffff;
     }
   }
 
@@ -345,10 +526,15 @@ const uploadToggleButton = () => {
     height: auto;
     -webkit-overflow-scrolling: touch;
     overflow-y: auto;
-    display: block;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 
     .input-wrapper {
       width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
 
     .input-container {
@@ -356,9 +542,28 @@ const uploadToggleButton = () => {
       z-index: 1001;
     }
 
-    .input-controls {
+    .agent-avatars {
       flex-wrap: wrap;
       gap: 8px;
+    }
+
+    .avatar-list {
+      gap: 8px;
+    }
+
+    .avatar-btn {
+      width: 36px;
+      height: 36px;
+
+      .avatar-icon {
+        width: 28px;
+        height: 28px;
+        font-size: 14px;
+
+        .icon-text {
+          font-size: 11px;
+        }
+      }
     }
 
     .control-btn {
@@ -367,8 +572,16 @@ const uploadToggleButton = () => {
     }
 
     .send-btn {
-      padding: 6px 12px;
-      font-size: 13px;
+      width: 36px;
+      height: 36px;
+      padding: 0;
+      font-size: 14px;
+
+      .send-icon {
+        width: 18px;
+        height: 18px;
+        object-fit: contain;
+      }
     }
   }
 
