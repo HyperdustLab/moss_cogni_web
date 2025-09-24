@@ -2027,7 +2027,7 @@ const groupedSessions = computed(() => {
           <message-input @send="preHandleSendMessage" :loading="sendLoading" @search="handleSearchWeb" @stop="handleStopReasoning" @agent-change="handleAgentChange" :functionStatus="selectAgent.functionStatus" :agentList="agentList"></message-input>
         </div>
 
-        <div class="disclaimer-text">slogen can make mistakes. Please monitor its work.</div>
+        <div class="disclaimer-text">Hire AI Agents and launch your startups</div>
 
         <Login ref="loginRef" />
 
@@ -3014,7 +3014,6 @@ const groupedSessions = computed(() => {
   text-align: center;
   letter-spacing: 0.05em;
   line-height: 1.4;
-  text-transform: lowercase;
   opacity: 0.9;
 }
 </style>

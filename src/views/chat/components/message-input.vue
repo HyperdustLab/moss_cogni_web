@@ -170,9 +170,9 @@ onMounted(async () => {
                 <div class="separator"></div>
               </div>
               <button @click="sendMessage" :disabled="!props.loading && !message.text.trim()">
-                <img v-if="!props.loading && !message.text.trim()" class="send-icon" style="width: 30px; height: auto" :src="send_2" alt="Send" />
+                <img v-if="!props.loading && !message.text.trim()" class="send-icon" style="width: 50px; height: auto" :src="send_2" alt="Send" />
                 <span v-else-if="!props.loading && message.text.trim()">
-                  <img class="send-icon" style="width: 30px; height: auto" :src="send_1" alt="Send" />
+                  <img class="send-icon" style="width: 50px; height: auto" :src="send_1" alt="Send" />
                 </span>
               </button>
 
