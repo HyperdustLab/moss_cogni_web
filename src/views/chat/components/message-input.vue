@@ -184,6 +184,7 @@ onMounted(async () => {
         </div>
       </div>
     </div>
+    <div class="disclaimer-text">Hire AI Agents and launch your startups</div>
   </div>
 </template>
 
@@ -192,6 +193,7 @@ onMounted(async () => {
   padding: 0;
   background-color: transparent;
   display: flex;
+  flex-direction: column;
   justify-content: center;
   align-items: center;
   width: 60%;
@@ -587,15 +589,17 @@ onMounted(async () => {
 
   .disclaimer-text {
     text-align: center;
-    margin-top: 12px;
+    margin-top: 20px;
     color: #6b7280;
     font-size: 12px;
     font-weight: 400;
     line-height: 1.4;
     opacity: 0.8;
-    white-space: normal;
+    white-space: pre-line;
     word-break: break-word;
     display: block;
+    width: 100%;
+    align-self: flex-end;
   }
 }
 

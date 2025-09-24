@@ -2024,10 +2024,8 @@ const groupedSessions = computed(() => {
             </div>
           </template>
 
-          <message-input @send="preHandleSendMessage" :loading="sendLoading" @search="handleSearchWeb" @stop="handleStopReasoning" @agent-change="handleAgentChange" :functionStatus="selectAgent.functionStatus" :agentList="agentList"></message-input>
+          <message-input @send="preHandleSendMessage" :loading="sendLoading" @search="handleSearchWeb" @stop="handleStopReasoning" @agent-change="handleAgentChange" :functionStatus="selectAgent.functionStatus"></message-input>
         </div>
-
-        <div class="disclaimer-text">Hire AI Agents and launch your startups</div>
 
         <Login ref="loginRef" />
 
@@ -2133,20 +2131,6 @@ const groupedSessions = computed(() => {
 
 .table-wrapper {
   margin-bottom: 20px;
-}
-
-.disclaimer-text {
-  text-align: center;
-  margin-top: 12px;
-  color: #6b7280;
-  font-size: 12px;
-  font-weight: 400;
-  line-height: 1.4;
-  opacity: 0.8;
-  white-space: normal;
-  word-break: break-word;
-  display: block;
-  margin-bottom: 100px;
 }
 
 .pager-wrapper {
@@ -2410,8 +2394,8 @@ const groupedSessions = computed(() => {
 
       .message-list {
         padding: 20px;
-        padding-bottom: 120px;
-        width: 100%;
+        width: 60%;
+        height: 100%;
         flex: 1;
         box-sizing: border-box;
         margin: 0 auto;
@@ -2989,7 +2973,7 @@ const groupedSessions = computed(() => {
     left: auto;
     transform: none;
     margin-top: auto;
-    padding-top: 20px;
+    padding-top: 100px;
     padding-bottom: 20px;
   }
 }
