@@ -84,7 +84,11 @@ const selectAgentObject = computed(() => {
     return { nickName: 'Browser Use' }
   }
   // 否则从agentList中查找
-  return agentList.value.find((agent) => agent.id === selectedAgent.value)
+  const agent = agentList.value.find((agent) => agent.id === selectedAgent.value)
+
+  emit('agentChange', agent?.id)
+
+  return agent
 })
 
 const sendMessage = () => {

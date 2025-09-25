@@ -2243,8 +2243,8 @@ const groupedSessions = computed(() => {
         }
 
         .logo-shape {
-          width: 10rem;
-          height: 5rem;
+          width: 15rem;
+          height: auto;
           object-fit: contain;
         }
 
