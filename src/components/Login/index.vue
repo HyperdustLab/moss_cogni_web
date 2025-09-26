@@ -153,7 +153,7 @@ async function handleMetamaskLogin() {
   // @ts-ignore
   const accounts = await ethereum.request({ method: 'eth_accounts' })
 
-  const { result } = await request.postForm(BASE_URL + '/sys/getPersonalSignMessage', {
+  const { result } = await request.postForm('/sys/getPersonalSignMessage', {
     address: accounts[0],
   })
 
@@ -167,7 +167,7 @@ async function handleMetamaskLogin() {
   })
 
   // @ts-ignore
-  const res = await request.post(BASE_URL + '/sys/metaMaskLogin', {
+  const res = await request.post('/sys/metaMaskLogin', {
     address: accounts[0],
     signature: signature,
     role: 'user',
@@ -196,7 +196,7 @@ async function sendCode() {
 
   loading.value = true
 
-  await request.postForm(BASE_URL + '/sys/sendEmailLoginCode', { email: form.email, type: 'login' })
+  await request.postForm('/sys/sendEmailLoginCode', { email: form.email, type: 'login' })
 
   loading.value = false
 
@@ -223,7 +223,7 @@ async function emailLogin() {
     return
   }
 
-  const { result, success, message } = await request.post(BASE_URL + '/sys/emailLogin', form)
+  const { result, success, message } = await request.post('/sys/emailLogin', form)
 
   if (success) {
     loginToken(result.token)

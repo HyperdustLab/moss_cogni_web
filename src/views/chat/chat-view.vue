@@ -521,7 +521,7 @@ onMounted(async () => {
 
   if (sid) {
     const { result } = await request({
-      url: BASE_URL + '/mgn/agent/list',
+      url: '/mgn/agent/list',
       params: {
         sid: sid,
       },
@@ -546,7 +546,7 @@ onMounted(async () => {
 
 async function getReplySearch() {
   const { result } = await request({
-    url: BASE_URL + '/sys/dict/getDictText/3d_client_config/reply_search',
+    url: '/sys/dict/getDictText/3d_client_config/reply_search',
     method: 'GET',
     headers: {
       'X-Access-Token': token.value,
@@ -558,7 +558,7 @@ async function getReplySearch() {
 
 async function getDefaultWelcomeMessage() {
   const { result } = await request({
-    url: BASE_URL + '/sys/dict/getDictText/sys_config/welcomeMessage',
+    url: '/sys/dict/getDictText/sys_config/welcomeMessage',
     method: 'GET',
     headers: {
       'X-Access-Token': token.value,
@@ -576,7 +576,7 @@ onUnmounted(() => {
 
 async function getDefaultContent() {
   const { result } = await request({
-    url: BASE_URL + '/mgn/agentNpc/list',
+    url: '/mgn/agentNpc/list',
     method: 'GET',
     params: {
       name: 'agentme',
@@ -620,7 +620,7 @@ async function getSessionList() {
   }
 
   const { result } = await request({
-    url: BASE_URL + '/mgn/aiSession/list',
+    url: '/mgn/aiSession/list',
     method: 'GET',
     headers: {
       'X-Access-Token': token.value,
@@ -655,7 +655,7 @@ function handleSelectSession(session: any) {
 
 async function getCurrAgentOnlineStatus() {
   const { result } = await request({
-    url: BASE_URL + '/mgn/agent/list',
+    url: '/mgn/agent/list',
     method: 'GET',
     params: {
       sid: selectAgent.value.sid,
@@ -736,7 +736,7 @@ const preHandleSendMessage = async (message: { text: string; image: string }) =>
       },
     }
 
-    await request.post(BASE_URL + '/ws/socketMsg/sendSocketMsg', {
+    await request.post('/ws/socketMsg/sendSocketMsg', {
       userId: selectAgent.value.owner,
       msg: JSON.stringify(msg),
     })
@@ -1053,7 +1053,7 @@ click the avatar to wake them."
                 avatar: avatar,
               },
             }
-            await request.post(BASE_URL + '/ws/socketMsg/sendSocketMsg', {
+            await request.post('/ws/socketMsg/sendSocketMsg', {
               userId: selectAgent.value.owner,
               msg: JSON.stringify(msg),
             })
@@ -1188,7 +1188,7 @@ click the avatar to wake them."
                   avatar: avatar,
                 },
               }
-              await request.post(BASE_URL + '/ws/socketMsg/sendSocketMsg', {
+              await request.post('/ws/socketMsg/sendSocketMsg', {
                 userId: selectAgent.value.owner,
                 msg: JSON.stringify(msg),
               })
@@ -1221,7 +1221,7 @@ click the avatar to wake them."
 
 async function addReasoningRecord(reasoningRecord: any) {
   await request({
-    url: BASE_URL + '/mgn/reasoningRecord/add',
+    url: '/mgn/reasoningRecord/add',
     method: 'POST',
     data: reasoningRecord,
     headers: {
@@ -1232,7 +1232,7 @@ async function addReasoningRecord(reasoningRecord: any) {
 
 async function saveMessage(message: any) {
   await request({
-    url: BASE_URL + '/mgn/aiMessage/add',
+    url: '/mgn/aiMessage/add',
     method: 'POST',
     data: message,
     headers: {
@@ -1248,7 +1248,7 @@ const handleSessionCreate = async () => {
   }
 
   await request({
-    url: BASE_URL + '/mgn/aiSession/add',
+    url: '/mgn/aiSession/add',
     method: 'POST',
     data: {
       agentId: selectAgent.value.sid,
@@ -1265,7 +1265,7 @@ const handleSessionCreate = async () => {
 
 async function getMyAgent() {
   const { result } = await request({
-    url: BASE_URL + '/mgn/agent/list',
+    url: '/mgn/agent/list',
     method: 'GET',
     headers: {
       'X-Access-Token': token.value,
@@ -1297,7 +1297,7 @@ async function getAgentList(isLoadMore = false) {
     }
 
     const { result } = await request({
-      url: BASE_URL + '/mgn/agent/list',
+      url: '/mgn/agent/list',
       params,
       method: 'GET',
       headers: {
@@ -1354,7 +1354,7 @@ watch(searchQuery, () => {
 async function getLoginUser() {
   try {
     const res = await request({
-      url: BASE_URL + '/sys/getCurrUser',
+      url: '/sys/getCurrUser',
       headers: {
         'X-Access-Token': token.value,
       },
@@ -1449,7 +1449,7 @@ const handleSelectAgent = (_agent: any) => {
 
 async function getMessageList() {
   const { result } = await request({
-    url: BASE_URL + '/mgn/aiMessage/list',
+    url: '/mgn/aiMessage/list',
     method: 'GET',
     headers: {
       'X-Access-Token': token.value,
@@ -1510,7 +1510,7 @@ async function handleDeleteSession(sessionId: string) {
 
     if (result === 'confirm') {
       await request({
-        url: BASE_URL + '/mgn/aiSession/delete',
+        url: '/mgn/aiSession/delete',
         method: 'DELETE',
         headers: {
           'X-Access-Token': token.value,
@@ -1564,7 +1564,7 @@ function handleMessage(event: any) {
 const handleUpdateSession = async () => {
   try {
     await request({
-      url: BASE_URL + '/mgn/aiSession/edit',
+      url: '/mgn/aiSession/edit',
       method: 'POST',
       headers: {
         'X-Access-Token': token.value,
@@ -1726,7 +1726,7 @@ async function isPhotoOrCelebrity(question: string) {
 
 async function getAgentCount(online: boolean | null) {
   const { result } = await request({
-    url: BASE_URL + '/mgn/agent/list',
+    url: '/mgn/agent/list',
     method: 'GET',
     params: {
       selectOnline: online,
@@ -1751,7 +1751,7 @@ async function unbindX() {
 
     if (confirmResult === 'confirm') {
       await request({
-        url: BASE_URL + '/mgn/agent/unbindX',
+        url: '/mgn/agent/unbindX',
         method: 'GET',
         params: {
           sid: selectAgent.value.sid,
