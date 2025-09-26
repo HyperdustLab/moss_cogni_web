@@ -188,7 +188,7 @@ onMounted(async () => {
         </div>
       </div>
     </div>
-    <div class="disclaimer-text">Hire AI Agents and launch your startups</div>
+    <div class="disclaimer-text">MOSS can make mistakes. Please monitor its work</div>
   </div>
 </template>
 

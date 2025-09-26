@@ -783,11 +783,12 @@ const handleSendMessage = async (message: { text: string; inputText: string; ima
 
   const messageParams = {
     assistantId: selectAgent.value.sid,
-    model: 'MFDoom/deepseek-r1-tool-calling:32b',
+    model: 'deepseek/deepseek-chat',
     content: content,
     userId: loginUser.value?.id || currSessionId.value,
-    textContent: message.inputText,
+    message: message.inputText,
     sessionId: activeSession.value.id,
+    max_iterations: 5,
     enableVectorStore: true,
     enableTool: selectAgent.value.functionStatus === 'Y',
   }
@@ -811,12 +812,40 @@ const handleSendMessage = async (message: { text: string; inputText: string; ima
 
   evtSource.stream()
 
+  // 添加错误处理
+  evtSource.addEventListener('error', (event: any) => {
+    console.error('SSE connection error:', event)
+    sendLoading.value = false
+    isProcessing.value = false
+    isThinking = false
+  })
+
   evtSource.addEventListener('message', async (event: any) => {
     console.info('event.data', event.data)
 
     const eventData = event.data
-    const data = JSON.parse(eventData)
 
+    // 处理 SSE 数据格式，移除 "data: " 前缀
+    let cleanData = eventData
+    if (eventData.startsWith('data: ')) {
+      cleanData = eventData.substring(6) // 移除 "data: " 前缀
+    }
+
+    // 跳过空数据或非 JSON 数据
+    if (!cleanData || cleanData.trim() === '') {
+      return
+    }
+
+    let data
+    try {
+      data = JSON.parse(cleanData)
+      console.info('Parsed SSE data:', data)
+    } catch (error) {
+      console.error('JSON parse error:', error, 'Raw data:', cleanData)
+      return
+    }
+
+    // 处理错误响应
     if (data.code === 400) {
       let errorText =
         "Out of gas, your agent's asleep. Top up the agent's wallet, then\nclick the avatar to wake them.\
@@ -839,7 +868,6 @@ click the avatar to wake them."
       messageList.value.push(errorMessage)
 
       sendLoading.value = false
-
       isProcessing.value = false
 
       await nextTick(() => {
@@ -866,141 +894,327 @@ click the avatar to wake them."
       return
     }
 
-    if (isThinking) {
-      // Accumulate content in buffer
-      buffer += data.content || ''
+    // 根据新的流式响应格式处理不同类型的数据
+    switch (data.type) {
+      case 'content':
+        // 处理内容流
+        console.info('Received content:', data.content)
 
-      // Check if buffer contains the complete </think> tag
-      if (buffer.includes('</think>')) {
-        isThinking = false
-        // Extract content after </think>, if any
-        const thinkEndIndex = buffer.indexOf('</think>') + 8
-        const contentAfterThink = buffer.slice(thinkEndIndex).trim()
-        // Append only content after </think>, if it exists
-        if (contentAfterThink) {
-          responseMessage.value.textContent += contentAfterThink
+        if (isThinking) {
+          // 在思考模式下累积内容到缓冲区
+          buffer += data.content || ''
+
+          // 检查缓冲区是否包含完整的 </think> 标签
+          if (buffer.includes('</think>')) {
+            isThinking = false
+            // 提取 </think> 后的内容（如果有）
+            const thinkEndIndex = buffer.indexOf('</think>') + 8
+            const contentAfterThink = buffer.slice(thinkEndIndex).trim()
+            // 只追加 </think> 后的内容（如果存在）
+            if (contentAfterThink) {
+              responseMessage.value.textContent += contentAfterThink
+            }
+            // 清空缓冲区
+            buffer = ''
+            // 滚动到底部
+            await nextTick(() => {
+              messageListRef.value?.scrollTo(0, messageListRef.value.scrollHeight)
+            })
+          }
+          // 如果仍在思考模式，跳过追加（不执行任何操作）
+        } else {
+          // 如果不在思考模式，直接追加内容
+          if (data.content) {
+            responseMessage.value.textContent += data.content
+            console.info('Updated response content:', responseMessage.value.textContent)
+          }
+          // 滚动到底部
+          await nextTick(() => {
+            messageListRef.value?.scrollTo(0, messageListRef.value.scrollHeight)
+          })
         }
-        // Clear buffer
-        buffer = ''
-        // Scroll to bottom
-        await nextTick(() => {
-          messageListRef.value?.scrollTo(0, messageListRef.value.scrollHeight)
-        })
-      }
-      // Do nothing if still in thinking mode (skip appending)
-    } else {
-      // Append content directly if not in thinking mode
-      responseMessage.value.textContent += data.content || ''
-      // Scroll to bottom
-      await nextTick(() => {
-        messageListRef.value?.scrollTo(0, messageListRef.value.scrollHeight)
-      })
-    }
+        break
 
-    if (data.fullPrompt) {
-      evtSource.close()
-
-      chatMessage.value.textContent = message.text
-      // if (message.mediaFileUrls) {
-      //   responseMessage.value.medias = message.mediaFileUrls.map((url) => ({ type: 'image', data: url }))
-      // }
-
-      reasoningRecord.value = {
-        inputContent: message.inputText,
-        outContent: responseMessage.value.textContent,
-        agentId: selectAgent.value.sid,
-        userId: loginUser.value?.id || '',
-        prompt: data.fullPrompt,
-        serviceName: options.value.model,
-        systemContent: content,
-        remark: options.value.baseUrl,
-      }
-
-      let avatar = loginUser.value ? loginUser.value.avatar : ''
-
-      if (!avatar) {
-        avatar = defAvatar.value
-      }
-
-      inputTextReplyStatus.value = false
-
-      if (!isOnline.value) {
-        sendLoading.value = false
-        await saveMessage(chatMessage.value)
-        await saveMessage(responseMessage.value)
-
-        await addReasoningRecord(reasoningRecord.value)
-
-        inputTextReplyStatus.value = true
-        // @ts-ignore
-        responseMessage.value.thinkingList[responseMessage.value.thinkingList.length - 1].status = 'success'
-
-        // @ts-ignore
-        responseMessage.value.thinkingList.push({ title: 'Think complete', status: 'success' })
-      } else {
-        const type = await isPhotoOrCelebrity(message.text)
-
-        if (type === 'celebrity') {
+      case 'tool_calls':
+        // Handle tool calls
+        console.info('Tool calls received:', data.tool_calls)
+        // Tool call handling logic can be added here
+        // For example: show status of calling tools
+        if (responseMessage.value.thinkingList && responseMessage.value.thinkingList.length > 0) {
+          const lastThinkingIndex = responseMessage.value.thinkingList.length - 1
           // @ts-ignore
-          responseMessage.value.thinkingList[responseMessage.value.thinkingList.length - 1].status = 'success'
+          responseMessage.value.thinkingList[lastThinkingIndex].status = 'success'
           // @ts-ignore
-          responseMessage.value.thinkingList.push({ title: 'Generating postcard', status: 'pending' })
-        } else if (type === 'photo') {
+          responseMessage.value.thinkingList.push({
+            title: `Calling tools: ${data.tool_calls.length} tools`,
+            status: 'pending',
+          })
+        }
+        break
+
+      case 'tool_result':
+        // 处理工具结果
+        console.info('Tool result received:', data.result)
+        // 可以在这里处理工具执行结果
+        if (responseMessage.value.thinkingList && responseMessage.value.thinkingList.length > 0) {
+          const lastThinkingIndex = responseMessage.value.thinkingList.length - 1
           // @ts-ignore
-          responseMessage.value.thinkingList[responseMessage.value.thinkingList.length - 1].status = 'success'
-          // @ts-ignore
-          responseMessage.value.thinkingList.push({ title: 'Generating images', status: 'pending' })
+          responseMessage.value.thinkingList[lastThinkingIndex].status = 'success'
+        }
+        break
+
+      case 'done':
+        // 处理完成事件
+        console.info('Stream completed, final content:', data.final_content)
+        console.info('Current response content:', responseMessage.value.textContent)
+
+        // 如果有最终内容，使用它替换当前内容
+        if (data.final_content) {
+          responseMessage.value.textContent = data.final_content
+          console.info('Replaced with final content:', responseMessage.value.textContent)
         }
 
-        if (type === 'other') {
-          isProcessing.value = false
+        // 关闭事件源
+        evtSource.close()
+        console.info('Event source closed')
+
+        // 设置聊天消息内容
+        chatMessage.value.textContent = message.text
+
+        // 创建推理记录
+        reasoningRecord.value = {
+          inputContent: message.inputText,
+          outContent: responseMessage.value.textContent,
+          agentId: selectAgent.value.sid,
+          userId: loginUser.value?.id || '',
+          prompt: data.fullPrompt || '',
+          serviceName: options.value.model,
+          systemContent: content,
+          remark: options.value.baseUrl,
+        }
+
+        let avatar = loginUser.value ? loginUser.value.avatar : ''
+
+        if (!avatar) {
+          avatar = defAvatar.value
+        }
+
+        inputTextReplyStatus.value = false
+
+        if (!isOnline.value) {
           sendLoading.value = false
-          // @ts-ignore
-          responseMessage.value.thinkingList[responseMessage.value.thinkingList.length - 1].status = 'success'
-          // @ts-ignore
-          responseMessage.value.thinkingList.push({ title: 'Think complete', status: 'success' })
           await saveMessage(chatMessage.value)
           await saveMessage(responseMessage.value)
 
           await addReasoningRecord(reasoningRecord.value)
+
+          inputTextReplyStatus.value = true
+          // @ts-ignore
+          responseMessage.value.thinkingList[responseMessage.value.thinkingList.length - 1].status = 'success'
+
+          // @ts-ignore
+          responseMessage.value.thinkingList.push({ title: 'Think complete', status: 'success' })
         } else {
-          const msg = {
-            action: 'autoReplyTweetsMedia',
-            data: {
-              replyTweetsRecordId: wsUserId,
-              tweets: chatMessage.value.textContent,
-              replyTweets: responseMessage.value.textContent,
-              replyTweetsName: selectAgent.value.xusername || selectAgent.value.nickName,
-              authorName: '',
-              authorUserName: loginUser.value?.walletAddress ? `${loginUser.value.walletAddress.slice(0, 6)}...${loginUser.value.walletAddress.slice(-4)}` : '',
-              avatar: avatar,
-            },
+          const type = await isPhotoOrCelebrity(message.text)
+
+          if (type === 'celebrity') {
+            // @ts-ignore
+            responseMessage.value.thinkingList[responseMessage.value.thinkingList.length - 1].status = 'success'
+            // @ts-ignore
+            responseMessage.value.thinkingList.push({ title: 'Generating postcard', status: 'pending' })
+          } else if (type === 'photo') {
+            // @ts-ignore
+            responseMessage.value.thinkingList[responseMessage.value.thinkingList.length - 1].status = 'success'
+            // @ts-ignore
+            responseMessage.value.thinkingList.push({ title: 'Generating images', status: 'pending' })
           }
-          await request.post(BASE_URL + '/ws/socketMsg/sendSocketMsg', {
-            userId: selectAgent.value.owner,
-            msg: JSON.stringify(msg),
-          })
 
-          setTimeout(async () => {
-            if (!inputTextReplyStatus.value) {
-              console.info('autoReplyTweetsMedia inputTextReplyStatus.value', inputTextReplyStatus.value)
+          if (type === 'other') {
+            isProcessing.value = false
+            sendLoading.value = false
+            // @ts-ignore
+            responseMessage.value.thinkingList[responseMessage.value.thinkingList.length - 1].status = 'success'
+            // @ts-ignore
+            responseMessage.value.thinkingList.push({ title: 'Think complete', status: 'success' })
+            await saveMessage(chatMessage.value)
+            await saveMessage(responseMessage.value)
 
-              inputTextReplyStatus.value = true
+            await addReasoningRecord(reasoningRecord.value)
+          } else {
+            const msg = {
+              action: 'autoReplyTweetsMedia',
+              data: {
+                replyTweetsRecordId: wsUserId,
+                tweets: chatMessage.value.textContent,
+                replyTweets: responseMessage.value.textContent,
+                replyTweetsName: selectAgent.value.xusername || selectAgent.value.nickName,
+                authorName: '',
+                authorUserName: loginUser.value?.walletAddress ? `${loginUser.value.walletAddress.slice(0, 6)}...${loginUser.value.walletAddress.slice(-4)}` : '',
+                avatar: avatar,
+              },
+            }
+            await request.post(BASE_URL + '/ws/socketMsg/sendSocketMsg', {
+              userId: selectAgent.value.owner,
+              msg: JSON.stringify(msg),
+            })
+
+            setTimeout(async () => {
+              if (!inputTextReplyStatus.value) {
+                console.info('autoReplyTweetsMedia inputTextReplyStatus.value', inputTextReplyStatus.value)
+
+                inputTextReplyStatus.value = true
+                isProcessing.value = false
+                await saveMessage(chatMessage.value)
+                await saveMessage(responseMessage.value)
+
+                await addReasoningRecord(reasoningRecord.value)
+
+                sendLoading.value = false
+                // @ts-ignore
+                responseMessage.value.thinkingList[responseMessage.value.thinkingList.length - 1].status = 'success'
+                // @ts-ignore
+                responseMessage.value.thinkingList.push({ title: 'Think complete', status: 'success' })
+              }
+            }, 30 * 1000)
+          }
+        }
+        break
+
+      default:
+        // 处理旧格式兼容性（如果没有 type 字段）
+        console.info('Unknown or legacy data type:', data.type, 'Data:', data)
+
+        if (!data.type && data.content) {
+          console.info('Processing legacy format content:', data.content)
+          // 保持原有的处理逻辑作为后备
+          if (isThinking) {
+            buffer += data.content || ''
+            if (buffer.includes('</think>')) {
+              isThinking = false
+              const thinkEndIndex = buffer.indexOf('</think>') + 8
+              const contentAfterThink = buffer.slice(thinkEndIndex).trim()
+              if (contentAfterThink) {
+                responseMessage.value.textContent += contentAfterThink
+              }
+              buffer = ''
+              await nextTick(() => {
+                messageListRef.value?.scrollTo(0, messageListRef.value.scrollHeight)
+              })
+            }
+          } else {
+            responseMessage.value.textContent += data.content || ''
+            await nextTick(() => {
+              messageListRef.value?.scrollTo(0, messageListRef.value.scrollHeight)
+            })
+          }
+        } else {
+          console.warn('Unhandled data format:', data)
+        }
+
+        // 处理 fullPrompt 完成信号（旧格式兼容）
+        if (data.fullPrompt) {
+          evtSource.close()
+
+          chatMessage.value.textContent = message.text
+
+          reasoningRecord.value = {
+            inputContent: message.inputText,
+            outContent: responseMessage.value.textContent,
+            agentId: selectAgent.value.sid,
+            userId: loginUser.value?.id || '',
+            prompt: data.fullPrompt,
+            serviceName: options.value.model,
+            systemContent: content,
+            remark: options.value.baseUrl,
+          }
+
+          let avatar = loginUser.value ? loginUser.value.avatar : ''
+
+          if (!avatar) {
+            avatar = defAvatar.value
+          }
+
+          inputTextReplyStatus.value = false
+
+          if (!isOnline.value) {
+            sendLoading.value = false
+            await saveMessage(chatMessage.value)
+            await saveMessage(responseMessage.value)
+
+            await addReasoningRecord(reasoningRecord.value)
+
+            inputTextReplyStatus.value = true
+            // @ts-ignore
+            responseMessage.value.thinkingList[responseMessage.value.thinkingList.length - 1].status = 'success'
+
+            // @ts-ignore
+            responseMessage.value.thinkingList.push({ title: 'Think complete', status: 'success' })
+          } else {
+            const type = await isPhotoOrCelebrity(message.text)
+
+            if (type === 'celebrity') {
+              // @ts-ignore
+              responseMessage.value.thinkingList[responseMessage.value.thinkingList.length - 1].status = 'success'
+              // @ts-ignore
+              responseMessage.value.thinkingList.push({ title: 'Generating postcard', status: 'pending' })
+            } else if (type === 'photo') {
+              // @ts-ignore
+              responseMessage.value.thinkingList[responseMessage.value.thinkingList.length - 1].status = 'success'
+              // @ts-ignore
+              responseMessage.value.thinkingList.push({ title: 'Generating images', status: 'pending' })
+            }
+
+            if (type === 'other') {
               isProcessing.value = false
-              await saveMessage(chatMessage.value)
-              await saveMessage(responseMessage.value)
-
-              await addReasoningRecord(reasoningRecord.value)
-
               sendLoading.value = false
               // @ts-ignore
               responseMessage.value.thinkingList[responseMessage.value.thinkingList.length - 1].status = 'success'
               // @ts-ignore
               responseMessage.value.thinkingList.push({ title: 'Think complete', status: 'success' })
+              await saveMessage(chatMessage.value)
+              await saveMessage(responseMessage.value)
+
+              await addReasoningRecord(reasoningRecord.value)
+            } else {
+              const msg = {
+                action: 'autoReplyTweetsMedia',
+                data: {
+                  replyTweetsRecordId: wsUserId,
+                  tweets: chatMessage.value.textContent,
+                  replyTweets: responseMessage.value.textContent,
+                  replyTweetsName: selectAgent.value.xusername || selectAgent.value.nickName,
+                  authorName: '',
+                  authorUserName: loginUser.value?.walletAddress ? `${loginUser.value.walletAddress.slice(0, 6)}...${loginUser.value.walletAddress.slice(-4)}` : '',
+                  avatar: avatar,
+                },
+              }
+              await request.post(BASE_URL + '/ws/socketMsg/sendSocketMsg', {
+                userId: selectAgent.value.owner,
+                msg: JSON.stringify(msg),
+              })
+
+              setTimeout(async () => {
+                if (!inputTextReplyStatus.value) {
+                  console.info('autoReplyTweetsMedia inputTextReplyStatus.value', inputTextReplyStatus.value)
+
+                  inputTextReplyStatus.value = true
+                  isProcessing.value = false
+                  await saveMessage(chatMessage.value)
+                  await saveMessage(responseMessage.value)
+
+                  await addReasoningRecord(reasoningRecord.value)
+
+                  sendLoading.value = false
+                  // @ts-ignore
+                  responseMessage.value.thinkingList[responseMessage.value.thinkingList.length - 1].status = 'success'
+                  // @ts-ignore
+                  responseMessage.value.thinkingList.push({ title: 'Think complete', status: 'success' })
+                }
+              }, 30 * 1000)
             }
-          }, 30 * 1000)
+          }
         }
-      }
+        break
     }
   })
 }
@@ -2020,7 +2234,7 @@ const groupedSessions = computed(() => {
                 <span style="font-family: 'Montserrat', sans-serif; font-weight: 400">MOSS AI</span>
                 <span style="font-family: 'Montserrat-Bold', sans-serif; margin-left: 10px">Office</span>
               </div>
-              <div class="dancer-title-sub">Hire AI Agents and launch your startups</div>
+              <div class="dancer-title-sub">Hire AI agents and launch your agentic office</div>
             </div>
           </template>
 
