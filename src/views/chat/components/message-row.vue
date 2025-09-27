@@ -66,12 +66,15 @@ const handleDownload = async (imageUrl: string) => {
 <template>
   <div class="message-row" :class="{ 'message-row-user': isUser, 'message-row-error': isError }">
     <div class="avatar">
-      <el-avatar :size="40" :src="message.avatar || avatar" />
+      <el-avatar :size="40" :src="(message as any).avatar || avatar" />
     </div>
     <div class="message-content" :class="{ 'error-content': isError }">
       <ThoughtChain v-if="message.thinkingList && message.thinkingList.length > 0" :items="message.thinkingList" />
 
-      <div class="message-text mt-5" :class="{ 'error-text': isError }" v-html="isError ? `<span style='color: #dc2626; font-weight: 500; white-space: pre-line;'>${message.textContent}</span>` : message.textContent"></div>
+      <div class="message-text mt-5" :class="{ 'error-text': isError }">
+        <MarkdownMessage v-if="!isError" :message="message.textContent || (message as any).text || (message as any).content || ''" />
+        <div v-else v-html="`<span style='color: #dc2626; font-weight: 500; white-space: pre-line;'>${message.textContent || (message as any).text || (message as any).content || ''}</span>`"></div>
+      </div>
 
       <div class="image-container" v-if="images && images.length > 0">
         <div v-for="(image, index) in images" :key="index" class="image-wrapper">
