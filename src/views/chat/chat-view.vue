@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { nextTick, normalizeClass, onMounted, onUnmounted, ref, Text, watch, computed } from 'vue'
+import { nextTick, normalizeClass, onMounted, onUnmounted, ref, Text, watch, computed, triggerRef } from 'vue'
 import SessionItem from './components/session-item.vue'
 import { ChatRound, Close, Delete, EditPen, Upload, Share, Message, Document, User, Plus, Edit, Search } from '@element-plus/icons-vue'
 import MessageRow from './components/message-row.vue'
@@ -807,17 +807,13 @@ const handleSendMessage = async (message: { text: string; inputText: string; ima
   // Record current inference stream
   evtSourceRef.value = evtSource
 
-  let isThinking = false
-  let buffer = ''
-
   evtSource.stream()
 
-  // 添加错误处理
+  // Add error handling
   evtSource.addEventListener('error', (event: any) => {
     console.error('SSE connection error:', event)
     sendLoading.value = false
     isProcessing.value = false
-    isThinking = false
   })
 
   evtSource.addEventListener('message', async (event: any) => {
@@ -825,13 +821,13 @@ const handleSendMessage = async (message: { text: string; inputText: string; ima
 
     const eventData = event.data
 
-    // 处理 SSE 数据格式，移除 "data: " 前缀
+    // Handle SSE data format, remove "data: " prefix
     let cleanData = eventData
     if (eventData.startsWith('data: ')) {
-      cleanData = eventData.substring(6) // 移除 "data: " 前缀
+      cleanData = eventData.substring(6) // Remove "data: " prefix
     }
 
-    // 跳过空数据或非 JSON 数据
+    // Skip empty data or non-JSON data
     if (!cleanData || cleanData.trim() === '') {
       return
     }
@@ -845,7 +841,7 @@ const handleSendMessage = async (message: { text: string; inputText: string; ima
       return
     }
 
-    // 处理错误响应
+    // Handle error response
     if (data.code === 400) {
       let errorText =
         "Out of gas, your agent's asleep. Top up the agent's wallet, then\nclick the avatar to wake them.\
@@ -889,62 +885,45 @@ click the avatar to wake them."
       // Reset loading state
       sendLoading.value = false
       isProcessing.value = false
-      isThinking = false
 
       return
     }
 
-    // 根据新的流式响应格式处理不同类型的数据
+    // Handle different types of data based on new streaming response format
     switch (data.type) {
       case 'content':
-        // 处理内容流
+        // Handle content stream - real-time assembly and display
         console.info('Received content:', data.content)
 
-        if (isThinking) {
-          // 在思考模式下累积内容到缓冲区
-          buffer += data.content || ''
-
-          // 检查缓冲区是否包含完整的 </think> 标签
-          if (buffer.includes('</think>')) {
-            isThinking = false
-            // 提取 </think> 后的内容（如果有）
-            const thinkEndIndex = buffer.indexOf('</think>') + 8
-            const contentAfterThink = buffer.slice(thinkEndIndex).trim()
-            // 只追加 </think> 后的内容（如果存在）
-            if (contentAfterThink) {
-              responseMessage.value.textContent += contentAfterThink
-            }
-            // 清空缓冲区
-            buffer = ''
-            // 滚动到底部
-            await nextTick(() => {
-              messageListRef.value?.scrollTo(0, messageListRef.value.scrollHeight)
-            })
-          }
-          // 如果仍在思考模式，跳过追加（不执行任何操作）
-        } else {
-          // 如果不在思考模式，直接追加内容
-          if (data.content) {
+        // Directly append content in real-time, no complex thinking mode judgment
+        if (data.content) {
+          if (responseMessage.value.textContent) {
             responseMessage.value.textContent += data.content
-            console.info('Updated response content:', responseMessage.value.textContent)
+          } else {
+            responseMessage.value.textContent = data.content
           }
-          // 滚动到底部
-          await nextTick(() => {
-            messageListRef.value?.scrollTo(0, messageListRef.value.scrollHeight)
-          })
+          console.info('Updated response content:', responseMessage.value.textContent)
+
+          // Force trigger reactive update
+          triggerRef(responseMessage)
         }
+
+        // Scroll to bottom
+        await nextTick(() => {
+          messageListRef.value?.scrollTo(0, messageListRef.value.scrollHeight)
+        })
         break
 
       case 'tool_call_start':
-        // 处理工具调用开始事件
+        // Handle tool call start event
         console.info('Tool call start:', data)
 
-        // 只显示有tool_args参数的工具调用
+        // Only show tool calls with tool_args parameter
         if (!data.tool_args) {
           break
         }
 
-        // 解析tool_args中的query参数
+        // Parse query parameter from tool_args
         let queryText = ''
         try {
           const toolArgs = JSON.parse(data.tool_args)
@@ -955,28 +934,30 @@ click the avatar to wake them."
           console.warn('Failed to parse tool_args:', error)
         }
 
-        // 将工具调用开始信息添加到响应内容中，包含query内容
-        const toolStartText = `\n\n运行 ${data.tool_name}${queryText}\n`
+        // Add tool call start information to response content, including query content
+        const toolStartText = `\n\nRunning ${data.tool_name}${queryText}\n`
         responseMessage.value.textContent += toolStartText
+        triggerRef(responseMessage)
 
-        // 滚动到底部
+        // Scroll to bottom
         await nextTick(() => {
           messageListRef.value?.scrollTo(0, messageListRef.value.scrollHeight)
         })
         break
 
       case 'tool_call_complete':
-        // 处理工具调用完成事件
+        // Handle tool call complete event
         console.info('Tool call complete:', data)
 
-        // 只显示有对应tool_call_start的工具完成状态
-        // 通过检查当前响应内容中是否包含该工具的运行状态来判断
-        const toolStartPattern = new RegExp(`运行\\s+${data.tool_name}`, 'g')
-        if (responseMessage.value.textContent.match(toolStartPattern)) {
-          const toolCompleteText = `✅ 完成 ${data.tool_name}\n`
+        // Only show tool completion status for corresponding tool_call_start
+        // Check if current response content contains the tool's running status
+        const toolStartPattern = new RegExp(`Running\\s+${data.tool_name}`, 'g')
+        if (responseMessage.value.textContent && responseMessage.value.textContent.match(toolStartPattern)) {
+          const toolCompleteText = `✅ Complete ${data.tool_name}\n`
           responseMessage.value.textContent += toolCompleteText
+          triggerRef(responseMessage)
 
-          // 滚动到底部
+          // Scroll to bottom
           await nextTick(() => {
             messageListRef.value?.scrollTo(0, messageListRef.value.scrollHeight)
           })
@@ -1001,9 +982,9 @@ click the avatar to wake them."
         break
 
       case 'tool_result':
-        // 处理工具结果
+        // Handle tool results
         console.info('Tool result received:', data.result)
-        // 可以在这里处理工具执行结果
+        // Tool execution results can be handled here
         if (responseMessage.value.thinkingList && responseMessage.value.thinkingList.length > 0) {
           const lastThinkingIndex = responseMessage.value.thinkingList.length - 1
           // @ts-ignore
@@ -1012,24 +993,24 @@ click the avatar to wake them."
         break
 
       case 'done':
-        // 处理完成事件
+        // Handle completion event
         console.info('Stream completed, final content:', data.final_content)
         console.info('Current response content:', responseMessage.value.textContent)
 
-        // 如果有最终内容，使用它替换当前内容
+        // If there is final content, use it to replace current content
         if (data.final_content) {
           responseMessage.value.textContent = data.final_content
           console.info('Replaced with final content:', responseMessage.value.textContent)
         }
 
-        // 关闭事件源
+        // Close event source
         evtSource.close()
         console.info('Event source closed')
 
-        // 设置聊天消息内容
+        // Set chat message content
         chatMessage.value.textContent = message.text
 
-        // 创建推理记录
+        // Create reasoning record
         reasoningRecord.value = {
           inputContent: message.inputText,
           outContent: responseMessage.value.textContent,
@@ -1129,37 +1110,26 @@ click the avatar to wake them."
         break
 
       default:
-        // 处理旧格式兼容性（如果没有 type 字段）
+        // Handle legacy format compatibility (if no type field)
         console.info('Unknown or legacy data type:', data.type, 'Data:', data)
 
         if (!data.type && data.content) {
           console.info('Processing legacy format content:', data.content)
-          // 保持原有的处理逻辑作为后备
-          if (isThinking) {
-            buffer += data.content || ''
-            if (buffer.includes('</think>')) {
-              isThinking = false
-              const thinkEndIndex = buffer.indexOf('</think>') + 8
-              const contentAfterThink = buffer.slice(thinkEndIndex).trim()
-              if (contentAfterThink) {
-                responseMessage.value.textContent += contentAfterThink
-              }
-              buffer = ''
-              await nextTick(() => {
-                messageListRef.value?.scrollTo(0, messageListRef.value.scrollHeight)
-              })
-            }
-          } else {
+          // Simplify processing logic, directly append content in real-time
+          if (responseMessage.value.textContent) {
             responseMessage.value.textContent += data.content || ''
-            await nextTick(() => {
-              messageListRef.value?.scrollTo(0, messageListRef.value.scrollHeight)
-            })
+          } else {
+            responseMessage.value.textContent = data.content || ''
           }
+          triggerRef(responseMessage)
+          await nextTick(() => {
+            messageListRef.value?.scrollTo(0, messageListRef.value.scrollHeight)
+          })
         } else {
           console.warn('Unhandled data format:', data)
         }
 
-        // 处理 fullPrompt 完成信号（旧格式兼容）
+        // Handle fullPrompt completion signal (legacy format compatibility)
         if (data.fullPrompt) {
           evtSource.close()
 
@@ -1636,25 +1606,25 @@ async function handleSearchWeb(message: boolean) {
   options.value.enableAgent = message
 }
 
-// 处理agent切换事件
+// Handle agent change event
 const handleAgentChange = async (agentId: string) => {
   try {
-    // 根据agentId从agentList中找到对应的agent
+    // Find corresponding agent from agentList based on agentId
     const agent = agentList.value.find((a) => a.id === agentId)
     if (agent) {
       selectAgent.value = agent
       selectAgentId.value = agent.id
       console.info('Agent changed to:', agent.nickName, 'ID:', agent.id)
 
-      // 重新获取会话列表
+      // Re-fetch session list
       await getSessionList()
 
-      // 重置搜索状态
+      // Reset search status
       handleSearchWeb(false)
     }
   } catch (error) {
     console.error('Handle agent change failed:', error)
-    ElMessage.error('切换Agent失败')
+    ElMessage.error('Failed to switch agent')
   }
 }
 
@@ -2081,7 +2051,7 @@ const groupedSessions = computed(() => {
                 <div class="flex-1 min-w-0 flex items-center">
                   <div class="text-sm text-gray-700 font-medium truncate">{{ getUserMainIdentifier(loginUser)?.display || 'User' }}</div>
                   <!-- Copy button -->
-                  <button @click="handleCopyClick($event, loginUser)" class="ml-1.5 text-xs font-semibold px-1.5 py-0.5 rounded-full text-gray-700 bg-gray-100 hover:bg-gray-200 transition-colors duration-200 cursor-pointer flex-shrink-0" title="复制用户标识符">
+                  <button @click="handleCopyClick($event, loginUser)" class="ml-1.5 text-xs font-semibold px-1.5 py-0.5 rounded-full text-gray-700 bg-gray-100 hover:bg-gray-200 transition-colors duration-200 cursor-pointer flex-shrink-0" title="Copy user identifier">
                     <img src="@/assets/image/wallets.png" alt="copy" class="w-4 h-4" />
                   </button>
                 </div>

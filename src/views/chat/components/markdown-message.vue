@@ -3,14 +3,14 @@ import { computed } from 'vue'
 
 const props = defineProps<{ message: string }>()
 
-// 简单的 Markdown 渲染函数
+// Simple Markdown rendering function
 const renderMarkdown = (text: string): string => {
   if (!text) return ''
 
   let html = text
 
-  // 处理标题，不依赖换行符
-  // 处理 H3 标题
+  // Handle headings, not dependent on line breaks
+  // Handle H3 headings
   const h3Matches = html.match(/###\s+[^#\n]+/g)
   if (h3Matches) {
     h3Matches.forEach((match) => {
@@ -19,7 +19,7 @@ const renderMarkdown = (text: string): string => {
     })
   }
 
-  // 处理 H2 标题
+  // Handle H2 headings
   const h2Matches = html.match(/##\s+[^#\n]+/g)
   if (h2Matches) {
     h2Matches.forEach((match) => {
@@ -28,7 +28,7 @@ const renderMarkdown = (text: string): string => {
     })
   }
 
-  // 处理 H1 标题
+  // Handle H1 headings
   const h1Matches = html.match(/#\s+[^#\n]+/g)
   if (h1Matches) {
     h1Matches.forEach((match) => {
@@ -37,61 +37,64 @@ const renderMarkdown = (text: string): string => {
     })
   }
 
-  // 处理粗体
+  // Handle bold text
   html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
 
-  // 处理斜体
+  // Handle italic text
   html = html.replace(/\*(.*?)\*/g, '<em>$1</em>')
 
-  // 处理工具调用 - 运行状态（包含query内容）
-  html = html.replace(/^运行\s+([^-]+)(?:\s*-\s*(.+))?$/gim, (match, toolName, query) => {
+  // Handle tool calls - running state (including query content)
+  html = html.replace(/^Running\s+([^-]+)(?:\s*-\s*(.+))?$/gim, (match, toolName, query) => {
     const queryPart = query ? ` - <span class="query-text">${query}</span>` : ''
-    return `<div class="tool-call running">🔧 运行 ${toolName.trim()}${queryPart}</div>`
+    return `<div class="tool-call running">🔧 Running ${toolName.trim()}${queryPart}</div>`
   })
 
-  // 处理工具调用 - 完成状态
-  html = html.replace(/^✅\s+完成\s+([^\n]+)$/gim, '<div class="tool-call completed">✅ 完成 $1</div>')
+  // Handle tool calls - completion state
+  html = html.replace(/^✅\s+Complete\s+([^\n]+)$/gim, '<div class="tool-call completed">✅ Complete $1</div>')
 
-  // 处理无序列表 - 优化的列表识别逻辑
-  // 先处理行首的列表项
+  // Handle reasoning content - convert <think> and </think> tags to special styles
+  html = html.replace(/<think>(.*?)<\/think>/gs, '<div class="thinking-content">💭 Thinking process<br>$1</div>')
+
+  // Handle unordered lists - optimized list recognition logic
+  // First handle list items at the beginning of lines
   html = html.replace(/^-\s+(.+)$/gim, '<li>$1</li>')
   html = html.replace(/^[\*\+]\s+(.+)$/gim, '<li>$1</li>')
 
-  // 处理行内的列表项 - 直接匹配 - 符号并换行
-  // 使用全局匹配，处理所有 - 符号，避免误匹配emoji
+  // Handle inline list items - directly match - symbol and wrap
+  // Use global matching, handle all - symbols, avoid mis-matching emoji
   html = html.replace(/([^\n])\s*-\s+([^-\n]+)/g, '$1\n<li>$2</li>')
 
-  // 处理多个连续的 - 符号（递归处理）
+  // Handle multiple consecutive - symbols (recursive processing)
   let prevHtml = ''
   while (prevHtml !== html) {
     prevHtml = html
     html = html.replace(/([^\n])\s*-\s+([^-\n]+)/g, '$1\n<li>$2</li>')
   }
 
-  // 将连续的 li 标签包装在 ul 中
+  // Wrap consecutive li tags in ul
   html = html.replace(/(<li>.*<\/li>)(\s*<li>.*<\/li>)*/gs, (match) => {
     return `<ul>${match}</ul>`
   })
 
-  // 处理有序列表
+  // Handle ordered lists
   html = html.replace(/^(\d+)\.\s+(.+)$/gim, '<li>$2</li>')
 
-  // 将连续的有序列表项包装在 ol 中
+  // Wrap consecutive ordered list items in ol
   html = html.replace(/(<li>.*<\/li>)(\s*<li>.*<\/li>)*/gs, (match) => {
-    // 检查是否在 ul 中，如果不在则包装为 ul
+    // Check if it's already in ul, if not wrap as ul
     if (!match.includes('<ul>')) {
       return `<ul>${match}</ul>`
     }
     return match
   })
 
-  // 处理换行
+  // Handle line breaks
   html = html.replace(/\n/g, '<br>')
 
   return html
 }
 
-// 计算属性：渲染 markdown 内容
+// Computed property: render markdown content
 const renderedMarkdown = computed(() => {
   return renderMarkdown(props.message)
 })
@@ -276,7 +279,7 @@ const renderedMarkdown = computed(() => {
   background: #f9fafb;
 }
 
-/* 工具调用样式 */
+/* Tool call styles */
 .tool-call {
   display: flex;
   align-items: center;
@@ -308,7 +311,21 @@ const renderedMarkdown = computed(() => {
   margin-left: 4px;
 }
 
-/* 响应式设计 */
+/* Reasoning content styles */
+.thinking-content {
+  display: block;
+  padding: 12px 16px;
+  margin: 8px 0;
+  background: rgba(59, 130, 246, 0.1);
+  border: 1px solid rgba(59, 130, 246, 0.2);
+  border-radius: 8px;
+  font-size: 14px;
+  line-height: 1.6;
+  color: #1e40af;
+  font-style: italic;
+}
+
+/* Responsive design */
 @media (max-width: 768px) {
   .custom-markdown {
     font-size: 15px;
