@@ -43,14 +43,9 @@ const renderMarkdown = (text: string): string => {
   // Handle italic text
   html = html.replace(/\*(.*?)\*/g, '<em>$1</em>')
 
-  // Handle tool calls - running state (including query content)
-  html = html.replace(/^Running\s+([^-]+)(?:\s*-\s*(.+))?$/gim, (match, toolName, query) => {
-    const queryPart = query ? ` - <span class="query-text">${query}</span>` : ''
-    return `<div class="tool-call running">🔧 Running ${toolName.trim()}${queryPart}</div>`
-  })
-
-  // Handle tool calls - completion state
-  html = html.replace(/^✅\s+Complete\s+([^\n]+)$/gim, '<div class="tool-call completed">✅ Complete $1</div>')
+  // Tool calls are now handled in thinking list, so remove these patterns from text content
+  html = html.replace(/^Running\s+([^-]+)(?:\s*-\s*(.+))?$/gim, '')
+  html = html.replace(/^✅\s+Complete\s+([^\n]+)$/gim, '')
 
   // Handle reasoning content - convert <think> and </think> tags to special styles
   html = html.replace(/<think>(.*?)<\/think>/gs, '<div class="thinking-content">💭 Thinking process<br>$1</div>')
@@ -279,48 +274,18 @@ const renderedMarkdown = computed(() => {
   background: #f9fafb;
 }
 
-/* Tool call styles */
-.tool-call {
-  display: flex;
-  align-items: center;
-  padding: 8px 12px;
-  margin: 4px 0;
-  border-radius: 6px;
-  font-size: 14px;
-  font-weight: 500;
-  background: rgba(147, 51, 234, 0.1);
-  border: 1px solid rgba(147, 51, 234, 0.2);
-  color: #7c3aed;
-}
-
-.tool-call.running {
-  background: rgba(147, 51, 234, 0.1);
-  border-color: rgba(147, 51, 234, 0.2);
-  color: #7c3aed;
-}
-
-.tool-call.completed {
-  background: rgba(34, 197, 94, 0.1);
-  border-color: rgba(34, 197, 94, 0.2);
-  color: #16a34a;
-}
-
-.tool-call .query-text {
-  opacity: 0.8;
-  font-size: 13px;
-  margin-left: 4px;
-}
+/* Tool call styles removed - now handled in thinking list */
 
 /* Reasoning content styles */
 .thinking-content {
   display: block;
-  padding: 12px 16px;
-  margin: 8px 0;
+  padding: 8px 12px;
+  margin: 4px 0;
   background: rgba(59, 130, 246, 0.1);
   border: 1px solid rgba(59, 130, 246, 0.2);
-  border-radius: 8px;
-  font-size: 14px;
-  line-height: 1.6;
+  border-radius: 6px;
+  font-size: 13px;
+  line-height: 1.5;
   color: #1e40af;
   font-style: italic;
 }

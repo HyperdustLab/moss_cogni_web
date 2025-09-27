@@ -934,9 +934,17 @@ click the avatar to wake them."
           console.warn('Failed to parse tool_args:', error)
         }
 
-        // Add tool call start information to response content, including query content
-        const toolStartText = `\n\nRunning ${data.tool_name}${queryText}\n`
-        responseMessage.value.textContent += toolStartText
+        // Add tool call start information to thinking list instead of response content
+        if (responseMessage.value.thinkingList && responseMessage.value.thinkingList.length > 0) {
+          const lastThinkingIndex = responseMessage.value.thinkingList.length - 1
+          // @ts-ignore
+          responseMessage.value.thinkingList[lastThinkingIndex].status = 'success'
+        }
+        // @ts-ignore
+        responseMessage.value.thinkingList.push({
+          title: `🔧 Running ${data.tool_name}${queryText}`,
+          status: 'pending',
+        })
         triggerRef(responseMessage)
 
         // Scroll to bottom
@@ -949,18 +957,35 @@ click the avatar to wake them."
         // Handle tool call complete event
         console.info('Tool call complete:', data)
 
-        // Only show tool completion status for corresponding tool_call_start
-        // Check if current response content contains the tool's running status
-        const toolStartPattern = new RegExp(`Running\\s+${data.tool_name}`, 'g')
-        if (responseMessage.value.textContent && responseMessage.value.textContent.match(toolStartPattern)) {
-          const toolCompleteText = `✅ Complete ${data.tool_name}\n`
-          responseMessage.value.textContent += toolCompleteText
-          triggerRef(responseMessage)
+        // Update the last thinking item status to completed if it matches the tool name
+        if (responseMessage.value.thinkingList && responseMessage.value.thinkingList.length > 0) {
+          const lastThinkingIndex = responseMessage.value.thinkingList.length - 1
+          const lastItem = responseMessage.value.thinkingList[lastThinkingIndex]
+          // @ts-ignore
+          if (lastItem.title && lastItem.title.includes(data.tool_name)) {
+            // Extract query content from the original title to preserve it in completed state
+            // @ts-ignore
+            const originalTitle = lastItem.title
+            let queryContent = ''
 
-          // Scroll to bottom
-          await nextTick(() => {
-            messageListRef.value?.scrollTo(0, messageListRef.value.scrollHeight)
-          })
+            // Extract query content from "🔧 Running tool_name - query_content"
+            const queryMatch = originalTitle.match(/🔧 Running [^-]+(?: - (.+))?$/)
+            if (queryMatch && queryMatch[1]) {
+              queryContent = ` - ${queryMatch[1]}`
+            }
+
+            // @ts-ignore
+            responseMessage.value.thinkingList[lastThinkingIndex] = {
+              title: `✅ Complete ${data.tool_name}${queryContent}`,
+              status: 'success',
+            }
+            triggerRef(responseMessage)
+
+            // Scroll to bottom
+            await nextTick(() => {
+              messageListRef.value?.scrollTo(0, messageListRef.value.scrollHeight)
+            })
+          }
         }
         break
 
