@@ -43,8 +43,22 @@ const renderMarkdown = (text: string): string => {
   // 处理斜体
   html = html.replace(/\*(.*?)\*/g, '<em>$1</em>')
 
-  // 处理无序列表
+  // 处理无序列表 - 优化的列表识别逻辑
+  // 先处理行首的列表项
   html = html.replace(/^-\s+(.+)$/gim, '<li>$1</li>')
+  html = html.replace(/^[\*\+]\s+(.+)$/gim, '<li>$1</li>')
+
+  // 处理行内的列表项 - 直接匹配 - 符号并换行
+  // 使用全局匹配，处理所有 - 符号，避免误匹配emoji
+  html = html.replace(/([^\n])\s*-\s+([^-\n]+)/g, '$1\n<li>$2</li>')
+
+  // 处理多个连续的 - 符号（递归处理）
+  let prevHtml = ''
+  while (prevHtml !== html) {
+    prevHtml = html
+    html = html.replace(/([^\n])\s*-\s+([^-\n]+)/g, '$1\n<li>$2</li>')
+  }
+
   // 将连续的 li 标签包装在 ul 中
   html = html.replace(/(<li>.*<\/li>)(\s*<li>.*<\/li>)*/gs, (match) => {
     return `<ul>${match}</ul>`
@@ -52,6 +66,15 @@ const renderMarkdown = (text: string): string => {
 
   // 处理有序列表
   html = html.replace(/^(\d+)\.\s+(.+)$/gim, '<li>$2</li>')
+
+  // 将连续的有序列表项包装在 ol 中
+  html = html.replace(/(<li>.*<\/li>)(\s*<li>.*<\/li>)*/gs, (match) => {
+    // 检查是否在 ul 中，如果不在则包装为 ul
+    if (!match.includes('<ul>')) {
+      return `<ul>${match}</ul>`
+    }
+    return match
+  })
 
   // 处理换行
   html = html.replace(/\n/g, '<br>')
@@ -77,6 +100,8 @@ const renderedMarkdown = computed(() => {
   font-size: 16px;
   word-wrap: break-word;
   overflow-wrap: break-word;
+  white-space: pre-wrap;
+  display: block;
 }
 
 .custom-markdown h1 {
@@ -127,6 +152,8 @@ const renderedMarkdown = computed(() => {
   line-height: 1.8;
   position: relative;
   padding-left: 1.5em;
+  display: block;
+  clear: both;
 }
 
 .custom-markdown li::before {
