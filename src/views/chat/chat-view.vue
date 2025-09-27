@@ -935,6 +935,54 @@ click the avatar to wake them."
         }
         break
 
+      case 'tool_call_start':
+        // 处理工具调用开始事件
+        console.info('Tool call start:', data)
+
+        // 只显示有tool_args参数的工具调用
+        if (!data.tool_args) {
+          break
+        }
+
+        // 解析tool_args中的query参数
+        let queryText = ''
+        try {
+          const toolArgs = JSON.parse(data.tool_args)
+          if (toolArgs.query) {
+            queryText = ` - ${toolArgs.query}`
+          }
+        } catch (error) {
+          console.warn('Failed to parse tool_args:', error)
+        }
+
+        // 将工具调用开始信息添加到响应内容中，包含query内容
+        const toolStartText = `\n\n运行 ${data.tool_name}${queryText}\n`
+        responseMessage.value.textContent += toolStartText
+
+        // 滚动到底部
+        await nextTick(() => {
+          messageListRef.value?.scrollTo(0, messageListRef.value.scrollHeight)
+        })
+        break
+
+      case 'tool_call_complete':
+        // 处理工具调用完成事件
+        console.info('Tool call complete:', data)
+
+        // 只显示有对应tool_call_start的工具完成状态
+        // 通过检查当前响应内容中是否包含该工具的运行状态来判断
+        const toolStartPattern = new RegExp(`运行\\s+${data.tool_name}`, 'g')
+        if (responseMessage.value.textContent.match(toolStartPattern)) {
+          const toolCompleteText = `✅ 完成 ${data.tool_name}\n`
+          responseMessage.value.textContent += toolCompleteText
+
+          // 滚动到底部
+          await nextTick(() => {
+            messageListRef.value?.scrollTo(0, messageListRef.value.scrollHeight)
+          })
+        }
+        break
+
       case 'tool_calls':
         // Handle tool calls
         console.info('Tool calls received:', data.tool_calls)

@@ -43,6 +43,15 @@ const renderMarkdown = (text: string): string => {
   // 处理斜体
   html = html.replace(/\*(.*?)\*/g, '<em>$1</em>')
 
+  // 处理工具调用 - 运行状态（包含query内容）
+  html = html.replace(/^运行\s+([^-]+)(?:\s*-\s*(.+))?$/gim, (match, toolName, query) => {
+    const queryPart = query ? ` - <span class="query-text">${query}</span>` : ''
+    return `<div class="tool-call running">🔧 运行 ${toolName.trim()}${queryPart}</div>`
+  })
+
+  // 处理工具调用 - 完成状态
+  html = html.replace(/^✅\s+完成\s+([^\n]+)$/gim, '<div class="tool-call completed">✅ 完成 $1</div>')
+
   // 处理无序列表 - 优化的列表识别逻辑
   // 先处理行首的列表项
   html = html.replace(/^-\s+(.+)$/gim, '<li>$1</li>')
@@ -265,6 +274,38 @@ const renderedMarkdown = computed(() => {
 
 .custom-markdown tr:hover {
   background: #f9fafb;
+}
+
+/* 工具调用样式 */
+.tool-call {
+  display: flex;
+  align-items: center;
+  padding: 8px 12px;
+  margin: 4px 0;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  background: rgba(147, 51, 234, 0.1);
+  border: 1px solid rgba(147, 51, 234, 0.2);
+  color: #7c3aed;
+}
+
+.tool-call.running {
+  background: rgba(147, 51, 234, 0.1);
+  border-color: rgba(147, 51, 234, 0.2);
+  color: #7c3aed;
+}
+
+.tool-call.completed {
+  background: rgba(34, 197, 94, 0.1);
+  border-color: rgba(34, 197, 94, 0.2);
+  color: #16a34a;
+}
+
+.tool-call .query-text {
+  opacity: 0.8;
+  font-size: 13px;
+  margin-left: 4px;
 }
 
 /* 响应式设计 */
