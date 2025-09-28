@@ -168,9 +168,6 @@ const { status, data, send, open, close } = useWebSocket(wsUrl, {
             // @ts-ignore
             responseMessage.value.thinkingList.push({ title: 'Think complete', status: 'success' })
 
-            // @ts-ignore
-            responseMessage.value.thinkingList.push({ title: 'Reasoning', status: 'pending' })
-
             await saveMessage(chatMessage.value)
             await saveMessage(responseMessage.value)
 
@@ -921,6 +918,12 @@ click the avatar to wake them."
       case 'tool_call_pending':
         console.info('Tool call pending:', data)
 
+        // 检查是否是invoke_service相关的工具调用，如果是则不添加到流程列表
+        if (data.tool_name && data.tool_name.includes('invoke_service')) {
+          console.info('Skipping invoke_service tool call from thinking list')
+          break
+        }
+
         // 解析 queryText 内容
         let queryText = ''
         try {
@@ -956,6 +959,12 @@ click the avatar to wake them."
       case 'tool_call_start':
         // Handle tool call start event
         console.info('Tool call start:', data)
+
+        // 检查是否是invoke_service相关的工具调用，如果是则不添加到流程列表
+        if (data.tool_name && data.tool_name.includes('invoke_service')) {
+          console.info('Skipping invoke_service tool call from thinking list')
+          break
+        }
 
         // Only show tool calls with tool_args parameter
         if (!data.tool_args) {
@@ -1022,6 +1031,12 @@ click the avatar to wake them."
         // Handle tool call complete event
         console.info('Tool call complete:', data)
 
+        // 检查是否是invoke_service相关的工具调用，如果是则不添加到流程列表
+        if (data.tool_name && data.tool_name.includes('invoke_service')) {
+          console.info('Skipping invoke_service tool call from thinking list')
+          break
+        }
+
         // 延迟2秒后切换状态
         setTimeout(() => {
           // Update the last thinking item status to completed if it matches the tool name
@@ -1060,6 +1075,15 @@ click the avatar to wake them."
       case 'tool_calls':
         // Handle tool calls
         console.info('Tool calls received:', data.tool_calls)
+
+        // 检查是否包含invoke_service相关的工具调用
+        const hasInvokeService = data.tool_calls && data.tool_calls.some((tool: any) => tool.function && tool.function.name && tool.function.name.includes('invoke_service'))
+
+        if (hasInvokeService) {
+          console.info('Skipping invoke_service tool calls from thinking list')
+          break
+        }
+
         // Tool call handling logic can be added here
         // For example: show status of calling tools
         if (responseMessage.value.thinkingList && responseMessage.value.thinkingList.length > 0) {
@@ -1085,6 +1109,51 @@ click the avatar to wake them."
         }
         break
 
+      case 'reasoning_pending':
+        console.info('Reasoning pending received:', data)
+
+        if (responseMessage.value.thinkingList && responseMessage.value.thinkingList.length > 0) {
+          const lastThinkingIndex = responseMessage.value.thinkingList.length - 1
+          const lastItem = responseMessage.value.thinkingList[lastThinkingIndex]
+
+          // @ts-ignore
+          responseMessage.value.thinkingList[lastThinkingIndex].status = 'success'
+          // @ts-ignore
+          responseMessage.value.thinkingList.push({ title: 'Reasoning', status: 'pending' })
+        }
+
+        console.info('Reasoning pending - thinking list:', responseMessage.value.thinkingList)
+        // 强制触发响应式更新
+        triggerRef(responseMessage)
+        break
+
+      case 'reasoning_complete':
+        console.info('Reasoning complete received:', data)
+        if (responseMessage.value.thinkingList && responseMessage.value.thinkingList.length > 0) {
+          const lastThinkingIndex = responseMessage.value.thinkingList.length - 1
+          const lastItem = responseMessage.value.thinkingList[lastThinkingIndex]
+
+          // 检查最后一个项目是否是Reasoning状态，如果是则更新状态而不是添加新项目
+          if (lastItem.title === 'Reasoning' && lastItem.status === 'pending') {
+            console.info('Updating existing Reasoning status to complete')
+            // @ts-ignore
+            responseMessage.value.thinkingList[lastThinkingIndex].status = 'success'
+            // @ts-ignore
+            responseMessage.value.thinkingList[lastThinkingIndex].title = 'Reasoning complete'
+          } else {
+            // 如果没有找到pending的Reasoning项目，则直接更新最后一个项目而不是追加
+            console.info('No pending Reasoning found, updating last item to Reasoning complete')
+            // @ts-ignore
+            responseMessage.value.thinkingList[lastThinkingIndex].status = 'success'
+            // @ts-ignore
+            responseMessage.value.thinkingList[lastThinkingIndex].title = 'Reasoning complete'
+          }
+        }
+
+        // 强制触发响应式更新
+        triggerRef(responseMessage)
+        break
+
       case 'done':
         // Handle completion event
         console.info('Stream completed, final content:', data.final_content)
@@ -1101,13 +1170,23 @@ click the avatar to wake them."
           const lastThinkingIndex = responseMessage.value.thinkingList.length - 1
           const lastItem = responseMessage.value.thinkingList[lastThinkingIndex]
 
+          console.info('Done event - checking reasoning status:', {
+            lastItemTitle: lastItem.title,
+            lastItemStatus: lastItem.status,
+            thinkingListLength: responseMessage.value.thinkingList.length,
+          })
+
           // 检查最后一个项目是否是 Reasoning 状态
           if (lastItem.title === 'Reasoning' && lastItem.status === 'pending') {
+            console.info('Found pending Reasoning status, updating to complete')
             // @ts-ignore
             responseMessage.value.thinkingList[lastThinkingIndex].status = 'success'
-            // @ts-ignore
-            responseMessage.value.thinkingList.push({ title: 'Reasoning complete', status: 'success' })
+            triggerRef(responseMessage)
+          } else {
+            console.info('No pending Reasoning status found, last item:', lastItem)
           }
+        } else {
+          console.info('No thinking list found in done event')
         }
 
         // Close event source
@@ -1150,9 +1229,6 @@ click the avatar to wake them."
 
           // @ts-ignore
           responseMessage.value.thinkingList.push({ title: 'Think complete', status: 'success' })
-
-          // @ts-ignore
-          responseMessage.value.thinkingList.push({ title: 'Reasoning', status: 'pending' })
         } else {
           const type = await isPhotoOrCelebrity(message.text)
 
@@ -1175,9 +1251,6 @@ click the avatar to wake them."
             responseMessage.value.thinkingList[responseMessage.value.thinkingList.length - 1].status = 'success'
             // @ts-ignore
             responseMessage.value.thinkingList.push({ title: 'Think complete', status: 'success' })
-
-            // @ts-ignore
-            responseMessage.value.thinkingList.push({ title: 'Reasoning', status: 'pending' })
 
             await saveMessage(chatMessage.value)
             await saveMessage(responseMessage.value)
@@ -1217,9 +1290,6 @@ click the avatar to wake them."
                 responseMessage.value.thinkingList[responseMessage.value.thinkingList.length - 1].status = 'success'
                 // @ts-ignore
                 responseMessage.value.thinkingList.push({ title: 'Think complete', status: 'success' })
-
-                // @ts-ignore
-                responseMessage.value.thinkingList.push({ title: 'Reasoning', status: 'pending' })
               }
             }, 30 * 1000)
           }
@@ -1257,13 +1327,24 @@ click the avatar to wake them."
             const lastThinkingIndex = responseMessage.value.thinkingList.length - 1
             const lastItem = responseMessage.value.thinkingList[lastThinkingIndex]
 
+            console.info('Legacy format - checking reasoning status:', {
+              lastItemTitle: lastItem.title,
+              lastItemStatus: lastItem.status,
+              thinkingListLength: responseMessage.value.thinkingList.length,
+            })
+
             // 检查最后一个项目是否是 Reasoning 状态
             if (lastItem.title === 'Reasoning' && lastItem.status === 'pending') {
+              console.info('Found pending Reasoning status in legacy format, updating to complete')
               // @ts-ignore
               responseMessage.value.thinkingList[lastThinkingIndex].status = 'success'
-              // @ts-ignore
-              responseMessage.value.thinkingList.push({ title: 'Reasoning complete', status: 'success' })
+
+              triggerRef(responseMessage)
+            } else {
+              console.info('No pending Reasoning status found in legacy format, last item:', lastItem)
             }
+          } else {
+            console.info('No thinking list found in legacy format')
           }
 
           reasoningRecord.value = {
@@ -1298,9 +1379,6 @@ click the avatar to wake them."
 
             // @ts-ignore
             responseMessage.value.thinkingList.push({ title: 'Think complete', status: 'success' })
-
-            // @ts-ignore
-            responseMessage.value.thinkingList.push({ title: 'Reasoning', status: 'pending' })
           } else {
             const type = await isPhotoOrCelebrity(message.text)
 
@@ -1323,9 +1401,6 @@ click the avatar to wake them."
               responseMessage.value.thinkingList[responseMessage.value.thinkingList.length - 1].status = 'success'
               // @ts-ignore
               responseMessage.value.thinkingList.push({ title: 'Think complete', status: 'success' })
-
-              // @ts-ignore
-              responseMessage.value.thinkingList.push({ title: 'Reasoning', status: 'pending' })
 
               await saveMessage(chatMessage.value)
               await saveMessage(responseMessage.value)
@@ -1367,7 +1442,6 @@ click the avatar to wake them."
                   responseMessage.value.thinkingList.push({ title: 'Think complete', status: 'success' })
 
                   // @ts-ignore
-                  responseMessage.value.thinkingList.push({ title: 'Reasoning', status: 'pending' })
                 }
               }, 30 * 1000)
             }
@@ -1523,6 +1597,7 @@ async function getLoginUser() {
     loginUser.value = res.result
   } catch (error) {
     console.error(error)
+    localStorage.removeItem('X-Token')
   }
 }
 
