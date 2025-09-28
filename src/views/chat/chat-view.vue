@@ -168,6 +168,9 @@ const { status, data, send, open, close } = useWebSocket(wsUrl, {
             // @ts-ignore
             responseMessage.value.thinkingList.push({ title: 'Think complete', status: 'success' })
 
+            // @ts-ignore
+            responseMessage.value.thinkingList.push({ title: 'Reasoning', status: 'pending' })
+
             await saveMessage(chatMessage.value)
             await saveMessage(responseMessage.value)
 
@@ -795,6 +798,7 @@ const handleSendMessage = async (message: { text: string; inputText: string; ima
 
   const evtSource = new SSE(BASE_URL + '/mgn/agent/unifaiAsyncChat', {
     withCredentials: true,
+    timeout: 300000,
     // Disable auto start, need to call stream() to initiate request
     start: false,
     payload: JSON.stringify(messageParams),
@@ -971,19 +975,21 @@ click the avatar to wake them."
 
         // 延迟2秒后切换状态
         setTimeout(() => {
-          // 查找并覆盖 tool_call_pending 状态，如果没找到则添加新的
+          // 保留pending状态的推理过程，不覆盖，而是添加新的状态
           if (responseMessage.value.thinkingList && responseMessage.value.thinkingList.length > 0) {
             const lastThinkingIndex = responseMessage.value.thinkingList.length - 1
             const lastItem = responseMessage.value.thinkingList[lastThinkingIndex]
 
             // 检查最后一个项目是否是 tool_call_pending 状态
             if (lastItem.title && lastItem.title.includes('Preparing') && lastItem.status === 'pending') {
-              // 覆盖 tool_call_pending 状态
+              // 保留pending状态，标记为成功并添加新的running状态
               // @ts-ignore
-              responseMessage.value.thinkingList[lastThinkingIndex] = {
+              responseMessage.value.thinkingList[lastThinkingIndex].status = 'success'
+              // @ts-ignore
+              responseMessage.value.thinkingList.push({
                 title: `Running ${data.tool_name}${startQueryText}`,
                 status: 'pending',
-              }
+              })
             } else {
               // 如果没有找到 pending 状态，则标记上一个为成功并添加新的
               // @ts-ignore
@@ -1032,12 +1038,14 @@ click the avatar to wake them."
                 queryContent = ` - ${queryMatch[1]}`
               }
 
-              // 覆盖 tool_call_start 状态为完成状态，显示调用过程
+              // 保留pending状态，标记为成功并添加完成状态
               // @ts-ignore
-              responseMessage.value.thinkingList[lastThinkingIndex] = {
+              responseMessage.value.thinkingList[lastThinkingIndex].status = 'success'
+              // @ts-ignore
+              responseMessage.value.thinkingList.push({
                 title: `Complete ${data.tool_name}${queryContent}`,
                 status: 'success',
-              }
+              })
               triggerRef(responseMessage)
 
               // Scroll to bottom
@@ -1088,6 +1096,20 @@ click the avatar to wake them."
           console.info('Replaced with final content:', responseMessage.value.textContent)
         }
 
+        // 推理内容显示完成，更新Reasoning状态为complete
+        if (responseMessage.value.thinkingList && responseMessage.value.thinkingList.length > 0) {
+          const lastThinkingIndex = responseMessage.value.thinkingList.length - 1
+          const lastItem = responseMessage.value.thinkingList[lastThinkingIndex]
+
+          // 检查最后一个项目是否是 Reasoning 状态
+          if (lastItem.title === 'Reasoning' && lastItem.status === 'pending') {
+            // @ts-ignore
+            responseMessage.value.thinkingList[lastThinkingIndex].status = 'success'
+            // @ts-ignore
+            responseMessage.value.thinkingList.push({ title: 'Reasoning complete', status: 'success' })
+          }
+        }
+
         // Close event source
         evtSource.close()
         console.info('Event source closed')
@@ -1128,6 +1150,9 @@ click the avatar to wake them."
 
           // @ts-ignore
           responseMessage.value.thinkingList.push({ title: 'Think complete', status: 'success' })
+
+          // @ts-ignore
+          responseMessage.value.thinkingList.push({ title: 'Reasoning', status: 'pending' })
         } else {
           const type = await isPhotoOrCelebrity(message.text)
 
@@ -1150,6 +1175,10 @@ click the avatar to wake them."
             responseMessage.value.thinkingList[responseMessage.value.thinkingList.length - 1].status = 'success'
             // @ts-ignore
             responseMessage.value.thinkingList.push({ title: 'Think complete', status: 'success' })
+
+            // @ts-ignore
+            responseMessage.value.thinkingList.push({ title: 'Reasoning', status: 'pending' })
+
             await saveMessage(chatMessage.value)
             await saveMessage(responseMessage.value)
 
@@ -1188,6 +1217,9 @@ click the avatar to wake them."
                 responseMessage.value.thinkingList[responseMessage.value.thinkingList.length - 1].status = 'success'
                 // @ts-ignore
                 responseMessage.value.thinkingList.push({ title: 'Think complete', status: 'success' })
+
+                // @ts-ignore
+                responseMessage.value.thinkingList.push({ title: 'Reasoning', status: 'pending' })
               }
             }, 30 * 1000)
           }
@@ -1219,6 +1251,20 @@ click the avatar to wake them."
           evtSource.close()
 
           chatMessage.value.textContent = message.text
+
+          // 推理内容显示完成，更新Reasoning状态为complete
+          if (responseMessage.value.thinkingList && responseMessage.value.thinkingList.length > 0) {
+            const lastThinkingIndex = responseMessage.value.thinkingList.length - 1
+            const lastItem = responseMessage.value.thinkingList[lastThinkingIndex]
+
+            // 检查最后一个项目是否是 Reasoning 状态
+            if (lastItem.title === 'Reasoning' && lastItem.status === 'pending') {
+              // @ts-ignore
+              responseMessage.value.thinkingList[lastThinkingIndex].status = 'success'
+              // @ts-ignore
+              responseMessage.value.thinkingList.push({ title: 'Reasoning complete', status: 'success' })
+            }
+          }
 
           reasoningRecord.value = {
             inputContent: message.inputText,
@@ -1252,6 +1298,9 @@ click the avatar to wake them."
 
             // @ts-ignore
             responseMessage.value.thinkingList.push({ title: 'Think complete', status: 'success' })
+
+            // @ts-ignore
+            responseMessage.value.thinkingList.push({ title: 'Reasoning', status: 'pending' })
           } else {
             const type = await isPhotoOrCelebrity(message.text)
 
@@ -1274,6 +1323,10 @@ click the avatar to wake them."
               responseMessage.value.thinkingList[responseMessage.value.thinkingList.length - 1].status = 'success'
               // @ts-ignore
               responseMessage.value.thinkingList.push({ title: 'Think complete', status: 'success' })
+
+              // @ts-ignore
+              responseMessage.value.thinkingList.push({ title: 'Reasoning', status: 'pending' })
+
               await saveMessage(chatMessage.value)
               await saveMessage(responseMessage.value)
 
@@ -1312,6 +1365,9 @@ click the avatar to wake them."
                   responseMessage.value.thinkingList[responseMessage.value.thinkingList.length - 1].status = 'success'
                   // @ts-ignore
                   responseMessage.value.thinkingList.push({ title: 'Think complete', status: 'success' })
+
+                  // @ts-ignore
+                  responseMessage.value.thinkingList.push({ title: 'Reasoning', status: 'pending' })
                 }
               }, 30 * 1000)
             }
