@@ -914,6 +914,41 @@ click the avatar to wake them."
         })
         break
 
+      case 'tool_call_pending':
+        console.info('Tool call pending:', data)
+
+        // 解析 queryText 内容
+        let queryText = ''
+        try {
+          if (data.tool_args) {
+            const toolArgs = JSON.parse(data.tool_args)
+            if (toolArgs.query) {
+              queryText = ` - ${toolArgs.query}`
+            }
+          }
+        } catch (error) {
+          console.warn('Failed to parse tool_args in tool_call_pending:', error)
+        }
+
+        // 添加 tool_call_pending 信息到思考列表
+        if (responseMessage.value.thinkingList && responseMessage.value.thinkingList.length > 0) {
+          const lastThinkingIndex = responseMessage.value.thinkingList.length - 1
+          // @ts-ignore
+          responseMessage.value.thinkingList[lastThinkingIndex].status = 'success'
+        }
+        // @ts-ignore
+        responseMessage.value.thinkingList.push({
+          title: `Preparing ${data.tool_name || 'tool'}${queryText}`,
+          status: 'pending',
+        })
+        triggerRef(responseMessage)
+
+        // 滚动到底部
+        await nextTick(() => {
+          messageListRef.value?.scrollTo(0, messageListRef.value.scrollHeight)
+        })
+        break
+
       case 'tool_call_start':
         // Handle tool call start event
         console.info('Tool call start:', data)
@@ -924,69 +959,94 @@ click the avatar to wake them."
         }
 
         // Parse query parameter from tool_args
-        let queryText = ''
+        let startQueryText = ''
         try {
           const toolArgs = JSON.parse(data.tool_args)
           if (toolArgs.query) {
-            queryText = ` - ${toolArgs.query}`
+            startQueryText = ` - ${toolArgs.query}`
           }
         } catch (error) {
           console.warn('Failed to parse tool_args:', error)
         }
 
-        // Add tool call start information to thinking list instead of response content
-        if (responseMessage.value.thinkingList && responseMessage.value.thinkingList.length > 0) {
-          const lastThinkingIndex = responseMessage.value.thinkingList.length - 1
-          // @ts-ignore
-          responseMessage.value.thinkingList[lastThinkingIndex].status = 'success'
-        }
-        // @ts-ignore
-        responseMessage.value.thinkingList.push({
-          title: `🔧 Running ${data.tool_name}${queryText}`,
-          status: 'pending',
-        })
-        triggerRef(responseMessage)
+        // 延迟2秒后切换状态
+        setTimeout(() => {
+          // 查找并覆盖 tool_call_pending 状态，如果没找到则添加新的
+          if (responseMessage.value.thinkingList && responseMessage.value.thinkingList.length > 0) {
+            const lastThinkingIndex = responseMessage.value.thinkingList.length - 1
+            const lastItem = responseMessage.value.thinkingList[lastThinkingIndex]
 
-        // Scroll to bottom
-        await nextTick(() => {
-          messageListRef.value?.scrollTo(0, messageListRef.value.scrollHeight)
-        })
+            // 检查最后一个项目是否是 tool_call_pending 状态
+            if (lastItem.title && lastItem.title.includes('Preparing') && lastItem.status === 'pending') {
+              // 覆盖 tool_call_pending 状态
+              // @ts-ignore
+              responseMessage.value.thinkingList[lastThinkingIndex] = {
+                title: `Running ${data.tool_name}${startQueryText}`,
+                status: 'pending',
+              }
+            } else {
+              // 如果没有找到 pending 状态，则标记上一个为成功并添加新的
+              // @ts-ignore
+              responseMessage.value.thinkingList[lastThinkingIndex].status = 'success'
+              // @ts-ignore
+              responseMessage.value.thinkingList.push({
+                title: `Running ${data.tool_name}${startQueryText}`,
+                status: 'pending',
+              })
+            }
+          } else {
+            // 如果思考列表为空，直接添加
+            // @ts-ignore
+            responseMessage.value.thinkingList.push({
+              title: `Running ${data.tool_name}${startQueryText}`,
+              status: 'pending',
+            })
+          }
+
+          triggerRef(responseMessage)
+
+          // Scroll to bottom
+          nextTick(() => {
+            messageListRef.value?.scrollTo(0, messageListRef.value.scrollHeight)
+          })
+        }, 2000) // 延迟2秒
         break
 
       case 'tool_call_complete':
         // Handle tool call complete event
         console.info('Tool call complete:', data)
 
-        // Update the last thinking item status to completed if it matches the tool name
-        if (responseMessage.value.thinkingList && responseMessage.value.thinkingList.length > 0) {
-          const lastThinkingIndex = responseMessage.value.thinkingList.length - 1
-          const lastItem = responseMessage.value.thinkingList[lastThinkingIndex]
-          // @ts-ignore
-          if (lastItem.title && lastItem.title.includes(data.tool_name)) {
-            // Extract query content from the original title to preserve it in completed state
-            // @ts-ignore
-            const originalTitle = lastItem.title
-            let queryContent = ''
+        // 延迟2秒后切换状态
+        setTimeout(() => {
+          // Update the last thinking item status to completed if it matches the tool name
+          if (responseMessage.value.thinkingList && responseMessage.value.thinkingList.length > 0) {
+            const lastThinkingIndex = responseMessage.value.thinkingList.length - 1
+            const lastItem = responseMessage.value.thinkingList[lastThinkingIndex]
 
-            // Extract query content from "🔧 Running tool_name - query_content"
-            const queryMatch = originalTitle.match(/🔧 Running [^-]+(?: - (.+))?$/)
-            if (queryMatch && queryMatch[1]) {
-              queryContent = ` - ${queryMatch[1]}`
+            // 检查最后一个项目是否是 tool_call_start 状态
+            if (lastItem.title && lastItem.title.includes('Running') && lastItem.status === 'pending') {
+              // 提取原始标题中的查询内容
+              let queryContent = ''
+              const queryMatch = lastItem.title.match(/Running [^-]+(?: - (.+))?$/)
+              if (queryMatch && queryMatch[1]) {
+                queryContent = ` - ${queryMatch[1]}`
+              }
+
+              // 覆盖 tool_call_start 状态为完成状态，显示调用过程
+              // @ts-ignore
+              responseMessage.value.thinkingList[lastThinkingIndex] = {
+                title: `Complete ${data.tool_name}${queryContent}`,
+                status: 'success',
+              }
+              triggerRef(responseMessage)
+
+              // Scroll to bottom
+              nextTick(() => {
+                messageListRef.value?.scrollTo(0, messageListRef.value.scrollHeight)
+              })
             }
-
-            // @ts-ignore
-            responseMessage.value.thinkingList[lastThinkingIndex] = {
-              title: `✅ Complete ${data.tool_name}${queryContent}`,
-              status: 'success',
-            }
-            triggerRef(responseMessage)
-
-            // Scroll to bottom
-            await nextTick(() => {
-              messageListRef.value?.scrollTo(0, messageListRef.value.scrollHeight)
-            })
           }
-        }
+        }, 2000) // 延迟2秒
         break
 
       case 'tool_calls':
