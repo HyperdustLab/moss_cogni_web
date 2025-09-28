@@ -1,8 +1,8 @@
 <template>
-  <el-dialog v-model="dialogVisible" fullscreen title="Login" width="45%" :close-on-click-modal="false" :close-on-press-escape="false" :modal="true" :modal-append-to-body="true" modal-class="modal-mask" :lock-scroll="true" :append-to-body="true">
+  <el-dialog v-model="dialogVisible" fullscreen title="Login" width="50%" :close-on-click-modal="false" :close-on-press-escape="false" :modal="true" :modal-append-to-body="true" modal-class="modal-mask" :lock-scroll="true" :append-to-body="true">
     <div>
       <!-- component -->
-      <div class="w-70% relative py-11 bg-white h-180 flex items-center justify-center" style="margin-left: 15%">
+      <div class="w-70% relative py-11 bg-white h-220 flex items-center justify-center" style="margin-left: 15%">
         <div class="relative m-auto px-4 text-gray-600 md:px-8 xl:px-28 h-full">
           <div class="m-auto md:w-8/12 lg:w-6/12 xl:w-10/12 h-full">
             <div class="rounded-xl shadow-xl h-full">
@@ -10,7 +10,7 @@
                 <div class="space-y-3">
                   <div class="flex justify-center">
                     <div class="flex flex-col items-center gap-3">
-                      <img src="/logo2.png" style="width: 10rem; height: auto" class="object-contain" loading="lazy" alt="tailus logo" />
+                      <img src="/logo2.png" style="width: 20rem; height: auto" class="object-contain" loading="lazy" alt="tailus logo" />
                     </div>
                   </div>
                 </div>

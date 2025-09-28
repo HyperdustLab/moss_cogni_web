@@ -1,37 +1,37 @@
 <template>
   <div>
     <!-- component -->
-    <div class="w-70% relative py-11 bg-black h-180 flex items-center justify-center" style="margin-left: 15%">
-      <div class="relative m-auto px-4 text-gray-300 md:px-8 xl:px-28 h-full">
+    <div class="w-70% relative py-11 bg-white h-220 flex items-center justify-center" style="margin-left: 15%">
+      <div class="relative m-auto px-4 text-gray-800 md:px-8 xl:px-28 h-full">
         <div class="m-auto md:w-8/12 lg:w-6/12 xl:w-10/12 h-full">
           <div class="rounded-xl shadow-xl h-full">
             <div class="p-4 sm:p-11 h-full">
               <div class="space-y-3">
                 <div class="flex justify-center">
                   <div class="flex flex-col items-center gap-3">
-                    <img src="../../assets/logo2.png" style="width: 5rem; height: auto" class="object-contain" loading="lazy" alt="tailus logo" />
+                    <img src="../../assets/logo2.png" style="width: 20rem; height: auto" class="object-contain" loading="lazy" alt="tailus logo" />
                   </div>
                 </div>
               </div>
 
               <div class="mt-11 grid space-y-3">
-                <button @click="loginWithGoogle" class="group h-10 px-4 border-2 border-gray-600 rounded-full transition duration-300 hover:border-blue-400 focus:bg-blue-900 active:bg-blue-800">
+                <button @click="loginWithGoogle" class="group h-12 w-1/2 mx-auto px-6 border-2 border-black rounded-full transition duration-300 hover:border-black focus:bg-black active:bg-black bg-black shadow-sm hover:shadow-md">
                   <div class="relative flex items-center justify-center">
-                    <img :src="googleIcon" class="w-5 mr-2" alt="google logo" />
-                    <span class="block w-max font-semibold tracking-wide text-gray-300 text-sm transition duration-300 group-hover:text-blue-400 sm:text-base">Google</span>
+                    <img :src="googleIcon" class="w-5 mr-2 flex-shrink-0" alt="google logo" />
+                    <span class="block font-semibold tracking-wide text-white text-sm transition duration-300 group-hover:text-white sm:text-base">Continue with Google</span>
                   </div>
                 </button>
-                <button @click="handleMetamaskLogin" class="group h-10 px-4 border-2 border-gray-600 rounded-full transition duration-300 hover:border-blue-400 focus:bg-blue-900 active:bg-blue-800">
+                <button @click="handleMetamaskLogin" class="group h-12 w-1/2 mx-auto px-6 border-2 border-black rounded-full transition duration-300 hover:border-black focus:bg-black active:bg-black bg-black shadow-sm hover:shadow-md">
                   <div class="relative flex items-center justify-center">
-                    <img :src="metamaskIcon" class="w-5 mr-2" alt="google logo" />
-                    <span class="block w-max font-semibold tracking-wide text-gray-300 text-sm transition duration-300 group-hover:text-blue-400 sm:text-base">MetaMask</span>
+                    <img :src="metamaskIcon" class="w-5 mr-2 flex-shrink-0" alt="google logo" />
+                    <span class="block font-semibold tracking-wide text-white text-sm transition duration-300 group-hover:text-white sm:text-base">Continue with MetaMask</span>
                   </div>
                 </button>
               </div>
 
               <div class="flex items-center mb-2">
                 <hr class="h-0 border-b border-solid border-grey-500 grow" />
-                <p class="mx-3 text-grey-600 text-base">or</p>
+                <p class="mx-3 text-gray-500 text-base">or</p>
                 <hr class="h-0 border-b border-solid border-grey-500 grow" />
               </div>
 
@@ -43,7 +43,7 @@
                   <el-form-item label="Verification Code" prop="code">
                     <el-input v-model="form.code" size="large">
                       <template #append>
-                        <el-button :disabled="sendCodeDisabled" :loading="loading" @click="sendCode" class="bg-black text-white border-black hover:bg-gray-800">{{ sendCodeTxt }}</el-button>
+                        <el-button :disabled="sendCodeDisabled" :loading="loading" @click="sendCode" class="bg-black text-white border-black hover:bg-black focus:bg-black active:bg-black disabled:bg-black disabled:text-white">{{ sendCodeTxt }}</el-button>
                       </template>
                     </el-input>
                   </el-form-item>
@@ -51,16 +51,16 @@
 
                 <div>
                   <div class="flex justify-center">
-                    <el-button type="primary" @click="emailLogin" class="group h-10 w-80/100 px-8 border-2 border-black rounded-full transition duration-300 hover:border-black focus:bg-black active:bg-black bg-black">
-                      <div class="relative flex items-center space-x-3 justify-center">
-                        <span class="block w-max font-semibold tracking-wide text-white text-sm transition duration-300 group-hover:text-white sm:text-base">Login with Email</span>
+                    <el-button type="primary" @click="emailLogin" class="group h-12 w-1/2 mx-auto px-12 border-2 border-black rounded-full transition duration-300 shadow-sm hover:shadow-md bg-black hover:bg-black focus:bg-black active:bg-black">
+                      <div class="relative flex items-center justify-center">
+                        <span class="block font-semibold tracking-wide text-white text-sm transition duration-300 group-hover:text-white sm:text-base">Login with Email</span>
                       </div>
                     </el-button>
                   </div>
                 </div>
               </div>
 
-              <div class="mt-22 space-y-3 text-gray-400 text-center sm:-mb-6">
+              <div class="mt-22 space-y-3 text-gray-500 text-center sm:-mb-6">
                 <p class="text-xs">By proceeding, you agree to our <a href="/termsService" class="underline" target="_blank">Terms of Use</a> and confirm you have read our <a href="/privacyPolicy" class="underline" target="_blank">Privacy and Cookie Statement</a>.</p>
                 <p class="text-xs">This site is protected by reCAPTCHA and the <a href="https://policies.google.com/privacy" class="underline" target="_blank">Google Privacy Policy</a> and <a href="https://policies.google.com/terms" class="underline" target="_blank">Terms of Service</a> apply.</p>
               </div>
@@ -283,11 +283,67 @@ onBeforeUnmount(() => {
 }
 
 :deep(.el-overlay) {
-  background-color: rgba(0, 0, 0, 0.8) !important;
+  background-color: rgba(255, 255, 255, 0.8) !important;
 }
 
 .modal-mask {
-  background-color: rgba(0, 0, 0, 0.95) !important;
+  background-color: rgba(255, 255, 255, 0.95) !important;
   backdrop-filter: blur(8px);
+}
+
+/* 取消Element Plus按钮的绿色边框 */
+::v-deep .el-button:focus {
+  outline: none !important;
+  border-color: black !important;
+}
+
+::v-deep .el-button:focus-visible {
+  outline: none !important;
+  border-color: black !important;
+}
+
+::v-deep .el-button:hover {
+  border-color: black !important;
+}
+
+::v-deep .el-button:active {
+  border-color: black !important;
+}
+
+::v-deep .el-button.is-focus {
+  border-color: black !important;
+}
+
+/* 取消所有Element Plus按钮的默认样式 */
+::v-deep .el-button {
+  border-color: black !important;
+  background-color: black !important;
+  color: white !important;
+}
+
+::v-deep .el-button:hover {
+  background-color: black !important;
+  color: white !important;
+}
+
+::v-deep .el-button:focus {
+  background-color: black !important;
+  color: white !important;
+}
+
+::v-deep .el-button:active {
+  background-color: black !important;
+  color: white !important;
+}
+
+::v-deep .el-button.is-focus {
+  background-color: black !important;
+  color: white !important;
+}
+
+::v-deep .el-button.is-disabled {
+  background-color: black !important;
+  color: white !important;
+  opacity: 0.6;
 }
 </style>

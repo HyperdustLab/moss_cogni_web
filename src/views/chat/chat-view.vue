@@ -793,7 +793,7 @@ const handleSendMessage = async (message: { text: string; inputText: string; ima
     enableTool: selectAgent.value.functionStatus === 'Y',
   }
 
-  const evtSource = new SSE(BASE_URL + '/mgn/agent/asyncChat', {
+  const evtSource = new SSE(BASE_URL + '/mgn/agent/unifaiAsyncChat', {
     withCredentials: true,
     // Disable auto start, need to call stream() to initiate request
     start: false,
