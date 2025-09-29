@@ -54,25 +54,25 @@ const renderMarkdown = (text: string): string => {
   // Also handles cases like "主要个股表现： - 特斯拉" -> "主要个股表现：<br>- 特斯拉"
   // And cases like "跌幅较大：\n - 阿里巴巴" -> "跌幅较大：<br>- 阿里巴巴"
   // Use recursive processing to handle multiple consecutive - symbols
-  // let prevHtml = ''
-  // while (prevHtml !== html) {
-  //   prevHtml = html
-  //   html = html.replace(/([^\n])\s*-\s+([^-\n]+)/g, '$1<br>- $2')
-  //   html = html.replace(/\n\s*-\s+([^-\n]+)/g, '<br>- $1')
-  // }
+  let prevHtml = ''
+  while (prevHtml !== html) {
+    prevHtml = html
+    html = html.replace(/([^\n])\s*-\s+([^-\n]+)/g, '$1<br>- $2')
+    html = html.replace(/\n\s*-\s+([^-\n]+)/g, '<br>- $1')
+  }
 
-  // // Handle unordered lists - optimized list recognition logic
-  // // First handle list items at the beginning of lines - only match true list patterns
-  // // Avoid matching negative numbers, ranges, or other non-list uses of -
-  // html = html.replace(/^-\s+(.+)$/gim, (match, content) => {
-  //   // Check if this looks like a list item (not a negative number or range)
-  //   const trimmedContent = content.trim()
-  //   // If it starts with a number or looks like a negative number, don't treat as list
-  //   if (/^[\d\-]/.test(trimmedContent) && !/^[\d\-]+\s/.test(trimmedContent)) {
-  //     return match // Return original if it looks like a negative number
-  //   }
-  //   return `<li>${content}</li>`
-  // })
+  // Handle unordered lists - optimized list recognition logic
+  // First handle list items at the beginning of lines - only match true list patterns
+  // Avoid matching negative numbers, ranges, or other non-list uses of -
+  html = html.replace(/^-\s+(.+)$/gim, (match, content) => {
+    // Check if this looks like a list item (not a negative number or range)
+    const trimmedContent = content.trim()
+    // If it starts with a number or looks like a negative number, don't treat as list
+    if (/^[\d\-]/.test(trimmedContent) && !/^[\d\-]+\s/.test(trimmedContent)) {
+      return match // Return original if it looks like a negative number
+    }
+    return `<li>${content}</li>`
+  })
   html = html.replace(/^[\*\+]\s+(.+)$/gim, '<li>$1</li>')
 
   // Wrap consecutive li tags in ul
