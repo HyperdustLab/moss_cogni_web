@@ -686,10 +686,6 @@ const preHandleSendMessage = async (message: { text: string; image: string }) =>
     medias.push({ type: 'image', data: message.image })
   }
 
-  for (const item of messageList.value) {
-    item.thinkingList = null
-  }
-
   responseMessage.value = {
     type: 'ASSISTANT',
     textContent: '',
@@ -2459,7 +2455,7 @@ const groupedSessions = computed(() => {
           </transition-group>
         </div>
 
-        <!-- Input area - at bottom when there are chat records, centered when none -->
+        <!-- Input area - at bottom when there are chat records, centered when nonmessage-inpute -->
         <div class="input-section" :class="{ 'input-section-bottom': showChatList }" v-if="activeSession && selectAgent">
           <!-- Add >.dancer title - only show when no chat records -->
           <template v-if="!showChatList">
