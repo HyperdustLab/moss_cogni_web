@@ -3,11 +3,35 @@ import { computed } from 'vue'
 
 const props = defineProps<{ message: string }>()
 
+// Enhanced regex matching function for dash-space patterns
+const processDashSpacePattern = (text: string): string => {
+  // Handle various dash-space patterns for better line breaking
+  let processedText = text
+
+  // Pattern 1: Handle inline dash-space patterns (e.g., "text - item")
+  processedText = processedText.replace(/([^\n\r])\s*-\s+([^-\n\r]+)/g, '$1\n- $2')
+
+  // Pattern 2: Handle market data specific patterns with numbers and percentages
+  processedText = processedText.replace(/(\d+(?:,\d+)*(?:\.\d+)?[^\n\r]*?)\s*-\s+([^-\n\r]+)/g, '$1\n- $2')
+
+  // Pattern 3: Handle emoji and text combinations
+  processedText = processedText.replace(/([🇺🇸🇬🇧🇯🇵🇨🇳🇩🇪🇫🇷]+\s*[^\n\r]*?)\s*-\s+([^-\n\r]+)/g, '$1\n- $2')
+
+  // Pattern 4: Handle colon followed by dash-space
+  processedText = processedText.replace(/([^\n\r]*：)\s*-\s+([^-\n\r]+)/g, '$1\n- $2')
+
+  // Pattern 5: Clean up multiple consecutive dashes
+  processedText = processedText.replace(/\n-\s+([^-\n\r]*)\s*-\s+/g, '\n- $1\n- ')
+
+  return processedText
+}
+
 // Simple Markdown rendering function
 const renderMarkdown = (text: string): string => {
   if (!text) return ''
 
-  let html = text
+  // First process dash-space patterns
+  let html = processDashSpacePattern(text)
 
   // Handle headings, not dependent on line breaks
   // Handle H3 headings
@@ -50,16 +74,12 @@ const renderMarkdown = (text: string): string => {
   // Handle reasoning content - convert <think> and </think> tags to special styles
   html = html.replace(/<think>(.*?)<\/think>/gs, '<div class="thinking-content">💭 Thinking process<br>$1</div>')
 
-  // Handle dash-space pattern for line breaks (e.g., "微涨0.07% - 英国富时100指数" -> "微涨0.07%<br>- 英国富时100指数")
-  // Also handles cases like "主要个股表现： - 特斯拉" -> "主要个股表现：<br>- 特斯拉"
-  // And cases like "跌幅较大：\n - 阿里巴巴" -> "跌幅较大：<br>- 阿里巴巴"
-  // Use recursive processing to handle multiple consecutive - symbols
-  // let prevHtml = ''
-  // while (prevHtml !== html) {
-  //   prevHtml = html
-  //   html = html.replace(/([^\n])\s*-\s+([^-\n]+)/g, '$1<br>- $2')
-  //   html = html.replace(/\n\s*-\s+([^-\n]+)/g, '<br>- $1')
-  // }
+  // Additional regex patterns for specific formatting (after initial dash-space processing)
+  // Handle any remaining inline dash patterns that weren't caught by the initial processing
+  html = html.replace(/([^\n])\s*-\s+([^-\n]+)/g, '$1<br>- $2')
+
+  // Clean up any double line breaks
+  html = html.replace(/<br><br>/g, '<br>')
 
   // // Handle unordered lists - optimized list recognition logic
   // // First handle list items at the beginning of lines - only match true list patterns
