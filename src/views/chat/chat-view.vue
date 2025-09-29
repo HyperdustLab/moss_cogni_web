@@ -2452,7 +2452,7 @@ const groupedSessions = computed(() => {
           </div> -->
         </div>
         <!-- <el-divider :border-style="'solid'" border-color="#666666" /> -->
-        <div ref="messageListRef" class="message-list" style="background-color: rgb(249, 250, 251)" v-show="showChatList">
+        <div ref="messageListRef" class="message-list" :style="{ width: showChatList ? '80%' : '60%', backgroundColor: 'rgb(249, 250, 251)' }" v-show="showChatList">
           <!-- Transition effect -->
           <transition-group name="list" v-if="activeSession && selectAgent">
             <message-row v-for="message in messageList" :defAgentAvatar="selectAgent.avatar" :avatar="message.avatar" :key="message.id" :message="message" :isCurrentMessage="message.id === responseMessage.id"></message-row>
@@ -2472,7 +2472,7 @@ const groupedSessions = computed(() => {
             </div>
           </template>
 
-          <message-input @send="preHandleSendMessage" :loading="sendLoading" @search="handleSearchWeb" @stop="handleStopReasoning" @agent-change="handleAgentChange" :functionStatus="selectAgent.functionStatus"></message-input>
+          <message-input @send="preHandleSendMessage" :style="{ width: showChatList ? '80%' : '60%' }" :loading="sendLoading" @search="handleSearchWeb" @stop="handleStopReasoning" @agent-change="handleAgentChange" :functionStatus="selectAgent.functionStatus"></message-input>
         </div>
 
         <Login ref="loginRef" />
@@ -2842,7 +2842,6 @@ const groupedSessions = computed(() => {
 
       .message-list {
         padding: 20px;
-        width: 60%;
         height: 100%;
         flex: 1;
         box-sizing: border-box;

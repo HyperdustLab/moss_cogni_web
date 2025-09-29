@@ -59,8 +59,23 @@ const handleBlur = () => {
   document.body.style.position = ''
 }
 
+// Handle keyboard events for multiline input
+const handleKeydown = (event: KeyboardEvent | Event) => {
+  const keyboardEvent = event as KeyboardEvent
+  if (keyboardEvent.key === 'Enter') {
+    if (keyboardEvent.shiftKey) {
+      // Shift+Enter: Allow new line (default behavior)
+      return
+    } else {
+      // Enter: Send message
+      keyboardEvent.preventDefault()
+      sendMessage()
+    }
+  }
+}
+
 async function getAgentList() {
-  const { result } = await request({
+  const response = await request({
     url: '/mgn/agent/list',
     method: 'GET',
     params: {
@@ -72,7 +87,7 @@ async function getAgentList() {
       'X-Access-Token': localStorage.getItem('X-Token') || '',
     },
   })
-  agentList.value = result.records
+  agentList.value = (response as any).result.records
 }
 
 const selectAgentObject = computed(() => {
@@ -142,7 +157,7 @@ onMounted(async () => {
         <div class="input-field">
           <div class="input-content">
             <!-- 可输入的文本框 -->
-            <el-input v-model="message.text" class="message-input-field" @keydown.enter.prevent="sendMessage" @focus="handleFocus" @blur="handleBlur" :placeholder="'Message ' + (selectAgentObject?.nickName || '')"></el-input>
+            <el-input v-model="message.text" type="textarea" class="message-input-field" @keydown="handleKeydown" @focus="handleFocus" @blur="handleBlur" :placeholder="'Message ' + (selectAgentObject?.nickName || '')" :autosize="{ minRows: 1, maxRows: 6 }" resize="none"></el-input>
             <!-- Agent头像列表和Send按钮 -->
             <div class="input-bottom-row">
               <div class="agent-avatars">
@@ -200,7 +215,6 @@ onMounted(async () => {
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  width: 60%;
   max-width: 100%;
   height: 100%;
   min-height: fit-content;
@@ -252,7 +266,14 @@ onMounted(async () => {
   }
 
   .message-input-field {
-    :deep(.el-input__wrapper) {
+    // 全局重置所有可能的边框样式
+    :deep(*) {
+      border: none !important;
+      outline: none !important;
+      box-shadow: none !important;
+    }
+
+    :deep(.el-textarea__wrapper) {
       background-color: transparent !important;
       border: none !important;
       border-radius: 0 !important;
@@ -262,9 +283,10 @@ onMounted(async () => {
       font-weight: 400;
       line-height: 1.5;
       min-height: 40px;
+      outline: none !important;
     }
 
-    :deep(.el-input__inner) {
+    :deep(.el-textarea__inner) {
       background-color: transparent !important;
       border: none !important;
       color: #374151;
@@ -272,6 +294,9 @@ onMounted(async () => {
       font-weight: 400;
       line-height: 1.5;
       padding: 0 !important;
+      resize: none !important;
+      min-height: 40px !important;
+      outline: none !important;
 
       &::placeholder {
         color: #9ca3af;
@@ -282,19 +307,46 @@ onMounted(async () => {
         border: none !important;
         box-shadow: none !important;
       }
+
+      &:blur {
+        outline: none !important;
+        border: none !important;
+        box-shadow: none !important;
+      }
     }
 
-    :deep(.el-input) {
+    :deep(.el-textarea) {
       border: none !important;
+      outline: none !important;
     }
 
-    :deep(.el-input__wrapper):hover {
+    // 覆盖所有可能的状态
+    :deep(.el-textarea__wrapper):hover,
+    :deep(.el-textarea__wrapper.is-focus),
+    :deep(.el-textarea__wrapper.is-disabled),
+    :deep(.el-textarea__wrapper.is-error),
+    :deep(.el-textarea__wrapper:not(.is-focus)),
+    :deep(.el-textarea__wrapper:not(.is-disabled)),
+    :deep(.el-textarea__wrapper:not(.is-error)) {
       border: none !important;
       box-shadow: none !important;
+      outline: none !important;
     }
 
-    :deep(.el-input__wrapper.is-focus) {
+    // 确保失焦状态
+    :deep(.el-textarea__wrapper:not(.is-focus)) {
       border: none !important;
+      box-shadow: none !important;
+      outline: none !important;
+    }
+
+    // 覆盖可能的伪元素
+    :deep(.el-textarea__wrapper::before),
+    :deep(.el-textarea__wrapper::after),
+    :deep(.el-textarea__inner::before),
+    :deep(.el-textarea__inner::after) {
+      border: none !important;
+      outline: none !important;
       box-shadow: none !important;
     }
   }
