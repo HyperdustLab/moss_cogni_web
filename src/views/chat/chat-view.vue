@@ -2455,7 +2455,7 @@ const groupedSessions = computed(() => {
         <div ref="messageListRef" class="message-list" style="background-color: rgb(249, 250, 251)" v-show="showChatList">
           <!-- Transition effect -->
           <transition-group name="list" v-if="activeSession && selectAgent">
-            <message-row v-for="message in messageList" :defAgentAvatar="selectAgent.avatar" :avatar="message.avatar" :key="message.id" :message="message"></message-row>
+            <message-row v-for="message in messageList" :defAgentAvatar="selectAgent.avatar" :avatar="message.avatar" :key="message.id" :message="message" :isCurrentMessage="message.id === responseMessage.id"></message-row>
           </transition-group>
         </div>
 

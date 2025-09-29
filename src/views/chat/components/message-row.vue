@@ -1,17 +1,19 @@
 <script lang="ts" setup>
-import { Picture, Warning, Share } from '@element-plus/icons-vue'
+import { Picture, Warning, Share, ArrowDown, ArrowUp } from '@element-plus/icons-vue'
 import { computed, ref } from 'vue'
-import TextLoading from './text-loading.vue'
+// import TextLoading from './text-loading.vue'
 import MarkdownMessage from './markdown-message.vue'
 import type { AiMessage } from '../store/chat-store'
 import ThoughtChain from './ThoughtChain.vue'
 
 const BASE_URL = import.meta.env.VITE_API_HYPERAGI_API
 const downloading = ref(false)
+const showThinkingList = ref(false)
 
 const props = defineProps<{
   message: AiMessage
   defAgentAvatar: string
+  isCurrentMessage?: boolean
 }>()
 
 const userAvatar = 'https://s3.hyperdust.io/upload/20250411/67f8cbcbe4b0bc355fbb060e.png'
@@ -20,6 +22,10 @@ const agentAvatar = 'https://s3.hyperdust.io/upload/20250416/67ff421d5bce8066f1e
 
 const isUser = computed(() => props.message.type === 'USER')
 const isError = computed(() => props.message.type === 'ERROR' || props.message.isError)
+const hasThinkingList = computed(() => props.message.thinkingList && props.message.thinkingList.length > 0)
+const hasPendingThinking = computed(() => hasThinkingList.value && props.message.thinkingList!.some((item) => item.status === 'pending'))
+const isHistoryMessage = computed(() => props.message.type === 'ASSISTANT' && hasThinkingList.value && !props.isCurrentMessage)
+const isCurrentThinkingMessage = computed(() => props.isCurrentMessage && hasPendingThinking.value)
 
 const avatar = computed(() => {
   return isUser.value ? userAvatar : props.defAgentAvatar || agentAvatar
@@ -69,7 +75,19 @@ const handleDownload = async (imageUrl: string) => {
       <el-avatar :size="40" :src="(message as any).avatar || avatar" />
     </div>
     <div class="message-content" :class="{ 'error-content': isError }">
-      <ThoughtChain v-if="message.thinkingList && message.thinkingList.length > 0" :items="message.thinkingList" />
+      <!-- 流程列表展开/隐藏按钮 - 仅对历史消息显示 -->
+      <div v-if="isHistoryMessage" class="thinking-toggle" @click="showThinkingList = !showThinkingList">
+        <el-button size="small" type="text" class="toggle-btn">
+          <el-icon>
+            <ArrowDown v-if="!showThinkingList" />
+            <ArrowUp v-else />
+          </el-icon>
+          <span>{{ showThinkingList ? 'Hide Steps' : 'Show Steps' }}</span>
+        </el-button>
+      </div>
+
+      <!-- 流程列表 - 历史消息默认隐藏，当前消息直接显示，正在进行的推理流程默认展开 -->
+      <ThoughtChain v-if="hasThinkingList && (!isHistoryMessage || showThinkingList || isCurrentThinkingMessage)" :items="message.thinkingList || []" />
 
       <div class="message-text mt-5" :class="{ 'error-text': isError }">
         <MarkdownMessage v-if="!isError" :message="message.textContent || (message as any).text || (message as any).content || ''" />
@@ -141,6 +159,24 @@ const handleDownload = async (imageUrl: string) => {
       // 确保所有子元素也使用红色
       * {
         color: #dc2626 !important;
+      }
+    }
+  }
+
+  .thinking-toggle {
+    margin-bottom: 8px;
+
+    .toggle-btn {
+      color: #666;
+      font-size: 12px;
+      padding: 4px 8px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+
+      &:hover {
+        color: #409eff;
+        background-color: rgba(64, 158, 255, 0.1);
       }
     }
   }
