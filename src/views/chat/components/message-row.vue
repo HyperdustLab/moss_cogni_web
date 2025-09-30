@@ -24,7 +24,7 @@ const isUser = computed(() => props.message.type === 'USER')
 const isError = computed(() => props.message.type === 'ERROR' || props.message.isError)
 const hasThinkingList = computed(() => props.message.thinkingList && props.message.thinkingList.length > 0)
 const hasPendingThinking = computed(() => hasThinkingList.value && props.message.thinkingList!.some((item) => item.status === 'pending'))
-const isHistoryMessage = computed(() => props.message.type === 'ASSISTANT' && hasThinkingList.value && !props.isCurrentMessage)
+const isHistoryMessage = computed(() => props.message.type === 'ASSISTANT' && hasThinkingList.value)
 const isCurrentThinkingMessage = computed(() => props.isCurrentMessage && hasPendingThinking.value)
 
 const avatar = computed(() => {
