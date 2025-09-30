@@ -540,8 +540,7 @@ onMounted(async () => {
     }
   }
 
-  // Add scroll listener
-  contactListRef.value?.addEventListener('scroll', handleScroll)
+  // Add scroll listener - will be bound when contactListRef is available
 })
 
 async function getReplySearch() {
@@ -1634,6 +1633,18 @@ const fileList = ref<UploadUserFile[]>([])
 
 // Add scroll loading method
 const contactListRef = ref<HTMLElement>()
+
+// Watch for contactListRef changes and bind scroll event
+watch(
+  contactListRef,
+  (newRef) => {
+    if (newRef) {
+      newRef.addEventListener('scroll', handleScroll)
+    }
+  },
+  { immediate: true }
+)
+
 const handleScroll = () => {
   if (!contactListRef.value) return
 
