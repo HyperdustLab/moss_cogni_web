@@ -415,7 +415,7 @@ onMounted(async () => {
     width: 2px;
     height: 40px;
     background-color: #000000;
-    margin: 0 0 0 100px;
+    margin: 0 0 0 10px;
   }
 
   .agent-dropdown {

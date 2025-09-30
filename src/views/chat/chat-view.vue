@@ -649,6 +649,7 @@ async function getSessionList() {
 
 function handleSelectSession(session: any) {
   activeSession.value = session
+  showChatList.value = true
   getMessageList()
 }
 
@@ -2494,7 +2495,7 @@ const groupedSessions = computed(() => {
 
           <message-input
             @send="preHandleSendMessage"
-            :style="{ width: showChatList ? '80%' : '60%' }"
+            :style="{ width: showChatList ? '80%' : '65%' }"
             :class="{ 'fixed-width-input': showChatList }"
             :loading="sendLoading"
             @search="handleSearchWeb"
