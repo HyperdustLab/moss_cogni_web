@@ -138,7 +138,6 @@ const handleDownload = async (imageUrl: string) => {
 
   .message-content {
     max-width: 85%;
-    background-color: #f3f4f6;
     padding: 8px 12px;
     border-radius: 8px;
     color: black;

@@ -80,7 +80,7 @@ async function getAgentList() {
     method: 'GET',
     params: {
       pageNo: 1,
-      pageSize: 5,
+      pageSize: 10,
       sid: sids.value.join(','),
     },
     headers: {
@@ -88,6 +88,8 @@ async function getAgentList() {
     },
   })
   agentList.value = (response as any).result.records
+
+  console.info('agentList.value', agentList.value)
 }
 
 const selectAgentObject = computed(() => {
