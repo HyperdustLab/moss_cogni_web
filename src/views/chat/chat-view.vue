@@ -2466,7 +2466,16 @@ const groupedSessions = computed(() => {
             </div>
           </template>
 
-          <message-input @send="preHandleSendMessage" :style="{ width: showChatList ? '80%' : '60%' }" :loading="sendLoading" @search="handleSearchWeb" @stop="handleStopReasoning" @agent-change="handleAgentChange" :functionStatus="selectAgent.functionStatus"></message-input>
+          <message-input
+            @send="preHandleSendMessage"
+            :style="{ width: showChatList ? '80%' : '60%' }"
+            :class="{ 'fixed-width-input': showChatList }"
+            :loading="sendLoading"
+            @search="handleSearchWeb"
+            @stop="handleStopReasoning"
+            @agent-change="handleAgentChange"
+            :functionStatus="selectAgent.functionStatus"
+          ></message-input>
         </div>
 
         <Login ref="loginRef" />
@@ -2798,7 +2807,7 @@ const groupedSessions = computed(() => {
       overscroll-behavior: none;
       -webkit-overscroll-behavior: none;
       align-items: center;
-      justify-content: center; /* Add vertical centering */
+      justify-content: flex-start; /* 从顶部开始对齐 */
       background-color: #ffffff;
       transition: width 0.3s ease;
       margin: 0 auto;
@@ -2835,15 +2844,18 @@ const groupedSessions = computed(() => {
       }
 
       .message-list {
-        padding: 20px;
-        height: 100%;
+        padding: 0 20px 120px 20px; /* 顶部内边距设为0，底部增加120px内边距为输入框留出空间 */
+        height: 100%; /* 使用父容器的全部高度 */
+        width: 100%;
         flex: 1;
         box-sizing: border-box;
-        margin: 0 auto;
+        margin: 0;
+        position: relative;
+        z-index: 5; /* 低于输入框的z-index，但允许穿透 */
         overflow-y: auto;
         overflow-x: hidden;
         touch-action: pan-y;
-        max-width: 96%;
+        max-width: 100%; /* 使用全部宽度 */
         scroll-behavior: smooth;
         overscroll-behavior: none;
         -webkit-overscroll-behavior: none;
@@ -3414,9 +3426,17 @@ const groupedSessions = computed(() => {
     left: auto;
     transform: none;
     margin-top: auto;
-    padding-top: 100px;
     padding-bottom: 20px;
   }
+}
+
+// Fixed width input styles when chat list is shown
+.fixed-width-input {
+  max-width: 1200px;
+  min-width: 800px;
+  margin: 0 auto;
+  position: relative;
+  z-index: 15;
 }
 
 // >.dancer title styles
