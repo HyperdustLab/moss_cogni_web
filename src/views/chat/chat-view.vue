@@ -1818,11 +1818,26 @@ async function handleSearchWeb(message: boolean) {
   options.value.enableAgent = message
 }
 
+async function getAgent(sid) {
+  const { result } = await request.get(`/mgn/agent/list`, {
+    params: {
+      sid: sid,
+    },
+  })
+
+  return result.records[0]
+}
+
 // Handle agent change event
 const handleAgentChange = async (agentId: string) => {
   try {
     // Find corresponding agent from agentList based on agentId
-    const agent = agentList.value.find((a) => a.id === agentId)
+    let agent = agentList.value.find((a) => a.id === agentId)
+
+    if (!agent) {
+      agent = await getAgent(agentId)
+    }
+
     if (agent) {
       selectAgent.value = agent
       selectAgentId.value = agent.id
