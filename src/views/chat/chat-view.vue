@@ -649,7 +649,6 @@ async function getSessionList() {
 
 function handleSelectSession(session: any) {
   activeSession.value = session
-  showChatList.value = true
   getMessageList()
 }
 
@@ -1663,11 +1662,14 @@ const loadMore = () => {
   getAgentList(true)
 }
 
-const preHandleSelectAgent = (agent: any) => {
+const preHandleSelectAgent = (agent: any, _showChatList: boolean = false) => {
   selectMyAgentId.value = ''
 
   handleSelectAgent(agent)
   showSessionPanel.value = true
+  if (_showChatList) {
+    showChatList.value = _showChatList
+  }
 }
 
 // Add selection method
@@ -2198,7 +2200,7 @@ const groupedSessions = computed(() => {
                   'bg-gray-100 !border-2 !border-yellow-400': selectAgentId === agent.id,
                   'selected-agent': selectAgentId === agent.id,
                 }"
-                @click="preHandleSelectAgent(agent)"
+                @click="preHandleSelectAgent(agent, true)"
               >
                 <div class="relative">
                   <el-avatar :size="40" :src="agent.avatar" fit="contain" />
