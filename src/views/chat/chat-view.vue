@@ -1821,7 +1821,7 @@ async function handleSearchWeb(message: boolean) {
 async function getAgent(sid) {
   const { result } = await request.get(`/mgn/agent/list`, {
     params: {
-      sid: sid,
+      id: sid,
     },
   })
 
