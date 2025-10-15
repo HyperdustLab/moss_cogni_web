@@ -778,7 +778,7 @@ const handleSendMessage = async (message: { text: string; inputText: string; ima
 
   const messageParams = {
     assistantId: selectAgent.value.sid,
-    model: 'deepseek/deepseek-chat',
+    model: 'ollama/cogito:32b',
     content: content,
     userId: loginUser.value?.id || currSessionId.value,
     message: message.inputText,

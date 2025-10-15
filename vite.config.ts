@@ -18,7 +18,7 @@ export default defineConfig({
     port: 5177,
     proxy: {
       '/api': {
-        target: 'https://moss.hyperagi.ai/api',
+        target: 'https://test.hyperagi.ai/api',
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api/, ''),
       },
