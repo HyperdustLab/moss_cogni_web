@@ -785,7 +785,7 @@ const handleSendMessage = async (message: { text: string; inputText: string; ima
     sessionId: activeSession.value.id,
     max_iterations: 5,
     enableVectorStore: true,
-    enableTool: selectAgent.value.functionStatus === 'Y',
+    enableTool: true,
   }
 
   const evtSource = new SSE(BASE_URL + '/mgn/agent/asyncChat', {
