@@ -9,7 +9,6 @@ import { ElIcon, ElMessage, type UploadProps, type UploadUserFile } from 'elemen
 import { getDictText, getDictItems } from '@/api/login'
 import { SSE } from 'sse.js'
 import { type AiMessage, useChatStore } from './store/chat-store'
-import type { AiMessageParams, AiMessageWrapper } from '@/apis/__generated/model/static'
 import Login from '@/components/Login/index.vue'
 
 import IntroductionBindAccount from '@/components/IntroductionBindAccount/index.vue'
@@ -258,7 +257,12 @@ const isOnline = ref(false)
 
 const defAvatar = ref('https://s3.hyperdust.io/upload/20250411/67f8cbcbe4b0bc355fbb060e.png')
 
-const options = ref<AiMessageParams>({
+const options = ref<{
+  enableVectorStore: boolean
+  enableAgent: boolean
+  model: string
+  baseUrl: string
+}>({
   enableVectorStore: true,
   enableAgent: false,
   model: '',
