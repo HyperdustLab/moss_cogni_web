@@ -4,6 +4,7 @@ import SessionItem from './components/session-item.vue'
 import { ChatRound, Close, Delete, EditPen, Upload, Share, Message, Document, User, Plus, Edit, Search } from '@element-plus/icons-vue'
 import MessageRow from './components/message-row.vue'
 import MessageInput from './components/message-input.vue'
+import CastAgentForm from './components/cast-agent-form.vue'
 import { storeToRefs } from 'pinia'
 import { ElIcon, ElMessage, type UploadProps, type UploadUserFile } from 'element-plus'
 import { getDictText, getDictItems } from '@/api/login'
@@ -65,6 +66,9 @@ import Substring from '@/components/Substring.vue'
 const loading = ref(false)
 
 const sendLoading = ref(false)
+
+// 铸造agent相关状态
+const showCastAgentForm = ref(false)
 
 let setTimeoutId: any = null
 
@@ -384,6 +388,74 @@ const isPremiumUser = (user: any) => {
 const handleUpgrade = () => {
   // Navigate to upgrade page or show upgrade popup
   goUser() // Use existing function to navigate to dashboard
+}
+
+// 处理铸造agent按钮点击
+const handleCastAgent = () => {
+  // 创建一个特殊的消息来显示铸造agent表单
+  const castAgentMessage: AiMessage = {
+    id: `cast-agent-${Date.now()}`,
+    type: 'CAST_AGENT_FORM',
+    textContent: '',
+    medias: [],
+    sessionId: activeSession.value?.id || '',
+    thinkingList: [],
+  }
+
+  // 将表单消息添加到messageList
+  messageList.value.push(castAgentMessage)
+
+  // 滚动到底部显示新消息
+  nextTick(() => {
+    if (messageListRef.value) {
+      messageListRef.value.scrollTo({
+        top: messageListRef.value.scrollHeight,
+        behavior: 'smooth',
+      })
+    }
+  })
+}
+
+// 处理铸造agent表单提交
+const handleCastAgentSubmit = async (formData: any, messageId: string) => {
+  try {
+    // 这里可以调用API创建agent
+    console.log('Agent casting data:', formData)
+
+    // 模拟API调用
+    await new Promise((resolve) => setTimeout(resolve, 1000))
+
+    ElMessage.success('Agent cast successfully!')
+
+    // 移除表单消息，添加成功消息
+    const messageIndex = messageList.value.findIndex((msg) => msg.id === messageId)
+    if (messageIndex !== -1) {
+      // 替换为成功消息
+      messageList.value[messageIndex] = {
+        id: `success-${Date.now()}`,
+        type: 'ASSISTANT',
+        textContent: `🎉 Agent "${formData.nickName}" cast successfully!\n\nPersonalization: ${formData.personalization}\n\nWelcome Message: ${formData.welcomeMessage}`,
+        medias: [],
+        sessionId: activeSession.value?.id || '',
+        thinkingList: [],
+      }
+    }
+
+    // 可以在这里刷新agent列表
+    // await refreshAgentList()
+  } catch (error) {
+    console.error('Agent casting failed:', error)
+    ElMessage.error('Agent casting failed, please try again')
+  }
+}
+
+// 处理取消铸造agent
+const handleCastAgentCancel = (messageId: string) => {
+  // 移除表单消息
+  const messageIndex = messageList.value.findIndex((msg) => msg.id === messageId)
+  if (messageIndex !== -1) {
+    messageList.value.splice(messageIndex, 1)
+  }
 }
 
 // Copy to clipboard
@@ -2478,7 +2550,16 @@ const groupedSessions = computed(() => {
         <div ref="messageListRef" class="message-list" :style="{ width: showChatList ? '80%' : '60%', backgroundColor: 'rgb(249, 250, 251)' }" v-show="showChatList">
           <!-- Transition effect -->
           <transition-group name="list" v-if="activeSession && selectAgent">
-            <message-row v-for="message in messageList" :defAgentAvatar="selectAgent.avatar" :avatar="message.avatar" :key="message.id" :message="message" :isCurrentMessage="message.id === responseMessage.id"></message-row>
+            <message-row
+              v-for="message in messageList"
+              :defAgentAvatar="selectAgent.avatar"
+              :avatar="message.avatar"
+              :key="message.id"
+              :message="message"
+              :isCurrentMessage="message.id === responseMessage.id"
+              @cast-agent-submit="handleCastAgentSubmit"
+              @cast-agent-cancel="handleCastAgentCancel"
+            ></message-row>
           </transition-group>
         </div>
 
@@ -2503,6 +2584,7 @@ const groupedSessions = computed(() => {
             @search="handleSearchWeb"
             @stop="handleStopReasoning"
             @agent-change="handleAgentChange"
+            @cast-agent="handleCastAgent"
             :functionStatus="selectAgent.functionStatus"
           ></message-input>
         </div>

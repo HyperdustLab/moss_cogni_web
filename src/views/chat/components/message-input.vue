@@ -40,6 +40,7 @@ const emit = defineEmits<{
   search: [message: boolean]
   stop: []
   agentChange: [agentId: string]
+  castAgent: []
 }>()
 // Message in input box
 const message = ref<Message>({ text: '', image: '' })
@@ -146,6 +147,10 @@ const selectAgent = (agentId: string) => {
   emit('agentChange', agentId)
 }
 
+const castAgent = () => {
+  emit('castAgent')
+}
+
 onMounted(async () => {
   await getAgentList()
 })
@@ -199,6 +204,10 @@ onMounted(async () => {
 
               <button v-if="props.loading" @click="sendMessage" class="stop-btn">
                 <span> Stop </span>
+              </button>
+
+              <button @click="castAgent" class="cast-agent-btn">
+                <span>Cast Agent</span>
               </button>
             </div>
           </div>
@@ -567,6 +576,30 @@ onMounted(async () => {
 
     &:hover {
       background-color: #333333;
+    }
+
+    span {
+      color: #ffffff;
+    }
+  }
+
+  .cast-agent-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px 16px;
+    background-color: #3b82f6;
+    border: none;
+    border-radius: 20px;
+    color: #ffffff;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    margin-left: 8px;
+
+    &:hover {
+      background-color: #2563eb;
     }
 
     span {

@@ -5,6 +5,7 @@ import { computed, ref } from 'vue'
 import MarkdownMessage from './markdown-message.vue'
 import type { AiMessage } from '../store/chat-store'
 import ThoughtChain from './ThoughtChain.vue'
+import CastAgentForm from './cast-agent-form.vue'
 
 const BASE_URL = import.meta.env.VITE_API_HYPERAGI_API
 const downloading = ref(false)
@@ -16,12 +17,18 @@ const props = defineProps<{
   isCurrentMessage?: boolean
 }>()
 
+const emit = defineEmits<{
+  castAgentSubmit: [formData: any, messageId: string]
+  castAgentCancel: [messageId: string]
+}>()
+
 const userAvatar = 'https://s3.hyperdust.io/upload/20250411/67f8cbcbe4b0bc355fbb060e.png'
 
 const agentAvatar = 'https://s3.hyperdust.io/upload/20250416/67ff421d5bce8066f1e25655.jpg'
 
 const isUser = computed(() => props.message.type === 'USER')
 const isError = computed(() => props.message.type === 'ERROR' || props.message.isError)
+const isCastAgentForm = computed(() => props.message.type === 'CAST_AGENT_FORM')
 const hasThinkingList = computed(() => props.message.thinkingList && props.message.thinkingList.length > 0)
 const hasPendingThinking = computed(() => hasThinkingList.value && props.message.thinkingList!.some((item) => item.status === 'pending'))
 const isHistoryMessage = computed(() => props.message.type === 'ASSISTANT' && hasThinkingList.value)
@@ -35,6 +42,16 @@ const images = computed(() => {
   if (!props.message.medias) return []
   return props.message.medias.filter((media) => media.type === 'image').map((media) => media.data)
 })
+
+// 处理铸造agent表单提交
+const handleCastAgentSubmit = (formData: any, messageId: string) => {
+  emit('castAgentSubmit', formData, messageId)
+}
+
+// 处理铸造agent表单取消
+const handleCastAgentCancel = (messageId: string) => {
+  emit('castAgentCancel', messageId)
+}
 
 const handleDownload = async (imageUrl: string) => {
   try {
@@ -89,7 +106,12 @@ const handleDownload = async (imageUrl: string) => {
       <!-- 流程列表 - 历史消息默认隐藏，当前消息直接显示，正在进行的推理流程默认展开 -->
       <ThoughtChain v-if="hasThinkingList && (!isHistoryMessage || showThinkingList || isCurrentThinkingMessage)" :items="message.thinkingList || []" />
 
-      <div class="message-text mt-5" :class="{ 'error-text': isError }">
+      <!-- 铸造Agent表单 -->
+      <div v-if="isCastAgentForm" class="cast-agent-form-container">
+        <CastAgentForm :message-id="message.id" @submit="handleCastAgentSubmit" @cancel="handleCastAgentCancel" />
+      </div>
+
+      <div v-else class="message-text mt-5" :class="{ 'error-text': isError }">
         <MarkdownMessage v-if="!isError" :message="message.textContent || (message as any).text || (message as any).content || ''" />
         <div v-else v-html="`<span style='color: #dc2626; font-weight: 500; white-space: pre-line;'>${message.textContent || (message as any).text || (message as any).content || ''}</span>`"></div>
       </div>
