@@ -2583,6 +2583,7 @@ const groupedSessions = computed(() => {
           <message-input
             @send="preHandleSendMessage"
             :style="{ width: showChatList ? '80%' : '65%' }"
+            :showCreateAgent="showChatList"
             :class="{ 'fixed-width-input': showChatList }"
             :loading="sendLoading"
             @search="handleSearchWeb"

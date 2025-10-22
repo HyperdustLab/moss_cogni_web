@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import { ref, reactive } from 'vue'
 import { ElMessage } from 'element-plus'
-import ImageUpload from '@/components/image/image-upload.vue'
+import UploadImage from '@/components/UploadImage/index.vue'
 
 // 定义表单数据类型
 interface CastAgentForm {
@@ -38,21 +38,16 @@ const rules = {
   ],
   personalization: [
     { required: true, message: 'Please enter personalization description', trigger: 'blur' },
-    { min: 10, max: 200, message: 'Personalization should be 10-200 characters', trigger: 'blur' },
+    { min: 2, max: 200, message: 'Personalization should be 2-200 characters', trigger: 'blur' },
   ],
   welcomeMessage: [
     { required: true, message: 'Please enter welcome message', trigger: 'blur' },
-    { min: 5, max: 100, message: 'Welcome message should be 5-100 characters', trigger: 'blur' },
+    { min: 2, max: 100, message: 'Welcome message should be 2-100 characters', trigger: 'blur' },
   ],
 }
 
 // 表单引用
 const formRef = ref()
-
-// 处理头像上传
-const handleAvatarUpload = (url: string) => {
-  formData.avatar = url
-}
 
 // 提交表单
 const handleSubmit = async () => {
@@ -106,7 +101,7 @@ defineExpose({
       <!-- Avatar Upload -->
       <el-form-item label="Avatar" required>
         <div class="avatar-upload-section">
-          <ImageUpload :image-url="formData.avatar" @upload-success="handleAvatarUpload" upload-text="Upload Agent Avatar" />
+          <UploadImage v-model="formData.avatar" :limit="1" />
           <p class="upload-tip">Recommended square image, minimum 200x200px</p>
         </div>
       </el-form-item>
@@ -130,7 +125,7 @@ defineExpose({
     <!-- Action Buttons -->
     <div class="form-actions">
       <el-button @click="handleCancel" size="large"> Cancel </el-button>
-      <el-button type="primary" @click="handleSubmit" size="large" :disabled="!formData.avatar || !formData.nickName || !formData.personalization || !formData.welcomeMessage"> Cast Agent </el-button>
+      <el-button type="primary" @click="handleSubmit" size="large" :disabled="!formData.avatar || !formData.nickName || !formData.personalization || !formData.welcomeMessage"> Create Agent </el-button>
     </div>
   </div>
 </template>

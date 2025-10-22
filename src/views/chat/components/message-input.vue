@@ -32,6 +32,7 @@ const selectedAgent = ref('')
 const props = defineProps<{
   functionStatus: string
   loading: boolean
+  showCreateAgent: boolean
 }>()
 
 // Send message event
@@ -195,6 +196,11 @@ onMounted(async () => {
                 </div>
                 <div class="separator"></div>
               </div>
+
+              <button v-if="props.showCreateAgent" @click="castAgent" class="cast-agent-btn">
+                <span>Create Agent</span>
+              </button>
+
               <button @click="sendMessage" :disabled="!props.loading && !message.text.trim()">
                 <img v-if="!props.loading && !message.text.trim()" class="send-icon" style="width: 50px; height: auto" :src="send_2" alt="Send" />
                 <span v-else-if="!props.loading && message.text.trim()">
@@ -204,10 +210,6 @@ onMounted(async () => {
 
               <button v-if="props.loading" @click="sendMessage" class="stop-btn">
                 <span> Stop </span>
-              </button>
-
-              <button @click="castAgent" class="cast-agent-btn">
-                <span>Cast Agent</span>
               </button>
             </div>
           </div>
@@ -566,20 +568,36 @@ onMounted(async () => {
     justify-content: center;
     padding: 8px 16px;
     background-color: #000000;
-    border: none;
-    border-radius: 20px;
+    border: 2px solid #000000;
+    border-radius: 50px;
     color: #ffffff;
     font-size: 14px;
     font-weight: 500;
     cursor: pointer;
     transition: all 0.2s ease;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
 
     &:hover {
-      background-color: #333333;
+      background-color: #000000;
+      border-color: #000000;
+      box-shadow:
+        0 4px 6px -1px rgba(0, 0, 0, 0.1),
+        0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    }
+
+    &:focus {
+      background-color: #000000;
+      border-color: #000000;
+    }
+
+    &:active {
+      background-color: #000000;
+      border-color: #000000;
     }
 
     span {
       color: #ffffff;
+      font-weight: 600;
     }
   }
 
@@ -588,22 +606,38 @@ onMounted(async () => {
     align-items: center;
     justify-content: center;
     padding: 8px 16px;
-    background-color: #3b82f6;
-    border: none;
-    border-radius: 20px;
+    background-color: #000000;
+    border: 2px solid #000000;
+    border-radius: 50px;
     color: #ffffff;
     font-size: 14px;
     font-weight: 500;
     cursor: pointer;
     transition: all 0.2s ease;
     margin-left: 8px;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
 
     &:hover {
-      background-color: #2563eb;
+      background-color: #000000;
+      border-color: #000000;
+      box-shadow:
+        0 4px 6px -1px rgba(0, 0, 0, 0.1),
+        0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    }
+
+    &:focus {
+      background-color: #000000;
+      border-color: #000000;
+    }
+
+    &:active {
+      background-color: #000000;
+      border-color: #000000;
     }
 
     span {
       color: #ffffff;
+      font-weight: 600;
     }
   }
 
