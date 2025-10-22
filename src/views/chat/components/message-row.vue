@@ -20,6 +20,7 @@ const props = defineProps<{
 const emit = defineEmits<{
   castAgentSubmit: [formData: any, messageId: string]
   castAgentCancel: [messageId: string]
+  castAgentSuccess: [messageId: string]
 }>()
 
 const userAvatar = 'https://s3.hyperdust.io/upload/20250411/67f8cbcbe4b0bc355fbb060e.png'
@@ -51,6 +52,11 @@ const handleCastAgentSubmit = (formData: any, messageId: string) => {
 // 处理铸造agent表单取消
 const handleCastAgentCancel = (messageId: string) => {
   emit('castAgentCancel', messageId)
+}
+
+// 处理铸造agent成功
+const handleCastAgentSuccess = (messageId: string) => {
+  emit('castAgentSuccess', messageId)
 }
 
 const handleDownload = async (imageUrl: string) => {
@@ -108,7 +114,7 @@ const handleDownload = async (imageUrl: string) => {
 
       <!-- 铸造Agent表单 -->
       <div v-if="isCastAgentForm" class="cast-agent-form-container">
-        <CastAgentForm :message-id="message.id" @submit="handleCastAgentSubmit" @cancel="handleCastAgentCancel" />
+        <CastAgentForm :message-id="message.id" @submit="handleCastAgentSubmit" @cancel="handleCastAgentCancel" @success="handleCastAgentSuccess" />
       </div>
 
       <div v-else class="message-text mt-5" :class="{ 'error-text': isError }">

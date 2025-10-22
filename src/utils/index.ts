@@ -53,11 +53,7 @@ async function checkChainId(chainId) {
 }
 
 export async function buildContract(blockchainId, smartContractCode) {
-  const accounts = await ethereum.request({ method: 'eth_requestAccounts' })
-
   const blockchain = await getBlockchain(blockchainId)
-
-  console.info(blockchain)
 
   const currChainId = await ethereum.request({ method: 'eth_chainId' })
 
@@ -104,7 +100,11 @@ export async function buildContract(blockchainId, smartContractCode) {
 
   const signer = await provider.getSigner()
 
+  console.info('blockchainId:', blockchainId)
+
   const smartContract = await getSmartContractByCode(smartContractCode, blockchainId)
+
+  console.info('blockchainId:', blockchainId)
 
   const contract = new ethers.Contract(smartContract.address, smartContract.contractBinary, signer)
   console.info(contract)
@@ -112,13 +112,13 @@ export async function buildContract(blockchainId, smartContractCode) {
 }
 
 async function getBlockchain(id) {
-  const { result } = await request.get('/mgn/blockchain/queryById', { id })
+  const { result } = await request({ url: '/mgn/blockchain/queryById', method: 'get', params: { id } })
 
   return result
 }
 
 export async function getSmartContractByCode(code, blockchainId) {
-  const { result } = await request.get('/mgn/smartContract/getSmartContractByCode', { code, blockchainId })
+  const { result } = await request({ url: '/mgn/smartContract/getSmartContractByCode', method: 'get', params: { code, blockchainId: blockchainId.toString() } })
 
   return result
 }

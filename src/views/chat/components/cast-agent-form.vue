@@ -2,7 +2,12 @@
 import { ref, reactive } from 'vue'
 import { ElMessage } from 'element-plus'
 import UploadImage from '@/components/UploadImage/index.vue'
-import
+
+import { buildContract, exceptionHandling } from '@/utils/index'
+
+import { ethers } from 'ethers'
+
+import { getDictText } from '@/api/login'
 
 // Define form data type
 interface CastAgentForm {
@@ -16,6 +21,7 @@ interface CastAgentForm {
 const emit = defineEmits<{
   submit: [formData: CastAgentForm, messageId: string]
   cancel: [messageId: string]
+  success: [messageId: string]
 }>()
 
 // Define props
@@ -62,8 +68,28 @@ const handleSubmit = async () => {
       ElMessage.warning('Please upload Agent avatar')
       return
     }
+
+    const curr_blockchain = await getDictText('sys_config', 'curr_blockchain')
+
+    const HyperAGI_Agent_Mint = await buildContract(curr_blockchain, 'HyperAGI_Agent_Mint')
+
+    // 准备参数
+    const id = 358
+    const agentParams = [
+      formData.avatar, // 头像
+      formData.nickName, // 昵称
+      formData.personalization, // 个性化描述
+      formData.welcomeMessage, // 欢迎消息
+    ]
+
+    const tx = await HyperAGI_Agent_Mint.mintAndCreateAgent(id, agentParams, {
+      value: ethers.parseEther('0.001'), // 根据合约逻辑，这里可能需要调整
+    })
+    await tx.wait()
+
+    ElMessage.success('Agent cast successfully!')
   } catch (error) {
-    console.error('Form validation failed:', error)
+    exceptionHandling(error)
   }
 }
 

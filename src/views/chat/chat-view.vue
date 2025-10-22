@@ -458,6 +458,15 @@ const handleCastAgentCancel = (messageId: string) => {
   }
 }
 
+// 处理铸造agent成功
+const handleCastAgentSuccess = (messageId: string) => {
+  // 移除表单消息
+  const messageIndex = messageList.value.findIndex((msg) => msg.id === messageId)
+  if (messageIndex !== -1) {
+    messageList.value.splice(messageIndex, 1)
+  }
+}
+
 // Copy to clipboard
 const copyToClipboard = async (text: string) => {
   try {
@@ -2563,6 +2572,7 @@ const groupedSessions = computed(() => {
               :isCurrentMessage="message.id === responseMessage.id"
               @cast-agent-submit="handleCastAgentSubmit"
               @cast-agent-cancel="handleCastAgentCancel"
+              @cast-agent-success="handleCastAgentSuccess"
             ></message-row>
           </transition-group>
         </div>

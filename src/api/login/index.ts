@@ -26,59 +26,14 @@ export function getUserInfoApi() {
   })
 }
 
-export async function metamaskLogin() {
-  // @ts-ignore
-  await window.ethereum.enable()
-  // @ts-ignore
-  const accounts = await ethereum.request({ method: 'eth_accounts' })
-
-  const data = await api.get('/sys/getPersonalSignMessage', {
-    address: accounts[0],
-  })
-
-  // @ts-ignore
-  const signature = await ethereum.request({
-    method: 'personal_sign',
-    // @ts-ignore
-    params: [data.result, accounts[0]],
-  })
-
-  // @ts-ignore
-  const { result } = await api.post('/sys/metaMaskLogin', {
-    address: accounts[0],
-    signature: signature,
-    role: 'user',
-  })
-
-  useUserStore().loginToken(result.token)
-
-  location.href = '/'
-}
-
-export async function getBindStatus() {
-  const userStore = useUserStore()
-
-  if (!userStore.walletAddress) {
-    return 'metamask'
-  }
-
-  const { result } = await request({ url: '/sys/user/listMyBindAccount', method: 'get' })
-
-  if (!userStore.email && !result.some((item) => item === 'google')) {
-    return 'email'
-  }
-
-  return 'none'
-}
-
-export async function getDictItems(dictCode) {
+export async function getDictItems(dictCode: string) {
   const { result } = await request({ url: '/sys/dict/getDictItems/' + dictCode, method: 'get' })
   return result
 }
-export async function getDictText(dictCode, key) {
-  const { result } = await request({
-    url: `/sys/dict/getDictText/${dictCode}/${key}`,
-    method: 'get',
-  })
+
+export async function getDictText(dictCode: string, key: string) {
+  const { result } = await request({ url: `/sys/dict/getDictText/${dictCode}/${key}`, method: 'get' })
+
+  debugger
   return result
 }
