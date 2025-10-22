@@ -848,14 +848,17 @@ const handleSendMessage = async (message: { text: string; inputText: string; ima
 
   content = content.replace('[agent name]', selectAgent.value.nickName)
 
+  const state = generateUUID()
+
   const messageParams = {
     assistantId: selectAgent.value.sid,
-    model: 'ollama/cogito:32b',
     content: content,
     userId: loginUser.value?.id || currSessionId.value,
-    message: message.inputText,
+    textContent: message.inputText,
     sessionId: activeSession.value.id,
+    state: state,
     max_iterations: 5,
+
     enableVectorStore: true,
     enableTool: true,
   }
@@ -1420,6 +1423,7 @@ click the avatar to wake them."
             agentId: selectAgent.value.sid,
             userId: loginUser.value?.id || '',
             prompt: data.fullPrompt,
+            state: state,
             serviceName: options.value.model,
             systemContent: content,
             remark: options.value.baseUrl,
