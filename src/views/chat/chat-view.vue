@@ -67,7 +67,7 @@ const loading = ref(false)
 
 const sendLoading = ref(false)
 
-// 铸造agent相关状态
+// Cast agent related state
 const showCastAgentForm = ref(false)
 
 let setTimeoutId: any = null
@@ -390,9 +390,9 @@ const handleUpgrade = () => {
   goUser() // Use existing function to navigate to dashboard
 }
 
-// 处理铸造agent按钮点击
+// Handle cast agent button click
 const handleCastAgent = () => {
-  // 创建一个特殊的消息来显示铸造agent表单
+  // Create a special message to display the cast agent form
   const castAgentMessage: AiMessage = {
     id: `cast-agent-${Date.now()}`,
     type: 'CAST_AGENT_FORM',
@@ -402,10 +402,10 @@ const handleCastAgent = () => {
     thinkingList: [],
   }
 
-  // 将表单消息添加到messageList
+  // Add form message to messageList
   messageList.value.push(castAgentMessage)
 
-  // 滚动到底部显示新消息
+  // Scroll to bottom to show new message
   nextTick(() => {
     if (messageListRef.value) {
       messageListRef.value.scrollTo({
@@ -416,10 +416,10 @@ const handleCastAgent = () => {
   })
 }
 
-// 处理铸造agent表单提交
+// Handle cast agent form submission
 const handleCastAgentSubmit = async (formData: any, messageId: string) => {
   try {
-    // 这里可以调用API创建agent
+    // Here you can call API to create agent
     console.log('Agent casting data:', formData)
 
     // 模拟API调用

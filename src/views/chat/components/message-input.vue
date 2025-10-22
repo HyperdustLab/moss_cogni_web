@@ -95,14 +95,14 @@ async function getAgentList() {
 }
 
 const selectAgentObject = computed(() => {
-  // 如果是固定的agent，返回对应的信息
+  // If it's a fixed agent, return corresponding information
   if (selectedAgent.value === 'ai_world') {
     return { nickName: 'AI World' }
   }
   if (selectedAgent.value === 'browuser') {
     return { nickName: 'Browser Use' }
   }
-  // 否则从agentList中查找
+  // Otherwise search from agentList
   const agent = agentList.value.find((agent) => agent.id === selectedAgent.value)
 
   emit('agentChange', agent?.id)
@@ -111,13 +111,13 @@ const selectAgentObject = computed(() => {
 })
 
 const sendMessage = () => {
-  // 如果当前处于加载状态，执行停止操作
+  // If currently in loading state, execute stop operation
   if (props.loading) {
     emit('stop')
     return
   }
 
-  // 去除首尾空格并检查实际内容
+  // Remove leading and trailing spaces and check actual content
   const trimmedText = message.value.text?.trim()
   if (!trimmedText) {
     ElMessage.warning('Please enter a message')
@@ -142,7 +142,7 @@ const uploadToggleButton = () => {
   buttonActive.upload = !buttonActive.upload
 }
 
-// 选择agent
+// Select agent
 const selectAgent = (agentId: string) => {
   selectedAgent.value = agentId
   emit('agentChange', agentId)
@@ -161,12 +161,12 @@ onMounted(async () => {
   <div class="message-input">
     <div class="input-wrapper">
       <div class="input-container">
-        <!-- 参考截图的输入框设计 -->
+        <!-- Reference screenshot input box design -->
         <div class="input-field">
           <div class="input-content">
-            <!-- 可输入的文本框 -->
+            <!-- Input text box -->
             <el-input v-model="message.text" type="textarea" class="message-input-field" @keydown="handleKeydown" @focus="handleFocus" @blur="handleBlur" :placeholder="'Message ' + (selectAgentObject?.nickName || '')" :autosize="{ minRows: 1, maxRows: 6 }" resize="none"></el-input>
-            <!-- Agent头像列表和Send按钮 -->
+            <!-- Agent avatar list and Send button -->
             <div class="input-bottom-row">
               <div class="agent-avatars">
                 <div class="avatar-list">
@@ -279,7 +279,7 @@ onMounted(async () => {
   }
 
   .message-input-field {
-    // 全局重置所有可能的边框样式
+    // Global reset all possible border styles
     :deep(*) {
       border: none !important;
       outline: none !important;
@@ -333,7 +333,7 @@ onMounted(async () => {
       outline: none !important;
     }
 
-    // 覆盖所有可能的状态
+    // Override all possible states
     :deep(.el-textarea__wrapper):hover,
     :deep(.el-textarea__wrapper.is-focus),
     :deep(.el-textarea__wrapper.is-disabled),
@@ -346,14 +346,14 @@ onMounted(async () => {
       outline: none !important;
     }
 
-    // 确保失焦状态
+    // Ensure blur state
     :deep(.el-textarea__wrapper:not(.is-focus)) {
       border: none !important;
       box-shadow: none !important;
       outline: none !important;
     }
 
-    // 覆盖可能的伪元素
+    // Override possible pseudo-elements
     :deep(.el-textarea__wrapper::before),
     :deep(.el-textarea__wrapper::after),
     :deep(.el-textarea__inner::before),
@@ -506,7 +506,7 @@ onMounted(async () => {
     }
   }
 
-  // 确保两个按钮样式完全一致
+  // Ensure both buttons have completely consistent styles
   .browser-btn,
   .ai-world-btn {
     background-color: #f3f4f6;

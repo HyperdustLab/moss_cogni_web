@@ -2,8 +2,9 @@
 import { ref, reactive } from 'vue'
 import { ElMessage } from 'element-plus'
 import UploadImage from '@/components/UploadImage/index.vue'
+import
 
-// 定义表单数据类型
+// Define form data type
 interface CastAgentForm {
   avatar: string
   nickName: string
@@ -11,18 +12,18 @@ interface CastAgentForm {
   welcomeMessage: string
 }
 
-// 定义事件
+// Define events
 const emit = defineEmits<{
   submit: [formData: CastAgentForm, messageId: string]
   cancel: [messageId: string]
 }>()
 
-// 定义props
+// Define props
 const props = defineProps<{
   messageId: string
 }>()
 
-// 表单数据
+// Form data
 const formData = reactive<CastAgentForm>({
   avatar: '',
   nickName: '',
@@ -30,7 +31,7 @@ const formData = reactive<CastAgentForm>({
   welcomeMessage: '',
 })
 
-// 表单验证规则
+// Form validation rules
 const rules = {
   nickName: [
     { required: true, message: 'Please enter Agent nickname', trigger: 'blur' },
@@ -46,34 +47,32 @@ const rules = {
   ],
 }
 
-// 表单引用
+// Form reference
 const formRef = ref()
 
-// 提交表单
+// Submit form
 const handleSubmit = async () => {
   if (!formRef.value) return
 
   try {
     await formRef.value.validate()
 
-    // 检查头像是否已上传
+    // Check if avatar has been uploaded
     if (!formData.avatar) {
       ElMessage.warning('Please upload Agent avatar')
       return
     }
-
-    emit('submit', { ...formData }, props.messageId)
   } catch (error) {
     console.error('Form validation failed:', error)
   }
 }
 
-// 取消表单
+// Cancel form
 const handleCancel = () => {
   emit('cancel', props.messageId)
 }
 
-// 重置表单
+// Reset form
 const resetForm = () => {
   formData.avatar = ''
   formData.nickName = ''
@@ -84,7 +83,7 @@ const resetForm = () => {
   }
 }
 
-// 暴露重置方法给父组件
+// Expose reset method to parent component
 defineExpose({
   resetForm,
 })
