@@ -21,7 +21,7 @@ const postError = ref<string | null>(null)
 export function useSSE() {
   const wallet = useWallet()
 
-  const makePostRequest = async (url: string, body?: Record<string, any>) => {
+  const makePostRequest = async (url: string, body?: Record<string, any>, customHeaders?: Record<string, string>) => {
     if (isRequesting.value) {
       throw new Error('Request in progress, please wait')
     }
@@ -46,10 +46,17 @@ export function useSSE() {
 
       try {
         // Use plain axios instance (without payment interceptor) to get 402 response
+        const baseHeaders: Record<string, string> = {
+          'Content-Type': 'application/json',
+        }
+
+        // Merge custom headers if provided
+        if (customHeaders) {
+          Object.assign(baseHeaders, customHeaders)
+        }
+
         const baseClient = axios.create({
-          headers: {
-            'Content-Type': 'application/json',
-          },
+          headers: baseHeaders,
         })
 
         const response = await baseClient.post(
@@ -110,6 +117,11 @@ export function useSSE() {
       // Step 2: Use POST request with payment header
       const headers: Record<string, string> = {
         'Content-Type': 'application/json',
+      }
+
+      // Merge custom headers if provided
+      if (customHeaders) {
+        Object.assign(headers, customHeaders)
       }
 
       // If payment header exists, add to request headers

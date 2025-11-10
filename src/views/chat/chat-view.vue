@@ -929,7 +929,9 @@ const handleSendMessage = async (message: { text: string; inputText: string; ima
 
     // Send POST request using X402 payment protocol
     // makePostRequest will automatically handle: authorization, signing, payment request resources and other complete operations
-    const response = await sse.makePostRequest('/advanced-server/generate', messageParams)
+    const response = await sse.makePostRequest('/advanced-server/generate', messageParams, {
+      'x-access-token': token.value || '',
+    })
 
     // Handle response data
     const data = response.data || response
