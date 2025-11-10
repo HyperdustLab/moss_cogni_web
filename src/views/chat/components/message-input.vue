@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import { ref, reactive, onMounted, computed } from 'vue'
-import { Position, ArrowDown } from '@element-plus/icons-vue'
+import { Position, ArrowDown, Plus } from '@element-plus/icons-vue'
 import ImageUpload from '@/components/image/image-upload.vue'
 import { ElMessage } from 'element-plus'
 import { request } from '@/utils/request'
@@ -198,7 +198,7 @@ onMounted(async () => {
               </div>
 
               <button v-if="props.showCreateAgent" @click="castAgent" class="cast-agent-btn">
-                <span>Create Agent</span>
+                <el-icon><Plus /></el-icon>
               </button>
 
               <button @click="sendMessage" :disabled="!props.loading && !message.text.trim()">
@@ -605,13 +605,14 @@ onMounted(async () => {
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 8px 16px;
+    width: 48px;
+    height: 48px;
+    padding: 0;
     background-color: #000000;
     border: 2px solid #000000;
-    border-radius: 50px;
+    border-radius: 50%;
     color: #ffffff;
-    font-size: 14px;
-    font-weight: 500;
+    font-size: 20px;
     cursor: pointer;
     transition: all 0.2s ease;
     margin-left: 8px;
@@ -623,6 +624,7 @@ onMounted(async () => {
       box-shadow:
         0 4px 6px -1px rgba(0, 0, 0, 0.1),
         0 2px 4px -1px rgba(0, 0, 0, 0.06);
+      transform: scale(1.05);
     }
 
     &:focus {
@@ -635,9 +637,9 @@ onMounted(async () => {
       border-color: #000000;
     }
 
-    span {
+    .el-icon {
+      font-size: 20px;
       color: #ffffff;
-      font-weight: 600;
     }
   }
 
@@ -708,6 +710,15 @@ onMounted(async () => {
         width: 18px;
         height: 18px;
         object-fit: contain;
+      }
+    }
+
+    .cast-agent-btn {
+      width: 36px;
+      height: 36px;
+
+      .el-icon {
+        font-size: 16px;
       }
     }
   }

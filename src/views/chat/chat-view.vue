@@ -28,7 +28,7 @@ import agent from '@/assets/agent.png'
 
 import { request } from '@/utils/request'
 
-// 初始化 X402 支付相关工具类
+// Initialize X402 payment related utility classes
 const wallet = useWallet()
 const sse = useSSE()
 
@@ -412,15 +412,15 @@ const handleCastAgentSubmit = async (formData: any, messageId: string) => {
     // Here you can call API to create agent
     console.log('Agent casting data:', formData)
 
-    // 模拟API调用
+    // Simulate API call
     await new Promise((resolve) => setTimeout(resolve, 1000))
 
     ElMessage.success('Agent cast successfully!')
 
-    // 移除表单消息，添加成功消息
+    // Remove form message, add success message
     const messageIndex = messageList.value.findIndex((msg) => msg.id === messageId)
     if (messageIndex !== -1) {
-      // 替换为成功消息
+      // Replace with success message
       messageList.value[messageIndex] = {
         id: `success-${Date.now()}`,
         type: 'ASSISTANT',
@@ -431,7 +431,7 @@ const handleCastAgentSubmit = async (formData: any, messageId: string) => {
       }
     }
 
-    // 可以在这里刷新agent列表
+    // Can refresh agent list here
     // await refreshAgentList()
   } catch (error) {
     console.error('Agent casting failed:', error)
@@ -439,18 +439,18 @@ const handleCastAgentSubmit = async (formData: any, messageId: string) => {
   }
 }
 
-// 处理取消铸造agent
+// Handle cancel casting agent
 const handleCastAgentCancel = (messageId: string) => {
-  // 移除表单消息
+  // Remove form message
   const messageIndex = messageList.value.findIndex((msg) => msg.id === messageId)
   if (messageIndex !== -1) {
     messageList.value.splice(messageIndex, 1)
   }
 }
 
-// 处理铸造agent成功
+// Handle successful agent casting
 const handleCastAgentSuccess = (messageId: string) => {
-  // 移除表单消息
+  // Remove form message
   const messageIndex = messageList.value.findIndex((msg) => msg.id === messageId)
   if (messageIndex !== -1) {
     messageList.value.splice(messageIndex, 1)
@@ -490,6 +490,21 @@ const handleCopyAgentWallet = async (event: MouseEvent, walletAddress: string) =
     const success = await copyToClipboard(walletAddress)
     if (success) {
       ElMessage.success('Copied successfully!')
+    } else {
+      ElMessage.error('Copy failed, please try again')
+    }
+  }
+}
+
+// Handle share agent - generate share link and copy to clipboard
+const handleShareAgent = async (event: MouseEvent, sid: string) => {
+  event.stopPropagation()
+  if (sid) {
+    // Generate share link, format: http://localhost:5177/?sid=xxx
+    const shareUrl = window.location.origin + '/?sid=' + sid
+    const success = await copyToClipboard(shareUrl)
+    if (success) {
+      ElMessage.success('Share link copied to clipboard!')
     } else {
       ElMessage.error('Copy failed, please try again')
     }
@@ -599,7 +614,9 @@ onMounted(async () => {
       method: 'GET',
     })
 
-    handleSelectAgent(result.records[0])
+    if (result.records && result.records.length > 0) {
+      await preHandleSelectAgent(result.records[0], true)
+    }
   } else {
     if (loginUser.value) {
       await getMyAgent()
@@ -716,11 +733,20 @@ async function getSessionList() {
     // Select the first session
     handleSelectSession(sessionList.value[0])
   }
+
+  // If sid parameter exists, ensure chat list is displayed
+  if (sid) {
+    showChatList.value = true
+  }
 }
 
 function handleSelectSession(session: any) {
   activeSession.value = session
   getMessageList()
+  // If sid parameter exists, automatically display chat list
+  if (sid) {
+    showChatList.value = true
+  }
 }
 
 async function getCurrAgentOnlineStatus() {
@@ -882,26 +908,26 @@ const handleSendMessage = async (message: { text: string; inputText: string; ima
   }
 
   try {
-    // 检查钱包连接状态，如果未连接则自动连接
+    // Check wallet connection status, auto-connect if not connected
     if (!wallet.isConnected.value || !wallet.signer.value) {
       try {
-        ElMessage.info('正在连接钱包...')
+        ElMessage.info('Connecting wallet...')
         await connectWallet()
-        ElMessage.success('钱包连接成功')
+        ElMessage.success('Wallet connected successfully')
       } catch (error: any) {
-        const errorMessage = error.message || '钱包连接失败'
-        ElMessage.error(`钱包连接失败: ${errorMessage}`)
+        const errorMessage = error.message || 'Wallet connection failed'
+        ElMessage.error(`Wallet connection failed: ${errorMessage}`)
         sendLoading.value = false
         isProcessing.value = false
         return
       }
     }
 
-    // 使用 X402 支付协议发送 POST 请求
-    // makePostRequest 会自动处理：授权、签名、支付请求资源等完整操作
+    // Send POST request using X402 payment protocol
+    // makePostRequest will automatically handle: authorization, signing, payment request resources and other complete operations
     const response = await sse.makePostRequest('/advanced-server/generate', messageParams)
 
-    // 处理响应数据
+    // Handle response data
     const data = response.data || response
     console.info('Response data:', data)
 
@@ -953,8 +979,8 @@ click the avatar to wake them."
       return
     }
 
-    // 处理同步响应数据
-    // 设置响应内容
+    // Handle synchronous response data
+    // Set response content
 
     const res = JSON.parse(data.result)
 
@@ -963,7 +989,7 @@ click the avatar to wake them."
       triggerRef(responseMessage)
     }
 
-    // 更新思考列表状态
+    // Update thinking list status
     if (responseMessage.value.thinkingList && responseMessage.value.thinkingList.length > 0) {
       const lastThinkingIndex = responseMessage.value.thinkingList.length - 1
       // @ts-ignore
@@ -972,7 +998,7 @@ click the avatar to wake them."
       responseMessage.value.thinkingList.push({ title: 'Think complete', status: 'success' })
     }
 
-    // 滚动到底部
+    // Scroll to bottom
     await nextTick(() => {
       messageListRef.value?.scrollTo(0, messageListRef.value.scrollHeight)
     })
@@ -1070,22 +1096,22 @@ click the avatar to wake them."
     sendLoading.value = false
     isProcessing.value = false
 
-    // 处理支付相关错误
-    let errorMessage = '请求失败，请稍后重试'
+    // Handle payment related errors
+    let errorMessage = 'Request failed, please try again later'
 
     if (error.message) {
-      if (error.message.includes('请先连接钱包')) {
-        errorMessage = '请先连接钱包以使用 X402 支付协议'
+      if (error.message.includes('请先连接钱包') || error.message.includes('Please connect wallet')) {
+        errorMessage = 'Please connect wallet first to use X402 payment protocol'
       } else if (error.message.includes('Payment processing failed') || error.message.includes('支付')) {
-        errorMessage = `支付处理失败: ${error.message}`
+        errorMessage = `Payment processing failed: ${error.message}`
       } else if (error.message.includes('402') || error.response?.status === 402) {
-        errorMessage = '支付处理失败，请检查钱包连接和网络设置'
+        errorMessage = 'Payment processing failed, please check wallet connection and network settings'
       } else {
         errorMessage = error.message
       }
     }
 
-    // 如果是支付错误，更新思考列表状态
+    // If payment error, update thinking list status
     if (responseMessage.value.thinkingList && responseMessage.value.thinkingList.length > 0) {
       const lastThinkingIndex = responseMessage.value.thinkingList.length - 1
       // @ts-ignore
@@ -1289,18 +1315,19 @@ const loadMore = () => {
   getAgentList(true)
 }
 
-const preHandleSelectAgent = (agent: any, _showChatList: boolean = false) => {
+const preHandleSelectAgent = async (agent: any, _showChatList: boolean = false) => {
   selectMyAgentId.value = ''
 
-  handleSelectAgent(agent)
+  await handleSelectAgent(agent)
   showSessionPanel.value = true
+  showContactPanel.value = true
   if (_showChatList) {
     showChatList.value = _showChatList
   }
 }
 
 // Add selection method
-const handleSelectAgent = (_agent: any) => {
+const handleSelectAgent = async (_agent: any) => {
   // Terminate inference logic
   if (isProcessing.value || sendLoading.value) {
     handleStopReasoning()
@@ -1314,7 +1341,7 @@ const handleSelectAgent = (_agent: any) => {
   }
   console.info('selectAgentId.value', selectAgentId.value)
 
-  getSessionList()
+  await getSessionList()
   handleSearchWeb(false)
 }
 
@@ -1829,7 +1856,7 @@ const groupedSessions = computed(() => {
                     <img src="@/assets/online.png" alt="online" class="w-3 h-3" />
                   </div>
                 </div>
-                <div>
+                <div class="flex-1">
                   <div class="text-black text-sm flex items-center">
                     {{ agent.nickName }}
                     <img v-if="agent.xname" src="../../assets/x.svg" alt="X" class="w-4 h-4 ml-6 mt-2" />
@@ -2043,37 +2070,31 @@ const groupedSessions = computed(() => {
       <!-- Message panel -->
       <div class="message-panel" :class="{ 'full-width': isSidebarCollapsed }">
         <!-- Session name -->
-        <div class="header" v-if="activeSession">
-          <!-- <div class="front">
+        <div class="header" v-if="activeSession && selectAgent">
+          <div class="front">
             <div class="flex flex-col">
               <div class="flex items-center">
                 <el-avatar :size="30" :src="selectAgent.avatar" class="mr-3" fit="contain" />
                 <div class="flex flex-col ml-10">
                   <div class="flex items-center">
                     <span class="text-black text-base">{{ selectAgent.nickName }}</span>
-
-                    <el-link v-if="!selectAgent.xname" class="flex items-center transition-all duration-300 hover:scale-105 ml-5 mt-2" @click="handleShareTwitter(selectAgent.sid)" :underline="false">
-                      <el-icon size="18" class="text-blue-400 hover:text-blue-300 transition-colors duration-300">
+                    <!-- Share button -->
+                    <button @click="handleShareAgent($event, selectAgent.sid)" class="ml-3 text-xs font-semibold px-2 py-1 rounded-full text-gray-700 bg-gray-100 hover:bg-gray-200 transition-colors duration-200 cursor-pointer flex items-center" title="Share Agent">
+                      <el-icon size="16" class="text-blue-500 mr-1">
                         <Share />
                       </el-icon>
-                    </el-link>
+                      <span class="text-xs">Share</span>
+                    </button>
                   </div>
 
-                  <div v-if="selectAgent.xname" class="mt-3 flex items-start rounded-lg transition-all duration-300 hover:bg-gray-700/10">
-                    <span class="text-gray-600 text-sm flex items-center group text-left">
-                      <img src="../../assets/x.svg" alt="X" class="w-4 h-4 mr-2 transition-transform duration-300 group-hover:scale-110 flex-shrink-0" />
-                      <a :href="`https://x.com/${selectAgent.xusername}`" target="_blank" class="font-medium truncate text-gray-600">@{{ selectAgent.xusername }}</a>
-                    </span>
-                    <el-link class="flex items-center transition-all duration-300 hover:scale-105 ml-5 mt-2" :underline="false" @click="handleShareTwitter(selectAgent.sid)">
-                      <el-icon size="18" class="text-blue-400 hover:text-blue-300 transition-colors duration-300">
-                        <Share />
-                      </el-icon>
-                    </el-link>
+                  <div v-if="selectAgent.xname" class="mt-2 flex items-center">
+                    <img src="../../assets/x.svg" alt="X" class="w-4 h-4 mr-2" />
+                    <a :href="`https://x.com/${selectAgent.xusername}`" target="_blank" class="font-medium truncate text-gray-600 text-sm">@{{ selectAgent.xusername }}</a>
                   </div>
                 </div>
               </div>
             </div>
-          </div> -->
+          </div>
           <!-- Edit buttons at end -->
           <!-- <div class="flex items-center">
             <div class="rear">
@@ -2469,7 +2490,7 @@ const groupedSessions = computed(() => {
       overscroll-behavior: none;
       -webkit-overscroll-behavior: none;
       align-items: center;
-      justify-content: flex-start; /* 从顶部开始对齐 */
+      justify-content: flex-start; /* Align from top */
       background-color: #ffffff;
       transition: width 0.3s ease;
       margin: 0 auto;
@@ -2506,18 +2527,18 @@ const groupedSessions = computed(() => {
       }
 
       .message-list {
-        padding: 0 20px 120px 20px; /* 顶部内边距设为0，底部增加120px内边距为输入框留出空间 */
-        height: 100%; /* 使用父容器的全部高度 */
+        padding: 0 20px 120px 20px; /* Top padding set to 0, bottom padding increased to 120px to leave space for input box */
+        height: 100%; /* Use full height of parent container */
         width: 100%;
         flex: 1;
         box-sizing: border-box;
         margin: 0;
         position: relative;
-        z-index: 5; /* 低于输入框的z-index，但允许穿透 */
+        z-index: 5; /* Lower than input box z-index, but allows penetration */
         overflow-y: auto;
         overflow-x: hidden;
         touch-action: pan-y;
-        max-width: 100%; /* 使用全部宽度 */
+        max-width: 100%; /* Use full width */
         scroll-behavior: smooth;
         overscroll-behavior: none;
         -webkit-overscroll-behavior: none;

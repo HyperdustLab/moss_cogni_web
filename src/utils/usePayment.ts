@@ -1,59 +1,52 @@
-import { ref } from "vue";
-import { getApiClient, useWallet, connectWallet } from "./useWallet";
-import { decodeXPaymentResponse } from "x402-axios";
+import { ref } from 'vue'
+import { getApiClient, useWallet, connectWallet } from './useWallet'
+import { decodeXPaymentResponse } from 'x402-axios'
 
-const paymentResult = ref<any>(null);
-const isRequesting = ref<boolean>(false);
+const paymentResult = ref<any>(null)
+const isRequesting = ref<boolean>(false)
 
 export function usePayment() {
-  const wallet = useWallet();
+  const wallet = useWallet()
 
   const makePaymentRequest = async (endpoint: string) => {
     if (!endpoint.trim()) {
-      throw new Error("Please enter API endpoint");
+      throw new Error('Please enter API endpoint')
     }
 
-    isRequesting.value = true;
-    paymentResult.value = null;
+    isRequesting.value = true
+    paymentResult.value = null
 
     try {
       // 检查钱包连接状态，如果未连接则自动连接
       if (!wallet.isConnected.value || !wallet.signer.value) {
         try {
-          await connectWallet();
+          await connectWallet()
         } catch (error: any) {
-          const errorMessage = error.message || "钱包连接失败";
-          throw new Error(`钱包连接失败: ${errorMessage}`);
+          const errorMessage = error.message || '钱包连接失败'
+          throw new Error(`钱包连接失败: ${errorMessage}`)
         }
       }
 
-      const api = getApiClient();
+      const api = getApiClient()
 
       // Check if it's a full URL (starts with http:// or https://)
-      const isFullUrl =
-        endpoint.startsWith("http://") || endpoint.startsWith("https://");
+      const isFullUrl = endpoint.startsWith('http://') || endpoint.startsWith('https://')
 
       // Make request (will automatically handle 402 payment response)
       // If full URL, use directly; otherwise treat as relative path
       // axios automatically ignores baseURL when encountering a full URL
-      const requestUrl = isFullUrl
-        ? endpoint
-        : endpoint.startsWith("/")
-        ? endpoint
-        : `/${endpoint}`;
+      const requestUrl = isFullUrl ? endpoint : endpoint.startsWith('/') ? endpoint : `/${endpoint}`
 
       // Add debug logs
-      console.log("[Payment Request] Making request:", requestUrl);
+      console.log('[Payment Request] Making request:', requestUrl)
 
-      const response = await api.get(requestUrl);
+      const response = await api.get(requestUrl)
 
-      console.log("[Payment Request] Request successful:", response.status);
+      console.log('[Payment Request] Request successful:', response.status)
 
       // Parse payment response
-      const paymentResponseHeader = response.headers["x-payment-response"];
-      const paymentResponse = paymentResponseHeader
-        ? decodeXPaymentResponse(paymentResponseHeader)
-        : null;
+      const paymentResponseHeader = response.headers['x-payment-response']
+      const paymentResponse = paymentResponseHeader ? decodeXPaymentResponse(paymentResponseHeader) : null
 
       paymentResult.value = {
         success: true,
@@ -61,46 +54,44 @@ export function usePayment() {
         paymentResponse,
         status: response.status,
         headers: {
-          "x-payment-response": paymentResponseHeader,
+          'x-payment-response': paymentResponseHeader,
         },
-      };
+      }
 
-      return paymentResult.value;
+      return paymentResult.value
     } catch (error: any) {
       // Add debug logs
-      console.error("[Payment Request] Request failed:", error);
-      console.error("[Payment Request] Error details:", {
+      console.error('[Payment Request] Request failed:', error)
+      console.error('[Payment Request] Error details:', {
         message: error.message,
         status: error.response?.status,
         data: error.response?.data,
         stack: error.stack,
-      });
+      })
 
       // More detailed error information
-      const errorMessage = error.message || "Unknown error";
-      const errorDetails = error.response?.data || {};
-      const statusCode = error.response?.status;
+      const errorMessage = error.message || 'Unknown error'
+      const errorDetails = error.response?.data || {}
+      const statusCode = error.response?.status
 
       // If it's a 402 error, provide clearer guidance
-      let userFriendlyMessage = errorMessage;
+      let userFriendlyMessage = errorMessage
       if (statusCode === 402) {
         if (errorDetails.x402Version && errorDetails.accepts) {
           // Check if it's a payment processing failure (possibly signature generation failure)
-          if (errorMessage.includes("Failed to create payment header") || 
-              errorMessage.includes("Failed to parse payment requirements") ||
-              errorMessage.includes("Failed to select payment requirements")) {
-            userFriendlyMessage = `Payment processing failed: ${errorMessage}. Please check wallet connection and network settings, ensure wallet is connected to the correct network (Base Sepolia).`;
+          if (errorMessage.includes('Failed to create payment header') || errorMessage.includes('Failed to parse payment requirements') || errorMessage.includes('Failed to select payment requirements')) {
+            userFriendlyMessage = `Payment processing failed: ${errorMessage}. Please check wallet connection and network settings, ensure wallet is connected to the correct network (Base Sepolia).`
           } else {
-            userFriendlyMessage = "Payment processing failed. Please check wallet connection and network settings.";
+            userFriendlyMessage = 'Payment processing failed. Please check wallet connection and network settings.'
           }
-          console.error("[Payment Request] 402 error - Payment info:", {
+          console.error('[Payment Request] 402 error - Payment info:', {
             x402Version: errorDetails.x402Version,
             accepts: errorDetails.accepts,
             error: errorMessage,
-          });
+          })
         } else {
-          userFriendlyMessage = "Received 402 payment required, but unable to parse payment information.";
-          console.error("[Payment Request] 402 error - Unable to parse payment info:", errorDetails);
+          userFriendlyMessage = 'Received 402 payment required, but unable to parse payment information.'
+          console.error('[Payment Request] 402 error - Unable to parse payment info:', errorDetails)
         }
       }
 
@@ -111,21 +102,21 @@ export function usePayment() {
         response: errorDetails,
         status: statusCode,
         fullError: error,
-      };
+      }
 
       // Re-throw error to let caller know what happened
-      const enhancedError = new Error(userFriendlyMessage);
-      (enhancedError as any).originalError = error;
-      (enhancedError as any).response = error.response;
-      throw enhancedError;
+      const enhancedError = new Error(userFriendlyMessage)
+      ;(enhancedError as any).originalError = error
+      ;(enhancedError as any).response = error.response
+      throw enhancedError
     } finally {
-      isRequesting.value = false;
+      isRequesting.value = false
     }
-  };
+  }
 
   return {
     paymentResult,
     isRequesting,
     makePaymentRequest,
-  };
+  }
 }

@@ -23,16 +23,16 @@ export function useSSE() {
 
   const makePostRequest = async (url: string, body?: Record<string, any>) => {
     if (isRequesting.value) {
-      throw new Error('请求正在进行中，请稍候')
+      throw new Error('Request in progress, please wait')
     }
 
-    // 检查钱包连接状态，如果未连接则自动连接
+    // Check wallet connection status, auto-connect if not connected
     if (!wallet.isConnected.value || !wallet.signer.value) {
       try {
         await connectWallet()
       } catch (error: any) {
-        const errorMessage = error.message || '钱包连接失败'
-        throw new Error(`钱包连接失败: ${errorMessage}`)
+        const errorMessage = error.message || 'Wallet connection failed'
+        throw new Error(`Wallet connection failed: ${errorMessage}`)
       }
     }
 
@@ -41,11 +41,11 @@ export function useSSE() {
     postResponse.value = null
 
     try {
-      // Step 1: 使用不带支付拦截器的 axios 获取支付要求（402 响应）
+      // Step 1: Use axios without payment interceptor to get payment requirements (402 response)
       let paymentHeader: string
 
       try {
-        // 使用普通的 axios 实例（不带支付拦截器）来获取 402 响应
+        // Use plain axios instance (without payment interceptor) to get 402 response
         const baseClient = axios.create({
           headers: {
             'Content-Type': 'application/json',
@@ -54,52 +54,52 @@ export function useSSE() {
 
         const response = await baseClient.post(
           url,
-          body || {}, // 将参数作为 JSON body 发送
+          body || {}, // Send parameters as JSON body
           {
-            validateStatus: (status) => status === 402 || status === 200, // 接受 402 和 200
+            validateStatus: (status) => status === 402 || status === 200, // Accept 402 and 200
           }
         )
 
         if (response.status === 402) {
-          // 解析支付要求
+          // Parse payment requirements
           const { x402Version, accepts } = response.data
 
           if (!x402Version || !accepts || !Array.isArray(accepts)) {
-            throw new Error('无效的 402 响应格式')
+            throw new Error('Invalid 402 response format')
           }
 
-          // 解析支付要求
+          // Parse payment requirements
           const parsedPaymentRequirements = accepts.map((x) => PaymentRequirementsSchema.parse(x))
 
-          // 选择支付要求（使用 base-sepolia 网络）
+          // Select payment requirements (using base-sepolia network)
           const selectedPaymentRequirements = selectPaymentRequirements(parsedPaymentRequirements, 'base-sepolia', 'exact')
 
-          // 创建支付 header（确保 signer 存在）
+          // Create payment header (ensure signer exists)
           if (!wallet.signer.value) {
-            throw new Error('钱包签名器未初始化')
+            throw new Error('Wallet signer not initialized')
           }
           paymentHeader = await createPaymentHeader(wallet.signer.value, x402Version, selectedPaymentRequirements)
         } else if (response.status === 200) {
-          // 如果直接返回 200，说明不需要支付
-          paymentHeader = '' // 空支付 header
+          // If directly returns 200, payment not required
+          paymentHeader = '' // Empty payment header
         } else {
-          throw new Error(`意外的响应状态: ${response.status}`)
+          throw new Error(`Unexpected response status: ${response.status}`)
         }
       } catch (error: any) {
         if (error.response?.status === 402) {
-          // 如果捕获到 402，尝试处理
+          // If 402 is caught, try to handle it
           const { x402Version, accepts } = error.response.data
 
           if (!x402Version || !accepts || !Array.isArray(accepts)) {
-            throw new Error('无效的 402 响应格式')
+            throw new Error('Invalid 402 response format')
           }
 
           const parsedPaymentRequirements = accepts.map((x) => PaymentRequirementsSchema.parse(x))
           const selectedPaymentRequirements = selectPaymentRequirements(parsedPaymentRequirements, 'base-sepolia', 'exact')
 
-          // 确保 signer 存在
+          // Ensure signer exists
           if (!wallet.signer.value) {
-            throw new Error('钱包签名器未初始化')
+            throw new Error('Wallet signer not initialized')
           }
           paymentHeader = await createPaymentHeader(wallet.signer.value, x402Version, selectedPaymentRequirements)
         } else {
@@ -107,12 +107,12 @@ export function useSSE() {
         }
       }
 
-      // Step 2: 使用带支付 header 的 POST 请求
+      // Step 2: Use POST request with payment header
       const headers: Record<string, string> = {
         'Content-Type': 'application/json',
       }
 
-      // 如果有支付 header，添加到请求头
+      // If payment header exists, add to request headers
       if (paymentHeader) {
         headers['X-PAYMENT'] = paymentHeader
       }
@@ -121,7 +121,7 @@ export function useSSE() {
         headers,
       })
 
-      // 成功响应
+      // Success response
       postResponse.value = {
         success: true,
         data: response.data,
@@ -135,7 +135,7 @@ export function useSSE() {
       const errorMsg = error.message || String(error)
       postError.value = errorMsg
 
-      // 处理错误响应
+      // Handle error response
       if (error.response) {
         postResponse.value = {
           success: false,
