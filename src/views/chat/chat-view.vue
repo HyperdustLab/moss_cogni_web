@@ -165,7 +165,7 @@ const { status, data, send, open, close } = useWebSocket(wsUrl, {
             await saveMessage(chatMessage.value)
             await saveMessage(responseMessage.value)
 
-            await addReasoningRecord(reasoningRecord.value)
+            //    await addReasoningRecord(reasoningRecord.value)
 
             isProcessing.value = false
             sendLoading.value = false
@@ -555,7 +555,7 @@ const isOnline = ref(false)
 const defAvatar = ref(agent)
 
 const options = ref<any>({
-  enableVectorStore: true,
+  enableVectorStore: false,
   enableAgent: false,
   model: '',
   baseUrl: '',
@@ -877,7 +877,7 @@ const handleSendMessage = async (message: { text: string; inputText: string; ima
     state: state,
     max_iterations: 5,
 
-    enableVectorStore: true,
+    enableVectorStore: false,
     enableTool: true,
   }
 
@@ -1005,7 +1005,7 @@ click the avatar to wake them."
       await saveMessage(chatMessage.value)
       await saveMessage(responseMessage.value)
 
-      await addReasoningRecord(reasoningRecord.value)
+      // await addReasoningRecord(reasoningRecord.value)
 
       inputTextReplyStatus.value = true
     } else {
@@ -1030,7 +1030,7 @@ click the avatar to wake them."
         await saveMessage(chatMessage.value)
         await saveMessage(responseMessage.value)
 
-        await addReasoningRecord(reasoningRecord.value)
+        //   await addReasoningRecord(reasoningRecord.value)
       } else {
         const msg = {
           action: 'autoReplyTweetsMedia',
@@ -1058,7 +1058,7 @@ click the avatar to wake them."
             await saveMessage(chatMessage.value)
             await saveMessage(responseMessage.value)
 
-            await addReasoningRecord(reasoningRecord.value)
+            //  await addReasoningRecord(reasoningRecord.value)
 
             sendLoading.value = false
           }
