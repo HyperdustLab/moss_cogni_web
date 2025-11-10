@@ -498,16 +498,27 @@ const handleCopyAgentWallet = async (event: MouseEvent, walletAddress: string) =
 
 // Handle share agent - generate share link and copy to clipboard
 const handleShareAgent = async (event: MouseEvent, sid: string) => {
-  event.stopPropagation()
-  if (sid) {
+  console.log('handleShareAgent called', { sid, event })
+  if (event) {
+    event.stopPropagation()
+  }
+  if (!sid) {
+    ElMessage.warning('Agent ID is missing')
+    return
+  }
+  try {
     // Generate share link, format: http://localhost:5177/?sid=xxx
     const shareUrl = window.location.origin + '/?sid=' + sid
+    console.log('Share URL:', shareUrl)
     const success = await copyToClipboard(shareUrl)
     if (success) {
       ElMessage.success('Share link copied to clipboard!')
     } else {
       ElMessage.error('Copy failed, please try again')
     }
+  } catch (error) {
+    console.error('Share agent error:', error)
+    ElMessage.error('Failed to share agent')
   }
 }
 
@@ -618,17 +629,8 @@ onMounted(async () => {
       await preHandleSelectAgent(result.records[0], true)
     }
   } else {
-    if (loginUser.value) {
-      await getMyAgent()
-
-      handleSelectAgent(myAgentList.value[0])
-      selectMyAgentId.value = myAgentList.value[0].id
-    } else {
-      handleSelectAgent(agentList.value[0])
-    }
+    handleSelectAgent(agentList.value[0])
   }
-
-  // Add scroll listener - will be bound when contactListRef is available
 })
 
 async function getReplySearch() {
@@ -705,6 +707,8 @@ async function getSessionList() {
     sessionList.value = []
     return
   }
+
+  console.info('getSessionList selectAgent.value', selectAgent.value)
 
   const { result } = await request({
     url: '/mgn/aiSession/list',
@@ -1144,21 +1148,6 @@ const handleSessionCreate = async () => {
   await getSessionList()
 }
 
-async function getMyAgent() {
-  const { result } = await request({
-    url: '/mgn/agent/list',
-    method: 'GET',
-    headers: {
-      'X-Access-Token': token.value,
-    },
-    params: {
-      walletAddress: loginUser.value.walletAddress || loginUser.value.email,
-    },
-  })
-
-  myAgentList.value = result.records
-}
-
 // Modify the method to get agent list, add search parameters
 async function getAgentList(isLoadMore = false) {
   if (loading.value || noMore.value) return
@@ -1169,7 +1158,6 @@ async function getAgentList(isLoadMore = false) {
       pageSize: pageSize.value,
       userOrderNum: true,
       showStatus: 'Y',
-      noWalletAddress: loginUser.value ? loginUser.value.walletAddress : '',
     }
 
     // Only add nickName parameter when search keyword is not empty
@@ -1332,6 +1320,7 @@ const handleSelectAgent = async (_agent: any) => {
   if (isProcessing.value || sendLoading.value) {
     handleStopReasoning()
   }
+
   if (_agent) {
     selectAgent.value = _agent
     selectAgentId.value = _agent.id
@@ -1339,9 +1328,9 @@ const handleSelectAgent = async (_agent: any) => {
     selectAgent.value = agentList.value[0]
     selectAgentId.value = agentList.value[0].id
   }
-  console.info('selectAgentId.value', selectAgentId.value)
 
   await getSessionList()
+
   handleSearchWeb(false)
 }
 
@@ -1498,6 +1487,10 @@ async function getAgent(sid) {
 
 // Handle agent change event
 const handleAgentChange = async (agentId: string) => {
+  if (agentId === undefined || agentId === null || agentId === '') {
+    return
+  }
+
   try {
     // Find corresponding agent from agentList based on agentId
     let agent = agentList.value.find((a) => a.id === agentId)
@@ -2079,7 +2072,13 @@ const groupedSessions = computed(() => {
                   <div class="flex items-center">
                     <span class="text-black text-base">{{ selectAgent.nickName }}</span>
                     <!-- Share button -->
-                    <button @click="handleShareAgent($event, selectAgent.sid)" class="ml-3 text-xs font-semibold px-2 py-1 rounded-full text-gray-700 bg-gray-100 hover:bg-gray-200 transition-colors duration-200 cursor-pointer flex items-center" title="Share Agent">
+                    <button
+                      @click="handleShareAgent($event, selectAgent.sid)"
+                      type="button"
+                      class="ml-3 text-xs font-semibold px-2 py-1 rounded-full text-gray-700 bg-gray-100 hover:bg-gray-200 transition-colors duration-200 cursor-pointer flex items-center"
+                      title="Share Agent"
+                      style="pointer-events: auto; z-index: 10"
+                    >
                       <el-icon size="16" class="text-blue-500 mr-1">
                         <Share />
                       </el-icon>
@@ -2117,7 +2116,7 @@ const groupedSessions = computed(() => {
           </div> -->
         </div>
         <!-- <el-divider :border-style="'solid'" border-color="#666666" /> -->
-        <div ref="messageListRef" class="message-list" :style="{ width: showChatList ? '80%' : '60%', backgroundColor: 'rgb(249, 250, 251)' }" v-show="showChatList">
+        <div ref="messageListRef" class="message-list mt-20" :style="{ width: showChatList ? '80%' : '60%', backgroundColor: 'rgb(249, 250, 251)' }" v-show="showChatList">
           <!-- Transition effect -->
           <transition-group name="list" v-if="activeSession && selectAgent">
             <message-row

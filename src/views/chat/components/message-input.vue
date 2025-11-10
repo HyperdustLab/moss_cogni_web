@@ -105,6 +105,9 @@ const selectAgentObject = computed(() => {
   // Otherwise search from agentList
   const agent = agentList.value.find((agent) => agent.id === selectedAgent.value)
 
+  console.info('selectAgentObject agent', agent)
+  console.info('selectAgentObject agent?.id', agent?.id)
+
   emit('agentChange', agent?.id)
 
   return agent
