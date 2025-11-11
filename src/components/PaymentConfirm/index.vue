@@ -1,5 +1,5 @@
 <template>
-  <el-dialog v-model="visible" title="Payment Confirmation" width="480px" :close-on-click-modal="false" :close-on-press-escape="false" :show-close="false" class="payment-confirm-dialog">
+  <el-dialog v-model="visible" title="Hyper Pay" width="480px" :close-on-click-modal="false" :close-on-press-escape="false" :show-close="false" class="payment-confirm-dialog">
     <div class="payment-content">
       <div class="payment-info">
         <div class="info-row">
