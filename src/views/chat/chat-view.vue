@@ -80,6 +80,7 @@ const replySearch = ref(null)
 // Add timestamp and flag for message processing control
 const lastProcessedTime = ref(0)
 const isProcessing = ref(false)
+const isHandlingMessage = ref(false) // 防止handleSendMessage重复调用
 
 const reasoningRecord = ref(null)
 
@@ -949,6 +950,15 @@ const handleSendMessage = async (message: { text: string; inputText: string; ima
     return
   }
 
+  // 防止重复调用：如果正在处理中，直接返回
+  if (isHandlingMessage.value) {
+    console.log('handleSendMessage: Already handling message, skipping duplicate call')
+    return
+  }
+
+  // 设置处理标志，防止重复调用
+  isHandlingMessage.value = true
+
   let content = selectAgent.value.personalization
 
   if (!content) {
@@ -984,6 +994,7 @@ const handleSendMessage = async (message: { text: string; inputText: string; ima
         ElMessage.error(`Wallet connection failed: ${errorMessage}`)
         sendLoading.value = false
         isProcessing.value = false
+        isHandlingMessage.value = false
         return
       }
     }
@@ -1027,6 +1038,7 @@ click the avatar to wake them."
 
       sendLoading.value = false
       isProcessing.value = false
+      isHandlingMessage.value = false
 
       await nextTick(() => {
         if (messageListRef.value) {
@@ -1047,6 +1059,7 @@ click the avatar to wake them."
       // Reset loading state
       sendLoading.value = false
       isProcessing.value = false
+      isHandlingMessage.value = false
 
       return
     }
@@ -1102,6 +1115,7 @@ click the avatar to wake them."
 
     if (!isOnline.value) {
       sendLoading.value = false
+      isHandlingMessage.value = false
       await saveMessage(chatMessage.value)
       await saveMessage(responseMessage.value)
 
@@ -1126,6 +1140,7 @@ click the avatar to wake them."
       if (type === 'other') {
         isProcessing.value = false
         sendLoading.value = false
+        isHandlingMessage.value = false
 
         await saveMessage(chatMessage.value)
         await saveMessage(responseMessage.value)
@@ -1155,6 +1170,7 @@ click the avatar to wake them."
 
             inputTextReplyStatus.value = true
             isProcessing.value = false
+            isHandlingMessage.value = false
             await saveMessage(chatMessage.value)
             await saveMessage(responseMessage.value)
 
@@ -1169,6 +1185,7 @@ click the avatar to wake them."
     console.error('Request error:', error)
     sendLoading.value = false
     isProcessing.value = false
+    isHandlingMessage.value = false
 
     // Handle payment related errors
     let errorMessage = 'Request failed, please try again later'

@@ -1,6 +1,9 @@
 <template>
   <el-dialog v-model="visible" title="Hyper Pay" width="480px" :close-on-click-modal="false" :close-on-press-escape="false" :show-close="false" class="payment-confirm-dialog">
     <div class="payment-content">
+      <div class="logo-container">
+        <img src="@/assets/x402.webp" alt="Logo" class="logo-image" />
+      </div>
       <div class="payment-info">
         <div class="info-row">
           <span class="info-label">Network</span>
@@ -235,6 +238,21 @@ const handleCancel = () => {
 }
 
 .payment-content {
+  .logo-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 24px;
+    padding-bottom: 24px;
+    border-bottom: 1px solid #f3f4f6;
+
+    .logo-image {
+      width: 200px;
+      height: auto;
+      object-fit: contain;
+    }
+  }
+
   .payment-info {
     display: flex;
     flex-direction: column;

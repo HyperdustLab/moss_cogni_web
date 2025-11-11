@@ -50,14 +50,12 @@ export function useSSE() {
     postResponse.value = null
 
     try {
-      // Step 1: Use axios without payment interceptor to get payment requirements (402 response)
+      // Step 1: Use GET request to check if payment is required (402 response)
       let paymentHeader: string
 
       try {
-        // Use plain axios instance (without payment interceptor) to get 402 response
-        const baseHeaders: Record<string, string> = {
-          'Content-Type': 'application/json',
-        }
+        // Use GET request to check payment requirements (without payment interceptor)
+        const baseHeaders: Record<string, string> = {}
 
         // Merge custom headers if provided
         if (customHeaders) {
@@ -68,13 +66,10 @@ export function useSSE() {
           headers: baseHeaders,
         })
 
-        const response = await baseClient.post(
-          url,
-          body || {}, // Send parameters as JSON body
-          {
-            validateStatus: (status) => status === 402 || status === 200, // Accept 402 and 200
-          }
-        )
+        // Step 1: Use GET request to check if payment is required
+        const response = await baseClient.get(url, {
+          validateStatus: (status) => status === 402 || status === 200, // Accept 402 and 200
+        })
 
         if (response.status === 402) {
           // Parse payment requirements
@@ -177,7 +172,7 @@ export function useSSE() {
         }
       }
 
-      // Step 2: Use POST request with payment header
+      // Step 2: Use POST request to execute inference with payment header
       const headers: Record<string, string> = {
         'Content-Type': 'application/json',
       }
