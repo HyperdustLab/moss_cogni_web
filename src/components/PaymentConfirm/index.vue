@@ -247,7 +247,7 @@ const handleCancel = () => {
     border-bottom: 1px solid #f3f4f6;
 
     .logo-image {
-      width: 200px;
+      width: 100%;
       height: auto;
       object-fit: contain;
     }

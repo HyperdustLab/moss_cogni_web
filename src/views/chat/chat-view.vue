@@ -62,6 +62,7 @@ const sendLoading = ref(false)
 const showCastAgentForm = ref(false)
 
 let setTimeoutId: any = null
+let typewriterTimer: any = null // 打字机效果定时器
 
 const showContactPanel = ref(false)
 
@@ -710,6 +711,11 @@ async function getDefaultWelcomeMessage() {
 onUnmounted(() => {
   contactListRef.value?.removeEventListener('scroll', handleScroll)
   document.removeEventListener('click', handleClickOutside)
+  // 清理打字机效果定时器
+  if (typewriterTimer) {
+    clearInterval(typewriterTimer)
+    typewriterTimer = null
+  }
 })
 
 async function getDefaultContent() {
@@ -909,6 +915,47 @@ const preHandleSendMessage = async (message: { text: string; image: string }) =>
   }
 }
 
+/**
+ * 打字机效果：逐字显示文本
+ * @param text 要显示的完整文本
+ * @param targetRef 目标响应式对象
+ * @param speed 打字速度（毫秒），默认 30ms
+ */
+function typewriterEffect(text: string, targetRef: any, speed: number = 30) {
+  // 清除之前的定时器
+  if (typewriterTimer) {
+    clearInterval(typewriterTimer)
+    typewriterTimer = null
+  }
+
+  // 初始化文本为空
+  targetRef.value.textContent = ''
+  let currentIndex = 0
+
+  // 创建定时器逐字显示
+  typewriterTimer = setInterval(() => {
+    if (currentIndex < text.length) {
+      targetRef.value.textContent = text.substring(0, currentIndex + 1)
+      triggerRef(targetRef)
+      currentIndex++
+
+      // 自动滚动到底部
+      nextTick(() => {
+        if (messageListRef.value) {
+          messageListRef.value.scrollTo({
+            top: messageListRef.value.scrollHeight,
+            behavior: 'smooth',
+          })
+        }
+      })
+    } else {
+      // 显示完成，清除定时器
+      clearInterval(typewriterTimer)
+      typewriterTimer = null
+    }
+  }, speed)
+}
+
 async function addReasoningRecord(reasoningRecord: any) {
   await request({
     url: '/mgn/reasoningRecord/add',
@@ -1069,9 +1116,13 @@ click the avatar to wake them."
 
     const res = JSON.parse(data.result)
 
+    // 保存完整内容，用于后续保存记录
+    let fullContent = ''
+
     if (res.content) {
-      responseMessage.value.textContent = res.content
-      triggerRef(responseMessage)
+      fullContent = res.content
+      // 使用打字机效果逐字显示推理结果
+      typewriterEffect(fullContent, responseMessage, 30)
     }
 
     // Update thinking list status
@@ -1094,9 +1145,10 @@ click the avatar to wake them."
     chatMessage.value.textContent = message.text
 
     // Create reasoning record
+    // 使用完整内容而不是 responseMessage.value.textContent（因为打字机效果可能还在进行中）
     reasoningRecord.value = {
       inputContent: message.inputText,
-      outContent: responseMessage.value.textContent,
+      outContent: fullContent || responseMessage.value.textContent,
       agentId: selectAgent.value.sid,
       userId: loginUser.value?.id || '',
       prompt: data.fullPrompt || '',
