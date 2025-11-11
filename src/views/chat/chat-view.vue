@@ -13,9 +13,10 @@ import { type AiMessage, useChatStore } from './store/chat-store'
 import Login from '@/components/Login/index.vue'
 
 import { connectWallet, disconnectWallet, useWallet } from '@/utils/useWallet'
-import { useSSE } from '@/utils/useSSE'
+import { useSSE, type PaymentInfo } from '@/utils/useSSE'
 
 import IntroductionBindAccount from '@/components/IntroductionBindAccount/index.vue'
+import PaymentConfirm from '@/components/PaymentConfirm/index.vue'
 
 import { useWebSocket } from '@vueuse/core'
 
@@ -593,6 +594,52 @@ const showSessionPanel = ref(false) // Control session panel show/hide
 const isSidebarCollapsed = ref(false) // Control entire left area (sidebar) collapse state
 const showChatList = ref(false) // Control chat list show/hide
 
+const usage = ref({
+  totalFreeCount: 0,
+  usedCount: 0,
+  remainingCount: 0,
+})
+
+// Payment confirmation dialog state
+const showPaymentConfirm = ref(false)
+const paymentInfo = ref<PaymentInfo>({
+  network: '',
+  currency: '',
+  amount: '',
+})
+const paymentConfirmResolve = ref<((value: boolean) => void) | null>(null)
+const isPaymentProcessing = ref(false)
+
+// Payment confirmation handler
+const handlePaymentConfirm = async (info: PaymentInfo): Promise<boolean> => {
+  return new Promise((resolve) => {
+    paymentInfo.value = info
+    paymentConfirmResolve.value = resolve
+    showPaymentConfirm.value = true
+  })
+}
+
+// Handle payment confirm button click
+const onPaymentConfirm = () => {
+  isPaymentProcessing.value = true
+  if (paymentConfirmResolve.value) {
+    paymentConfirmResolve.value(true)
+    paymentConfirmResolve.value = null
+  }
+  showPaymentConfirm.value = false
+  isPaymentProcessing.value = false
+}
+
+// Handle payment cancel button click
+const onPaymentCancel = () => {
+  if (paymentConfirmResolve.value) {
+    paymentConfirmResolve.value(false)
+    paymentConfirmResolve.value = null
+  }
+  showPaymentConfirm.value = false
+  isPaymentProcessing.value = false
+}
+
 // Control agent panel show/hide
 function toggleAgentPanel() {
   showAgentPanel.value = true
@@ -606,6 +653,7 @@ onMounted(async () => {
 
   if (localStorage.getItem('X-Token')) {
     await getLoginUser()
+    await usageAgent()
   }
 
   await getAgentList()
@@ -882,6 +930,19 @@ async function saveMessage(message: any) {
   })
 }
 
+async function usageAgent() {
+  const { data } = await request({
+    url: location.origin + '/advanced-server/usage',
+    method: 'GET',
+    headers: {
+      'X-Access-Token': token.value,
+    },
+  })
+
+  console.info('usageAgent result', data)
+  usage.value = data
+}
+
 const handleSendMessage = async (message: { text: string; inputText: string; image: string }) => {
   if (!activeSession.value) {
     ElMessage.warning('Please create a session')
@@ -929,9 +990,14 @@ const handleSendMessage = async (message: { text: string; inputText: string; ima
 
     // Send POST request using X402 payment protocol
     // makePostRequest will automatically handle: authorization, signing, payment request resources and other complete operations
-    const response = await sse.makePostRequest('/advanced-server/generate', messageParams, {
-      'x-access-token': token.value || '',
-    })
+    const response = await sse.makePostRequest(
+      '/advanced-server/generate',
+      messageParams,
+      {
+        'x-access-token': token.value || '',
+      },
+      handlePaymentConfirm
+    )
 
     // Handle response data
     const data = response.data || response
@@ -1008,6 +1074,8 @@ click the avatar to wake them."
     await nextTick(() => {
       messageListRef.value?.scrollTo(0, messageListRef.value.scrollHeight)
     })
+
+    await usageAgent()
 
     // Set chat message content
     chatMessage.value.textContent = message.text
@@ -2065,7 +2133,7 @@ const groupedSessions = computed(() => {
       <!-- Message panel -->
       <div class="message-panel" :class="{ 'full-width': isSidebarCollapsed }">
         <!-- Session name -->
-        <div class="header" v-if="activeSession && selectAgent">
+        <div class="header" v-if="activeSession && selectAgent && showChatList">
           <div class="front">
             <div class="flex flex-col">
               <div class="flex items-center">
@@ -2094,6 +2162,17 @@ const groupedSessions = computed(() => {
                   </div>
                 </div>
               </div>
+            </div>
+          </div>
+          <!-- Usage info display on the right -->
+          <div class="usage-info" v-if="loginUser">
+            <div class="usage-item">
+              <span class="usage-label">Usage quota:</span>
+              <span class="usage-value">
+                <span class="usage-number">{{ usage?.totalFreeCount }}</span>
+                <span class="usage-separator">/</span>
+                <span class="usage-number">{{ usage?.remainingCount }}</span>
+              </span>
             </div>
           </div>
           <!-- Edit buttons at end -->
@@ -2169,6 +2248,9 @@ const groupedSessions = computed(() => {
     </div>
 
     <IntroductionBindAccount ref="introductionBindAccountRef"></IntroductionBindAccount>
+
+    <!-- Payment Confirmation Dialog -->
+    <PaymentConfirm v-model="showPaymentConfirm" :payment-info="paymentInfo" :is-processing="isPaymentProcessing" @confirm="onPaymentConfirm" @cancel="onPaymentCancel" />
   </div>
 </template>
 <style lang="scss" scoped>
@@ -2506,6 +2588,7 @@ const groupedSessions = computed(() => {
         display: flex;
         /* Session name and edit button distributed left and right horizontally */
         justify-content: space-between;
+        align-items: flex-start;
 
         /* Front title and message count */
         .front {
@@ -2524,6 +2607,57 @@ const groupedSessions = computed(() => {
         .rear {
           display: flex;
           align-items: center;
+        }
+
+        /* Usage info styles */
+        .usage-info {
+          display: flex;
+          flex-direction: column;
+          align-items: flex-end;
+          margin-left: auto;
+          padding-left: 24px;
+
+          .usage-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 14px;
+            line-height: 1.5;
+
+            .usage-label {
+              color: #64748b;
+              font-weight: 500;
+              font-size: 13px;
+              white-space: nowrap;
+            }
+
+            .usage-value {
+              display: inline-flex;
+              align-items: center;
+              gap: 4px;
+              color: #0f172a;
+              font-weight: 600;
+              font-size: 14px;
+              font-variant-numeric: tabular-nums;
+
+              .usage-number {
+                color: #1e293b;
+                font-weight: 700;
+                font-size: 15px;
+                min-width: 20px;
+                text-align: center;
+                letter-spacing: 0.2px;
+              }
+
+              .usage-separator {
+                color: #94a3b8;
+                font-weight: 400;
+                font-size: 13px;
+                margin: 0 2px;
+                opacity: 0.6;
+              }
+            }
+          }
         }
       }
 

@@ -14,6 +14,15 @@ export interface PostResponse {
   errorDetails?: any
 }
 
+export interface PaymentInfo {
+  network: string
+  currency: string
+  amount: string
+  decimals?: number // Token decimals, default 18 for ETH
+}
+
+export type PaymentConfirmCallback = (paymentInfo: PaymentInfo) => Promise<boolean>
+
 const postResponse = ref<PostResponse | null>(null)
 const isRequesting = ref<boolean>(false)
 const postError = ref<string | null>(null)
@@ -21,7 +30,7 @@ const postError = ref<string | null>(null)
 export function useSSE() {
   const wallet = useWallet()
 
-  const makePostRequest = async (url: string, body?: Record<string, any>, customHeaders?: Record<string, string>) => {
+  const makePostRequest = async (url: string, body?: Record<string, any>, customHeaders?: Record<string, string>, paymentConfirmCallback?: PaymentConfirmCallback) => {
     if (isRequesting.value) {
       throw new Error('Request in progress, please wait')
     }
@@ -81,6 +90,33 @@ export function useSSE() {
           // Select payment requirements (using base-sepolia network)
           const selectedPaymentRequirements = selectPaymentRequirements(parsedPaymentRequirements, 'base-sepolia', 'exact')
 
+          // Extract payment info for confirmation dialog
+          if (paymentConfirmCallback && selectedPaymentRequirements) {
+            const networkName = selectedPaymentRequirements.network || 'base-sepolia'
+            const asset = selectedPaymentRequirements.asset || 'ETH'
+            const amount = selectedPaymentRequirements.maxAmountRequired || '0'
+
+            // Get token info from extra field
+            const extra = (selectedPaymentRequirements as any).extra || {}
+            // Use token name from extra.name, fallback to asset address or 'ETH'
+            const currencyName = extra.name || (asset === 'ETH' || !asset ? 'ETH' : asset)
+            // Get decimals from extra.decimals, default to 18 for ETH
+            const decimals = extra.decimals ?? (asset === 'ETH' || !asset ? 18 : 18)
+
+            const paymentInfo: PaymentInfo = {
+              network: networkName,
+              currency: currencyName,
+              amount: amount, // Store raw amount without unit, will be converted based on decimals
+              decimals: decimals,
+            }
+
+            // Show confirmation dialog and wait for user confirmation
+            const confirmed = await paymentConfirmCallback(paymentInfo)
+            if (!confirmed) {
+              throw new Error('Payment cancelled by user')
+            }
+          }
+
           // Create payment header (ensure signer exists)
           if (!wallet.signer.value) {
             throw new Error('Wallet signer not initialized')
@@ -103,6 +139,33 @@ export function useSSE() {
 
           const parsedPaymentRequirements = accepts.map((x) => PaymentRequirementsSchema.parse(x))
           const selectedPaymentRequirements = selectPaymentRequirements(parsedPaymentRequirements, 'base-sepolia', 'exact')
+
+          // Extract payment info for confirmation dialog
+          if (paymentConfirmCallback && selectedPaymentRequirements) {
+            const networkName = selectedPaymentRequirements.network || 'base-sepolia'
+            const asset = selectedPaymentRequirements.asset || 'ETH'
+            const amount = selectedPaymentRequirements.maxAmountRequired || '0'
+
+            // Get token info from extra field
+            const extra = (selectedPaymentRequirements as any).extra || {}
+            // Use token name from extra.name, fallback to asset address or 'ETH'
+            const currencyName = extra.name || (asset === 'ETH' || !asset ? 'ETH' : asset)
+            // Get decimals from extra.decimals, default to 18 for ETH
+            const decimals = extra.decimals ?? (asset === 'ETH' || !asset ? 18 : 18)
+
+            const paymentInfo: PaymentInfo = {
+              network: networkName,
+              currency: currencyName,
+              amount: amount, // Store raw amount without unit, will be converted based on decimals
+              decimals: decimals,
+            }
+
+            // Show confirmation dialog and wait for user confirmation
+            const confirmed = await paymentConfirmCallback(paymentInfo)
+            if (!confirmed) {
+              throw new Error('Payment cancelled by user')
+            }
+          }
 
           // Ensure signer exists
           if (!wallet.signer.value) {
