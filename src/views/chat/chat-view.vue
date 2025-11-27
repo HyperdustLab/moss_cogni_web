@@ -58,13 +58,15 @@ const loading = ref(false)
 
 const sendLoading = ref(false)
 
+const sessionListLoading = ref(false)
+
 // Cast agent related state
 const showCastAgentForm = ref(false)
 
 let setTimeoutId: any = null
 let typewriterTimer: any = null // 打字机效果定时器
 
-const showContactPanel = ref(false)
+const showContactPanel = ref(true)
 
 const defaultWelcomeMessage = ref('')
 
@@ -458,6 +460,30 @@ const handleCastAgentSuccess = (messageId: string) => {
   if (messageIndex !== -1) {
     messageList.value.splice(messageIndex, 1)
   }
+
+  // Add success message to chat
+  const successMessage: any = {
+    id: `success-${Date.now()}`,
+    type: 'ASSISTANT',
+    textContent: 'Mint successful, you can edit it in the personal center later.',
+    medias: [],
+    sessionId: activeSession.value?.id || '',
+    thinkingList: [],
+    avatar: selectAgent.value?.avatar,
+    name: selectAgent.value?.nickName || 'Assistant',
+  }
+
+  messageList.value.push(successMessage)
+
+  // Scroll to bottom
+  nextTick(() => {
+    if (messageListRef.value) {
+      messageListRef.value.scrollTo({
+        top: messageListRef.value.scrollHeight,
+        behavior: 'smooth',
+      })
+    }
+  })
 }
 
 // Copy to clipboard
@@ -572,7 +598,7 @@ const handleClickOutside = (event: MouseEvent) => {
 }
 
 import { useRoute } from 'vue-router'
-import { fa } from 'element-plus/es/locales.mjs'
+import { ca, fa } from 'element-plus/es/locales.mjs'
 
 const route = useRoute()
 const sid = route.query.sid
@@ -765,37 +791,45 @@ async function getSessionList() {
 
   console.info('getSessionList selectAgent.value', selectAgent.value)
 
-  const { result } = await request({
-    url: '/mgn/aiSession/list',
-    method: 'GET',
-    headers: {
-      'X-Access-Token': token.value,
-    },
+  // 开始加载
+  sessionListLoading.value = true
 
-    params: {
-      pageNo: 1,
-      pageSize: 20,
-      column: 'createdTime',
-      order: 'desc',
-      type: '3',
-      creatorId: loginUser.value?.id || currSessionId.value,
-      agentId: selectAgent.value.sid,
-    },
-  })
+  try {
+    const { result } = await request({
+      url: '/mgn/aiSession/list',
+      method: 'GET',
+      headers: {
+        'X-Access-Token': token.value,
+      },
 
-  sessionList.value = result.records
+      params: {
+        pageNo: 1,
+        pageSize: 20,
+        column: 'createdTime',
+        order: 'desc',
+        type: '3',
+        creatorId: loginUser.value?.id || currSessionId.value,
+        agentId: selectAgent.value.sid,
+      },
+    })
 
-  // If no sessions, automatically create a new one
-  if (sessionList.value.length === 0) {
-    await handleSessionCreate()
-  } else {
-    // Select the first session
-    handleSelectSession(sessionList.value[0])
-  }
+    sessionList.value = result.records
 
-  // If sid parameter exists, ensure chat list is displayed
-  if (sid) {
-    showChatList.value = true
+    // If no sessions, automatically create a new one
+    if (sessionList.value.length === 0) {
+      await handleSessionCreate()
+    } else {
+      // Select the first session
+      handleSelectSession(sessionList.value[0])
+    }
+
+    // If sid parameter exists, ensure chat list is displayed
+    if (sid) {
+      showChatList.value = true
+    }
+  } finally {
+    // 结束加载
+    sessionListLoading.value = false
   }
 }
 
@@ -979,16 +1013,20 @@ async function saveMessage(message: any) {
 }
 
 async function usageAgent() {
-  const { data } = await request({
-    url: location.origin + '/advanced-server/usage',
-    method: 'GET',
-    headers: {
-      'X-Access-Token': token.value,
-    },
-  })
+  try {
+    const { data } = await request({
+      url: location.origin + '/advanced-server/usage',
+      method: 'GET',
+      headers: {
+        'X-Access-Token': token.value,
+      },
+    })
 
-  console.info('usageAgent result', data)
-  usage.value = data
+    console.info('usageAgent result', data)
+    usage.value = data
+  } catch (error: any) {
+    console.error('usageAgent error:', error)
+  }
 }
 
 const handleSendMessage = async (message: { text: string; inputText: string; image: string }) => {
@@ -1138,7 +1176,6 @@ click the avatar to wake them."
     await nextTick(() => {
       messageListRef.value?.scrollTo(0, messageListRef.value.scrollHeight)
     })
-
     await usageAgent()
 
     // Set chat message content
@@ -1386,7 +1423,8 @@ const goHome = () => {
 }
 
 function goUser() {
-  location.href = `https://dashboard.hyperagi.ai/login?token=${token.value}`
+  // location.href = `https://dashboard.hyperagi.ai/login?token=${token.value}`
+  location.href = `https://test-user.hyperagi.ai/login?token=${token.value}`
 }
 
 function showUploadEmbedding() {
@@ -2141,7 +2179,7 @@ const groupedSessions = computed(() => {
         </div>
 
         <!-- Session list -->
-        <div class="h-[calc(75vh-140px)] overflow-y-auto custom-scrollbar px-4 mt-10" style="max-height: calc(90% - 180px)">
+        <div class="h-[calc(75vh-140px)] overflow-y-auto custom-scrollbar px-4 mt-10" style="max-height: calc(90% - 180px)" v-loading="sessionListLoading">
           <div class="space-y-4">
             <!-- Display sessions grouped by time -->
             <div v-for="group in groupedSessions" :key="group.label" class="session-group">
@@ -2152,7 +2190,7 @@ const groupedSessions = computed(() => {
             </div>
 
             <!-- Empty state -->
-            <div v-if="sessionList.length === 0" class="text-center py-8 text-gray-400">
+            <div v-if="!sessionListLoading && sessionList.length === 0" class="text-center py-8 text-gray-400">
               <div class="text-lg mb-2">No sessions yet</div>
               <div class="text-sm">Create your first session to get started</div>
             </div>
@@ -2203,11 +2241,11 @@ const groupedSessions = computed(() => {
       <div class="message-panel" :class="{ 'full-width': isSidebarCollapsed }">
         <!-- Session name -->
         <div class="header" v-if="activeSession && selectAgent && showChatList">
-          <div class="front">
+          <div class="front" style="margin-left: 100px">
             <div class="flex flex-col">
               <div class="flex items-center">
                 <el-avatar :size="30" :src="selectAgent.avatar" class="mr-3" fit="contain" />
-                <div class="flex flex-col ml-10">
+                <div class="flex flex-col">
                   <div class="flex items-center">
                     <span class="text-black text-base">{{ selectAgent.nickName }}</span>
                     <!-- Share button -->
@@ -2238,9 +2276,10 @@ const groupedSessions = computed(() => {
             <div class="usage-item">
               <span class="usage-label">Usage quota:</span>
               <span class="usage-value">
-                <span class="usage-number">{{ usage?.totalFreeCount }}</span>
-                <span class="usage-separator">/</span>
                 <span class="usage-number">{{ usage?.remainingCount }}</span>
+
+                <span class="usage-separator">/</span>
+                <span class="usage-number">{{ usage?.totalFreeCount }}</span>
               </span>
             </div>
           </div>
@@ -2655,6 +2694,8 @@ const groupedSessions = computed(() => {
       .header {
         padding: 20px 20px 0 20px;
         display: flex;
+        width: 100%;
+        align-self: flex-start;
         /* Session name and edit button distributed left and right horizontally */
         justify-content: space-between;
         align-items: flex-start;
