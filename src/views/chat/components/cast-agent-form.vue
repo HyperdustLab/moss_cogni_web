@@ -231,9 +231,9 @@ defineExpose({
       </el-form-item>
 
       <!-- Charge Amount -->
-      <el-form-item label="* Charge Amount" prop="chargeAmount">
+      <el-form-item label="* Task Rate" prop="chargeAmount">
         <div class="charge-amount-wrapper">
-          <el-input-number v-model="formData.chargeAmount" :min="0" :precision="2" :step="0.01" placeholder="Enter charge amount (HYPT)" class="charge-input" controls-position="right" />
+          <el-input-number v-model="formData.chargeAmount" :min="0" :precision="2" :step="0.01" placeholder="Enter task rate (HYPT)" class="charge-input" controls-position="right" />
           <p class="form-tip">The amount users need to pay to use this Agent (in HYPT)</p>
         </div>
       </el-form-item>
