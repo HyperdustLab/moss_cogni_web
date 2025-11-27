@@ -465,7 +465,7 @@ const handleCastAgentSuccess = (messageId: string) => {
   const successMessage: any = {
     id: `success-${Date.now()}`,
     type: 'ASSISTANT',
-    textContent: 'Mint successful, you can edit it in the personal center later.',
+    textContent: 'Mint successful, you can edit it in the dashboard later.',
     medias: [],
     sessionId: activeSession.value?.id || '',
     thinkingList: [],
