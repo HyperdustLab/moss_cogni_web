@@ -1663,23 +1663,33 @@ async function getAgent(sid) {
 }
 
 // Handle agent change event
-const handleAgentChange = async (agentId: string) => {
+const handleAgentChange = async (agentId: string, agent?: any) => {
   if (agentId === undefined || agentId === null || agentId === '') {
     return
   }
 
   try {
-    // Find corresponding agent from agentList based on agentId
-    let agent = agentList.value.find((a) => a.id === agentId)
+    // 如果传递了完整的 agent 对象，直接使用；否则从 agentList 中查找
+    let selectedAgent = agent
 
-    if (!agent) {
-      agent = await getAgent(agentId)
+    if (!selectedAgent) {
+      // Find corresponding agent from agentList based on agentId
+      selectedAgent = agentList.value.find((a) => a.id === agentId)
     }
 
-    if (agent) {
-      selectAgent.value = agent
-      selectAgentId.value = agent.id
-      console.info('Agent changed to:', agent.nickName, 'ID:', agent.id)
+    if (!selectedAgent) {
+      selectedAgent = await getAgent(agentId)
+    }
+
+    if (selectedAgent) {
+      selectAgent.value = selectedAgent
+      selectAgentId.value = selectedAgent.id
+      console.info('Agent changed to:', selectedAgent.nickName, 'ID:', selectedAgent.id)
+
+      // 切换视图状态：显示聊天列表和相关面板
+      showChatList.value = true
+      showSessionPanel.value = true
+      showContactPanel.value = true
 
       // Re-fetch session list
       await getSessionList()

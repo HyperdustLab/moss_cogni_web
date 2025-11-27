@@ -40,7 +40,7 @@ const emit = defineEmits<{
   send: [message: Message]
   search: [message: boolean]
   stop: []
-  agentChange: [agentId: string]
+  agentChange: [agentId: string, agent?: any]
   castAgent: []
 }>()
 // Message in input box
@@ -146,9 +146,14 @@ const uploadToggleButton = () => {
 }
 
 // Select agent
-const selectAgent = (agentId: string) => {
+const selectAgent = (agentId: string, agent?: any) => {
   selectedAgent.value = agentId
-  emit('agentChange', agentId)
+  // 传递完整的 agent 对象给父组件
+  if (agent) {
+    emit('agentChange', agentId, agent)
+  } else {
+    emit('agentChange', agentId)
+  }
 }
 
 const castAgent = () => {
@@ -189,7 +194,7 @@ onMounted(async () => {
                     </div>
                   </button>
 
-                  <button v-for="agent in agentList" :key="agent.id" class="avatar-btn" :class="{ active: selectedAgent === agent.id }" @click="selectAgent(agent.id)" :title="agent.name">
+                  <button v-for="agent in agentList" :key="agent.id" class="avatar-btn" :class="{ active: selectedAgent === agent.id }" @click="selectAgent(agent.id, agent)" :title="agent.name">
                     <div class="avatar-icon" :style="{ backgroundColor: agent.color }">
                       <span class="icon-text">
                         <el-avatar :size="48" :src="agent.avatar" fit="contain" />
