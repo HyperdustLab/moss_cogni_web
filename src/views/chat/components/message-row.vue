@@ -97,7 +97,7 @@ const handleDownload = async (imageUrl: string) => {
     <div class="avatar">
       <el-avatar :size="40" :src="(message as any).avatar || avatar" />
     </div>
-    <div class="message-content" :class="{ 'error-content': isError }">
+    <div class="message-content" :class="{ 'error-content': isError, 'cast-agent-message': isCastAgentForm }">
       <!-- 流程列表展开/隐藏按钮 - 仅对历史消息显示 -->
       <div v-if="isHistoryMessage" class="thinking-toggle" @click="showThinkingList = !showThinkingList">
         <el-button size="small" type="text" class="toggle-btn">
@@ -170,6 +170,11 @@ const handleDownload = async (imageUrl: string) => {
     border-radius: 8px;
     color: black;
     word-break: break-word;
+
+    &.cast-agent-message {
+      max-width: 100%;
+      padding: 0;
+    }
 
     &.error-content {
       background-color: #fef2f2;

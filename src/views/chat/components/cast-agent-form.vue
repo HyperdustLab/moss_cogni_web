@@ -201,7 +201,7 @@ defineExpose({
       </div>
     </div>
 
-    <el-form ref="formRef" :model="formData" :rules="rules" label-width="120px" label-position="right" class="agent-form">
+    <el-form ref="formRef" :model="formData" :rules="rules" label-width="150px" label-position="right" class="agent-form">
       <!-- Avatar Upload -->
       <el-form-item label="Avatar" required>
         <div class="avatar-upload-section">
@@ -211,27 +211,27 @@ defineExpose({
       </el-form-item>
 
       <!-- Nickname -->
-      <el-form-item label="* Nickname" prop="nickName">
+      <el-form-item label="Nickname" prop="nickName">
         <el-input v-model="formData.nickName" placeholder="Enter Agent nickname" maxlength="20" show-word-limit clearable />
       </el-form-item>
 
       <!-- Position -->
-      <el-form-item label="* Position" prop="position">
+      <el-form-item label="Position" prop="position">
         <el-input v-model="formData.position" placeholder="Enter Agent position" maxlength="50" show-word-limit clearable />
       </el-form-item>
 
       <!-- Personalization -->
-      <el-form-item label="* Personalization" prop="personalization">
+      <el-form-item label="Personalization" prop="personalization">
         <el-input v-model="formData.personalization" type="textarea" :rows="4" placeholder="Describe Agent's personality, skills and characteristics..." maxlength="1000" show-word-limit resize="vertical" />
       </el-form-item>
 
       <!-- Welcome Message -->
-      <el-form-item label="* Welcome Message" prop="welcomeMessage">
+      <el-form-item label="Welcome Message" prop="welcomeMessage">
         <el-input v-model="formData.welcomeMessage" type="textarea" :rows="3" placeholder="Agent's greeting message when meeting users for the first time..." maxlength="1000" show-word-limit resize="vertical" />
       </el-form-item>
 
       <!-- Charge Amount -->
-      <el-form-item label="* Task Rate" prop="chargeAmount">
+      <el-form-item label="Task Rate" prop="chargeAmount">
         <div class="charge-amount-wrapper">
           <el-input-number v-model="formData.chargeAmount" :min="0" :precision="2" :step="0.01" placeholder="Enter task rate (HYPT)" class="charge-input" controls-position="right" />
           <p class="form-tip">The amount users need to pay to use this Agent (in HYPT)</p>
@@ -256,18 +256,18 @@ defineExpose({
   padding: 24px;
   border: 1px solid #e5e7eb;
   width: 100%;
-  max-width: 900px;
+  max-width: 1100px;
   margin: 0 auto;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 
   .form-header {
     display: flex;
-    align-items: flex-start;
+    align-items: center;
     gap: 12px;
     margin-bottom: 28px;
     padding-bottom: 20px;
     border-bottom: 1px solid #f3f4f6;
-    flex-direction: row-reverse;
+    flex-direction: row;
     justify-content: flex-start;
 
     .header-icon {
@@ -285,7 +285,7 @@ defineExpose({
 
     .header-content {
       flex: 1;
-      text-align: right;
+      text-align: left;
 
       h3 {
         font-size: 20px;
@@ -313,20 +313,21 @@ defineExpose({
         color: #374151;
         font-size: 14px;
         line-height: 1.5;
+        white-space: nowrap;
         padding-bottom: 8px;
-        text-align: right;
-        justify-content: flex-end;
+        text-align: left;
+        justify-content: flex-start;
       }
 
       :deep(.el-form-item__content) {
         line-height: 1.5;
-        text-align: right;
+        text-align: left;
       }
 
       :deep(.el-form-item__error) {
-        text-align: right;
-        right: 0;
-        left: auto;
+        text-align: left;
+        left: 0;
+        right: auto;
       }
 
       :deep(.el-input__wrapper) {
@@ -351,11 +352,10 @@ defineExpose({
         color: #111827;
         padding: 10px 12px;
         height: auto;
-        text-align: right;
+        text-align: left;
 
         &::placeholder {
-          text-align: right;
-          direction: ltr;
+          text-align: left;
         }
       }
 
@@ -370,11 +370,10 @@ defineExpose({
         color: #111827;
         padding: 10px 12px;
         line-height: 1.5;
-        text-align: right;
+        text-align: left;
 
         &::placeholder {
-          text-align: right;
-          direction: ltr;
+          text-align: left;
         }
 
         &:hover {
@@ -414,14 +413,14 @@ defineExpose({
       color: #6b7280;
       margin: 8px 0 0 0;
       line-height: 1.5;
-      text-align: right;
+      text-align: left;
     }
   }
 
   .avatar-upload-section {
     display: flex;
     flex-direction: column;
-    align-items: flex-end;
+    align-items: flex-start;
     gap: 10px;
 
     .upload-tip {
@@ -429,7 +428,7 @@ defineExpose({
       color: #6b7280;
       margin: 0;
       line-height: 1.5;
-      text-align: right;
+      text-align: left;
     }
   }
 
@@ -445,11 +444,10 @@ defineExpose({
 
       :deep(.el-input__inner) {
         width: 100%;
-        text-align: right;
+        text-align: left;
 
         &::placeholder {
-          text-align: right;
-          direction: ltr;
+          text-align: left;
         }
       }
     }
@@ -457,7 +455,7 @@ defineExpose({
 
   .form-actions {
     display: flex;
-    justify-content: flex-end;
+    justify-content: flex-start;
     gap: 12px;
     margin-top: 32px;
     padding-top: 20px;
