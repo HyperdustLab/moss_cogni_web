@@ -54,11 +54,11 @@ const rules = {
   ],
   personalization: [
     { required: true, message: 'Please enter personalization description', trigger: 'blur' },
-    { min: 2, max: 200, message: 'Personalization should be 2-200 characters', trigger: 'blur' },
+    { min: 2, max: 1000, message: 'Personalization should be 2-1000 characters', trigger: 'blur' },
   ],
   welcomeMessage: [
     { required: true, message: 'Please enter welcome message', trigger: 'blur' },
-    { min: 2, max: 100, message: 'Welcome message should be 2-100 characters', trigger: 'blur' },
+    { min: 2, max: 1000, message: 'Welcome message should be 2-1000 characters', trigger: 'blur' },
   ],
   chargeAmount: [
     { required: true, message: 'Please enter charge amount', trigger: 'blur' },
