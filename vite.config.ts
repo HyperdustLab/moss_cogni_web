@@ -18,8 +18,8 @@ export default defineConfig({
     port: 5177,
     proxy: {
       '/api': {
-        target: 'https://test.hyperagi.ai/api',
-        changeOrigin: true,
+        target: 'http://127.0.0.1:9999',
+        changeOrigin: false,
         rewrite: (path) => path.replace(/^\/api/, ''),
       },
       '/advanced-server': {
