@@ -61,6 +61,8 @@ import logoutPng from '@/assets/image/logout.png?url'
 import walletsPng from '@/assets/image/wallets.png?url'
 import logo5Png from '@/assets/image/logo5.png?url'
 
+const { ensurePaid } = await import('@/utils/x402')
+
 import Substring from '@/components/Substring.vue'
 
 const loading = ref(false)
@@ -77,6 +79,9 @@ const showContactPanel = ref(false)
 const defaultWelcomeMessage = ref('')
 
 const loginRef = ref<InstanceType<typeof Login>>()
+
+
+
 
 const BASE_URL = import.meta.env.VITE_API_HYPERAGI_API
 
@@ -849,6 +854,19 @@ const handleSendMessage = async (message: { text: string; inputText: string; ima
     return
   }
 
+  // 在发送消息前执行 x402 支付校验（通过 MetaMask 签名），并带上支付凭据头
+  let x402PaymentHeader: string | null = null
+  try {
+    const x402Enabled = true
+    if (x402Enabled) {
+      const { ensurePaid } = await import('@/utils/x402')
+      x402PaymentHeader = await ensurePaid(BASE_URL + '/mgn/agent/asyncChat')
+    }
+  } catch (err: any) {
+    ElMessage.error(err?.message || '支付失败，请重试')
+    return
+  }
+
   let content = selectAgent.value.personalization
 
   if (!content) {
@@ -880,6 +898,7 @@ const handleSendMessage = async (message: { text: string; inputText: string; ima
     payload: JSON.stringify(messageParams),
     headers: {
       'Content-Type': 'application/json',
+      ...(x402PaymentHeader ? { 'X-Payment-Response': x402PaymentHeader } : {}),
     },
     method: 'POST',
   })
@@ -890,8 +909,30 @@ const handleSendMessage = async (message: { text: string; inputText: string; ima
   evtSource.stream()
 
   // Add error handling
-  evtSource.addEventListener('error', (event: any) => {
+  evtSource.addEventListener('error', async (event: any) => {
     console.error('SSE connection error:', event)
+    
+    // Handle 402 Payment Required error
+    if (event.status === 402 || event.data?.includes('402')) {
+      console.info('[x402] SSE 收到 402 错误，需要处理支付')
+      ElMessage.warning('需要完成支付才能继续')
+      
+      // 重新尝试支付
+      try {
+      
+        const x402PaymentHeader = await ensurePaid(BASE_URL + '/mgn/agent/asyncChat')
+        
+        if (x402PaymentHeader) {
+          ElMessage.success('支付完成，请重试')
+          // 可选：自动重试发送消息
+          // handleSendMessage(message)
+        }
+      } catch (err: any) {
+        console.error('[x402] 支付处理失败:', err)
+        ElMessage.error(err?.message || '支付失败，请重试')
+      }
+    }
+    
     sendLoading.value = false
     isProcessing.value = false
   })
